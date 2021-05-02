@@ -1,4 +1,5 @@
 import socket
+import json
 
 SERVER_IP = "localhost"
 SERVER_PORT = 1338
@@ -10,4 +11,5 @@ print("UDP server has started and is ready to receive")
 
 while True:
     data, addr = server_sock.recvfrom(2048)
-    print('msg =>', data)
+    msg = json.loads(data)
+    print('msg =>', json.dumps(msg, indent=4))
