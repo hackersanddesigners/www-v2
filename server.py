@@ -1,3 +1,4 @@
+import traceback
 import sys
 import socket
 import json
@@ -37,4 +38,4 @@ while True:
                 print('✕ error for %s-article "%s" =>' % (article['slug'], article['title']), e)
 
     except Exception as e:
-        print('ERR ARTICLE =>', e)
+        traceback.print_exc()
