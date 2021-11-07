@@ -1,4 +1,5 @@
 from wikitexthtml import Page
+import wikitextparser as wtp
 from slugify import slugify
 
 class WikiPage(Page):
@@ -51,13 +52,37 @@ def parser(data):
         'id': article_data['pageid'],
         'slug': slugify(article_data['title']),
         'body': article_data['revisions'][0]['slots']['main']['content'],
+        'template': None,
+        'category': None,
         'html': None
     }
+
+    article = pre_process(article)
 
     wiki_page = WikiPage(article)
     body_html = wiki_page.render().html
     article['html'] = body_html
 
-    print(body_html)
+    # print(body_html)
+
+    return article
+
+
+def pre_process(article):
+    """We take out any {{template}} and [[category:<>]] syntax, before rendering the article"""
+
+    article_wtp = wtp.parse(article['body'])
+
+    for template in article_wtp.templates:
+        article['template'] = template.name.strip()
+        del template[:]
+
+    for wikilink in article_wtp.wikilinks:
+        if wikilink.title.lower().startswith('category:'):
+            cat = wikilink.title.split(':')[-1]
+            article['category'] = cat 
+            del wikilink[:]
+
+    article['body'] = article_wtp.string
 
     return article
