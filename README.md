@@ -4,7 +4,7 @@
 
 a program to export data from MediaWiki into a mostly static website (except `/search`).
 
-the underlaying idea is to make it easier to archive and distribute the website in an easier format to work with: 
+the underlying idea is to make it easier to archive and distribute the website in an easier format to work with: 
 
 - we export each article into its Mediawiki plain text syntax
 - add it to a git repo
