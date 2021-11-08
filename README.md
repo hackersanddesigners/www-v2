@@ -1,7 +1,5 @@
 # hackersanddesigners.nl v2
 
-previous name: `had-py`
-new name: 
 
   - static + search
   - 
