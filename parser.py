@@ -26,24 +26,27 @@ class WikiPage(Page):
 
     def file_exists(self, file):
         """Return True if and only if the file (upload) exists."""
-        return
+        return file
 
     def clean_url(self, url):
         """Clean "url" (which is a wikilink) to become a valid URL to call."""
-        return
+        print('clean-url =>', url)
+        return url
 
     def clean_title(self, title):
         """Clean "title" (which is a full pagename) to become more human readable."""
-        return
+        print('clean-title =>', title)
+        return title
 
     def file_get_link(self, url):
         """Get the link to a file (for the "a href" of the File)."""
+        print('file-get-link =>', url)
         return url
 
     def file_get_img(self, url, thumb):
         """Get the "img src" to a file. If thumb is set, a thumb should be generated of that size."""
-        print('file_get_img =>', [self, url, thumb])
-        return
+        print('file-get-img =>', [self, url, thumb])
+        return url
 
 def parser(data):
     article_data = data['query']['pages'][0]
