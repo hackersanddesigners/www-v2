@@ -1,6 +1,9 @@
 from wikitexthtml import Page
 import wikitextparser as wtp
+from fetch import fetch_article, fetch_file
 from slugify import slugify
+import json
+
 
 class WikiPage(Page):
     def __init__(self, page):
@@ -41,12 +44,16 @@ class WikiPage(Page):
     def file_get_link(self, url):
         """Get the link to a file (for the "a href" of the File)."""
         print('file-get-link =>', url)
+
+
         return url
 
     def file_get_img(self, url, thumb):
         """Get the "img src" to a file. If thumb is set, a thumb should be generated of that size."""
         print('file-get-img =>', [self, url, thumb])
+
         return url
+
 
 def parser(data):
     article_data = data['query']['pages'][0]
@@ -55,6 +62,7 @@ def parser(data):
         'id': article_data['pageid'],
         'slug': slugify(article_data['title']),
         'body': article_data['revisions'][0]['slots']['main']['content'],
+        'files': [],
         'template': None,
         'category': None,
         'html': None
@@ -64,9 +72,10 @@ def parser(data):
 
     wiki_page = WikiPage(article)
     body_html = wiki_page.render().html
-    article['html'] = body_html
+    article['html'] = body_html 
+                              
 
-    # print(body_html)
+    print('article (parsed) =>', json.dumps(article, indent=2))
 
     return article
 

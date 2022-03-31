@@ -4,7 +4,7 @@ import socket
 import json
 import wikitextparser as wtp
 from jinja2 import Environment, FileSystemLoader
-from fetch import fetch
+from fetch import fetch_article
 from parser import parser
 
 env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
@@ -24,7 +24,7 @@ while True:
 
     #-- we have the UPD message, let's fetch the full article now
     try: 
-        data = fetch(msg['title']) 
+        data = fetch_article(msg['title']) 
         article = parser(data)
         
         t = env.get_template('article.html')
