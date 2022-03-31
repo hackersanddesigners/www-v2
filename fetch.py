@@ -58,7 +58,7 @@ def fetch_file(title):
    # return file_path
    return {
        'caption': data_file['revisions'][0]['slots']['main']['content'],
-       'url': file_path
+       'url': '/' + '/'.join(file_path.split('/')[2:])
    }
 
 
