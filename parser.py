@@ -122,6 +122,10 @@ def pre_process(article):
             article_url = slugify(wikilink.title)
 
             wikilink.title = article_url
+
+
+        # TODO scan through all <a href> and intercept those
+        # pointing to <https://hackersanddesigners.nl> ?
             
 
 
