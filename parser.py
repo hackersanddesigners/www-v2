@@ -81,19 +81,49 @@ def parser(data):
 
 
 def pre_process(article):
-    """We take out any {{template}} and [[category:<>]] syntax, before rendering the article"""
+    """We take out any {{template}} and [[category:<>]] syntax,
+    before rendering the article. We also update wikilinks [[<>]] to point to
+    correct locations, so that WikiTextParser does its job just fine."""
 
     article_wtp = wtp.parse(article['body'])
 
+    print('article_wtp =>', article_wtp, '\n---\n')
+
     for template in article_wtp.templates:
+        print('article_wtp template =>', article['template'], '\n---\n')
         article['template'] = template.name.strip()
         del template[:]
 
+
+    print('wikilinks =>', article_wtp.wikilinks)
     for wikilink in article_wtp.wikilinks:
         if wikilink.title.lower().startswith('category:'):
             cat = wikilink.title.split(':')[-1]
             article['category'] = cat 
             del wikilink[:]
+
+        elif wikilink.title.lower().startswith('file:'):
+            # download file to disk and fetch metadata
+            print('wikilink file =>', wikilink.title)
+
+            title = wikilink.title
+            file_data = fetch_file(title)
+            article['files'].append(file_data)
+
+            print('file-data =>', file_data)
+            wikilink.title = "File:%s|%s" % (file_data['url'], file_data['caption'])
+
+        else:
+            # convert normal wikilink to standard URL
+            print('wikilink page =>', wikilink.title)
+
+            # TODO should decide if articles are organized in a tree
+            # or not, and so construct the URL accordingly
+            article_url = slugify(wikilink.title)
+
+            wikilink.title = article_url
+            
+
 
     article['body'] = article_wtp.string
 
