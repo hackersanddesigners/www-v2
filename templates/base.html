@@ -5,11 +5,12 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="description" content="">
     <link href=data:, rel=icon>
-    <link rel="stylesheet" type="text/css" href=""/>
+    <link rel="stylesheet" type="text/css" href="/assets/styles/base.css"/>
 
     <title>{{ article['title'] }} • H&amp;D</title>
   </head>
 	<body>
+    {% include 'header.html' %}
     {% block content %}{% endblock %}
   </body>
 </html>

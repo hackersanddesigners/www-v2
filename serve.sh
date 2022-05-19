@@ -9,7 +9,8 @@ if [[ $# == 1 ]]; then
     DIR=$1
 
     echo "serving $DIR at http:localhost:$PORT"
-    python -m http.server --directory $DIR --bind 127.0.0.1 $PORT 
+    # python -m http.server --directory $DIR --bind 127.0.0.1 $PORT
+    python dev-server.py ./$DIR $PORT
 
 else
     echo "serving current directory $(pwd) at http:localhost:$PORT"
@@ -20,4 +21,3 @@ else
     python -m http.server --bind 127.0.0.1 $PORT
 
 fi
-

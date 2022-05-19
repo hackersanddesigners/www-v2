@@ -12,6 +12,8 @@ env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 SERVER_IP = "localhost"
 SERVER_PORT = 1338
 
+
+
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_sock.bind((SERVER_IP, SERVER_PORT))
 
@@ -23,10 +25,10 @@ while True:
     print('msg =>', json.dumps(msg, indent=4))
 
     #-- we have the UPD message, let's fetch the full article now
-    try: 
-        data = fetch_article(msg['title']) 
+    try:
+        data = fetch_article(msg['title'])
         article = parser(data)
-        
+
         t = env.get_template('article.html')
         document = t.render(article=article)
 

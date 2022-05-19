@@ -3,8 +3,8 @@ import shutil
 import requests
 import json
 
-# base_url = 'https://wiki.hackersanddesigners.nl/api.php?'
-BASE_URL = 'http://hd-mw.test/api.php?' # change this to .env
+BASE_URL = 'https://wiki.hackersanddesigners.nl/api.php?'
+# BASE_URL = 'http://hd-mw.test/api.php?' # change this to .env
 
 def fetch_article(title):
     # action=query&
@@ -12,7 +12,7 @@ def fetch_article(title):
     # titles=AntiSpoof&
     # formatversion=2&
     # redirects=1
-    
+
     options = {'action': 'query',
                'prop': 'revisions|images',
                'titles': title,
@@ -21,17 +21,17 @@ def fetch_article(title):
                'formatversion': '2',
                'format': 'json',
                'redirects': '1'}
-    
+
     response = requests.get(BASE_URL, params=options)
     data = response.json()
 
-    print('data =>', json.dumps(data, indent=2))
+    # print('data =>', json.dumps(data, indent=2))
 
     return data
 
 
 def fetch_file(title):
-   print('fetch-file', title) 
+#    print('fetch-file', title)
 
    options = {'action': 'query',
               'prop': 'revisions|imageinfo',
@@ -46,7 +46,7 @@ def fetch_file(title):
    response = requests.get(BASE_URL, params=options)
    data = response.json()
 
-   print('data =>', json.dumps(data, indent=2))
+#    print('data =>', json.dumps(data, indent=2))
 
    # we assume we get back an array with 1 result
    # we could map over in case of weird behaviour
@@ -54,7 +54,7 @@ def fetch_file(title):
    data_file = data['query']['pages'][0]
    file_url = data_file['imageinfo'][0]['url']
    file_path = write_blob_to_disk(file_url)
-   
+
    # return file_path
    return {
        'caption': data_file['revisions'][0]['slots']['main']['content'],
@@ -63,12 +63,12 @@ def fetch_file(title):
 
 
 def write_blob_to_disk(url):
-    print('url =>', url)
+    # print('url =>', url)
 
-    dir_path = './wiki/assets/imgs'
+    dir_path = './wiki/assets/media'
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-        
+
     # <https://stackoverflow.com/a/18043472>
     r = requests.get(url, stream=True)
     if r.status_code == 200:
@@ -79,12 +79,12 @@ def write_blob_to_disk(url):
             with open(img_path, 'wb') as outf:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, outf)
-                print('img downloaded successfully!') 
+                # print('img downloaded successfully!')
 
             del r
 
-        else:
-            print('image already exists!', img_filename)
+        # else:
+        #     print('image already exists!', img_filename)
 
 
         return img_path
