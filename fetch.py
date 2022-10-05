@@ -2,9 +2,9 @@ import os
 import shutil
 import requests
 import json
+from dotenv import load_dotenv
 
-BASE_URL = 'https://wiki.hackersanddesigners.nl/api.php?'
-# BASE_URL = 'http://hd-mw.test/api.php?' # change this to .env
+BASE_URL = os.getenv('BASE_URL')
 
 def fetch_article(title):
     # action=query&
