@@ -87,7 +87,10 @@ def pre_process(article):
 
     article_wtp = wtp.parse(article['body'])
 
-    # print('article_wtp =>', article_wtp, '\n---\n')
+    # <2022-10-13> as we are in the process of "designing our own TOC"
+    # we need to inject `__NOTOC__` to every article to avoid
+    # wikitexthtml to create a TOC
+    article_wtp.insert(0, '__NOTOC__')
 
     for template in article_wtp.templates:
         # print('article_wtp template =>', article['template'], '\n---\n')
