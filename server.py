@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+import os
 import traceback
 import sys
 import socket
@@ -7,12 +9,11 @@ from jinja2 import Environment, FileSystemLoader
 from fetch import fetch_article
 from parser import parser
 
+
 env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 
-SERVER_IP = "localhost"
-SERVER_PORT = 1338
-
-
+SERVER_IP = os.getenv('SERVER_IP')
+SERVER_PORT = int(os.getenv('SERVER_PORT'))
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_sock.bind((SERVER_IP, SERVER_PORT))
