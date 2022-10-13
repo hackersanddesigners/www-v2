@@ -1,5 +1,39 @@
 # hackersanddesigners.nl v2
 
+## setup
+
+we are using Python 3.8 at the time of writing and handle managing Python's packages and virtual environments with [pipenv](https://pipenv.pypa.io/en/latest/). `pipenv` is not necessary, as you can use Python's `virtualenv` to set up a working environment with a specified Python version, as well as using `pip` to install the necessary packages. 
+
+following are reported both options.
+
+### virtual environment
+
+if you are willing to use `pipenv`, then do:
+
+```
+pipenv shell
+```
+
+and the first time it should setup a new virtual environment for your user.
+
+else you can:
+
+- make virtual environment: `python3 -m venv env`
+- activate virtual environment: `source env/bin/activate`
+- do `pip freeze > requirements.txt` after installing a new package to update list of packages
+
+### packages
+
+if using `pipenv`, do:
+
+```
+pipenv install
+```
+
+else to install all packages do: 
+- make sure to upgrade pip: `python3 -m pip install --upgrade pip`
+- then try: `python3 -m pip install -r requirements.txt`
+
 ## intro
 
 a program to export data from MediaWiki into a mostly static website (except `/search`).
