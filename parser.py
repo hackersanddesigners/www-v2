@@ -44,8 +44,6 @@ class WikiPage(Page):
     def file_get_link(self, url):
         """Get the link to a file (for the "a href" of the File)."""
         # print('file-get-link =>', url)
-
-
         return url
 
     def file_get_img(self, url, thumb):
@@ -69,13 +67,12 @@ def parser(data):
     }
 
     article = pre_process(article)
-
     wiki_page = WikiPage(article)
+
     body_html = wiki_page.render().html
     article['html'] = body_html
 
-
-    print('article (parsed) =>', json.dumps(article, indent=2))
+    # print('article (parsed) =>', json.dumps(article, indent=2))
 
     return article
 
@@ -93,12 +90,14 @@ def pre_process(article):
     article_wtp.insert(0, '__NOTOC__')
 
     for template in article_wtp.templates:
-        # print('article_wtp template =>', article['template'], '\n---\n')
         article['template'] = template.name.strip()
         del template[:]
 
-    # print('wikilinks =>', article_wtp.wikilinks)
+
     for wikilink in article_wtp.wikilinks:
+
+        print('wikilink =>', wikilink)
+
         if wikilink.title.lower().startswith('category:'):
             cat = wikilink.title.split(':')[-1]
             article['category'] = cat
@@ -112,12 +111,10 @@ def pre_process(article):
             file_data = fetch_file(title)
             article['files'].append(file_data)
 
-            # print('file-data =>', file_data)
             wikilink.title = "File:%s|%s" % (file_data['url'], file_data['caption'])
 
         else:
             # convert normal wikilink to standard URL
-            # print('wikilink page =>', wikilink.title)
 
             # TODO should decide if articles are organized in a tree
             # or not, and so construct the URL accordingly
