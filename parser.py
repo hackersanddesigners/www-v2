@@ -120,14 +120,36 @@ def pre_process(article):
             # or not, and so construct the URL accordingly
             article_url = slugify(wikilink.title)
 
-            wikilink.title = article_url
+            # most times only a wikilink like this is added:
+            # [Title of Other Page]
+            # and Mediawiki automatically converts that into a proper URL
+            # so we set wikilink.target to wikilink.title and wikilink.text
+            # *then* we update wikilink.target to the slugified URL version
+            # the main problem here is that we slugify all HTML pages we
+            # link to in the format `title-of-page.html` so if we live
+            # the link style like this, the page will never be found.
+
+            wl_label = wikilink.target
+            # TODO wikilink.title is set to be wikilink.target when using
+            # wikitextohtml, so we need to run a post-process function
+            
+            wikilink.title = wl_label
+            wikilink.text = wikilink.text or wl_label
+            wikilink.target = article_url 
+
+            print('wikilink.title =>', [wikilink.title, wl_label])
 
 
-        # TODO scan through all <a href> and intercept those
-        # pointing to <https://hackersanddesigners.nl> ?
-
-
-
+    # save pre-processed wikitext article to `body`
     article['body'] = article_wtp.string
 
+    # return updated article dictionary
     return article
+
+
+def post_process(article):
+    """
+    update HTML before saving to disk:
+    - update wikilinks to set correct title attribute
+    - scan for a-href pointing to <https://hackersanddesigners.nl/...> and change them to be relative URLs?
+    """
