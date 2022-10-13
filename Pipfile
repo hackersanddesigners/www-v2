@@ -9,6 +9,8 @@ wikitextparser = "*"
 wikitexthtml = "*"
 jinja2 = "*"
 slugify = "*"
+lxml = "*"
+bs4 = "*"
 
 [dev-packages]
 

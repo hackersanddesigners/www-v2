@@ -3,6 +3,7 @@ import wikitextparser as wtp
 from fetch import fetch_article, fetch_file
 from slugify import slugify
 import json
+from bs4 import BeautifulSoup
 
 
 class WikiPage(Page):
@@ -74,6 +75,7 @@ def parser(data):
     wiki_page = WikiPage(article)
 
     body_html = wiki_page.render().html
+    body_html = post_process(body_html)
     article['html'] = body_html
 
     # print('article (parsed) =>', json.dumps(article, indent=2))
@@ -99,8 +101,6 @@ def pre_process(article):
 
 
     for wikilink in article_wtp.wikilinks:
-
-        print('wikilink =>', wikilink)
 
         if wikilink.title.lower().startswith('category:'):
             cat = wikilink.title.split(':')[-1]
@@ -141,8 +141,6 @@ def pre_process(article):
             wikilink.text = wikilink.text or wl_label
             wikilink.target = article_url 
 
-            print('wikilink.title =>', [wikilink.title, wl_label])
-
 
     # save pre-processed wikitext article to `body`
     article['body'] = article_wtp.string
@@ -157,3 +155,19 @@ def post_process(article):
     - update wikilinks to set correct title attribute
     - scan for a-href pointing to <https://hackersanddesigners.nl/...> and change them to be relative URLs?
     """
+
+    soup = BeautifulSoup(article, 'lxml')
+    links = soup.find_all('a')
+
+    for link in links:
+        if 'title' in link.attrs:
+            link.attrs['title'] = link.text
+
+        if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
+            # intercept abs-url pointing to root-level website
+            # (eg https://hackersanddesigners.nl, no subdomain)
+            # and re-write the URL to be in relative format
+            # TODO: URL should be following new URL format
+
+    return soup.prettify()
+    
