@@ -4,6 +4,7 @@ from fetch import fetch_article, fetch_file
 from slugify import slugify
 import json
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 
 class WikiPage(Page):
@@ -168,6 +169,13 @@ def post_process(article):
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
             # TODO: URL should be following new URL format
+
+            print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
+            url_parse = urlparse(link.attrs['href'])
+            rel_url = url_parse.path
+            print('rel-url =>', rel_url)
+            # link.attrs['href'] = 
+
 
     return soup.prettify()
     
