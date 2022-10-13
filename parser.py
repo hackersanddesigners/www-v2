@@ -55,6 +55,10 @@ class WikiPage(Page):
 
 def parser(data):
     article_data = data['query']['pages'][0]
+
+    # TODO we've ended up converting article['body'] to HTML
+    # using wikitextothtml, therefore keeping fields
+    # like `files` seems unnecessary?
     article = {
         'title': article_data['title'],
         'id': article_data['pageid'],
