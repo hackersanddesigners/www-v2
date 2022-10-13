@@ -1,8 +1,8 @@
+from dotenv import load_dotenv
 import os
 import shutil
 import requests
 import json
-from dotenv import load_dotenv
 
 BASE_URL = os.getenv('BASE_URL')
 
@@ -31,7 +31,7 @@ def fetch_article(title):
 
 
 def fetch_file(title):
-#    print('fetch-file', title)
+   # print('fetch-file', title)
 
    options = {'action': 'query',
               'prop': 'revisions|imageinfo',
@@ -46,7 +46,7 @@ def fetch_file(title):
    response = requests.get(BASE_URL, params=options)
    data = response.json()
 
-#    print('data =>', json.dumps(data, indent=2))
+   # print('data =>', json.dumps(data, indent=2))
 
    # we assume we get back an array with 1 result
    # we could map over in case of weird behaviour
