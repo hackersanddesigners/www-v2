@@ -8,6 +8,7 @@ import wikitextparser as wtp
 from jinja2 import Environment, FileSystemLoader
 from fetch import fetch_article
 from parser import parser
+from write_to_disk import main as write_to_disk
 load_dotenv()
 
 
@@ -33,14 +34,7 @@ def main(SERVER_IP: str, SERVER_PORT: int):
             t = env.get_template('article.html')
             document = t.render(article=article)
 
-            with open('./wiki/%s.html' % article['slug'], 'w') as f:
-                try:
-                    f.write(document)
-                    print('✓ %s-article "%s" has been correctly written to disk'
-                          % (article['slug'], article['title']))
-                except Exception as e:
-                    print('✕ error for %s-article "%s" =>'
-                          % (article['slug'], article['title']), e)
+            write_to_disk(article, document)
 
         except Exception as e:
             traceback.print_exc()
