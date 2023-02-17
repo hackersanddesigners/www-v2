@@ -1,10 +1,8 @@
 from dotenv import load_dotenv
 import os
 import traceback
-import sys
 import socket
 import json
-import wikitextparser as wtp
 from jinja2 import Environment, FileSystemLoader
 from fetch import fetch_article
 from parser import parser
