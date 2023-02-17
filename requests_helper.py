@@ -35,4 +35,6 @@ def main(req_input, req_op, env: str):
     else:
         r = req_input.send(prepped, verify=True, stream=req_op['stream'])
 
+    r.raise_for_status()
+
     return r
