@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import shutil
-from requests import Request
+from requests import Session
 from requests_helper import main as requests_helper
 load_dotenv()
 
@@ -29,7 +29,7 @@ def fetch_article(title):
         'stream': True
     }
 
-    req = Request()
+    req = Session()
     response = requests_helper(req, req_op, env)
     data = response.json()
     print('data =>', data)
@@ -57,7 +57,7 @@ def fetch_file(title):
         'stream': True
     }
 
-    req = Request()
+    req = Session()
     response = requests_helper(req, req_op, env)
     data = response.json()
 
@@ -86,11 +86,12 @@ def write_blob_to_disk(url):
     req_op = {
         'verb': 'GET',
         'url': url,
+        'params': None,
         'session': False,
         'stream': True
     }
 
-    req = Request()
+    req = Session()
     response = requests_helper(req, req_op, env)
 
     if response.status_code == 200:
