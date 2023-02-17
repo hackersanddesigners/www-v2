@@ -8,6 +8,10 @@ load_dotenv()
 
 def main(env: str, input_page: str):
     """
+    this func helps to test the whole workflow
+    by triggering a change in a wiki article and
+    let server.py do the rest.
+
     <https://www.mediawiki.org/wiki/API:Edit>
     login to the wikimedia instance as a bot user
     and update the given article (passed as arg)
