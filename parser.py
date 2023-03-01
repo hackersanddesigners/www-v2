@@ -14,10 +14,6 @@ class WikiPage(Page):
         self.en_page = None
         self.categories = []
 
-    def page_exists(self, page):
-        """Return True if and only if the page exists."""
-        return
-
     def template_load(self, template):
         """Load the template indicated by "template" and return its body."""
     def page_load(self, page: str) -> str:
@@ -27,6 +23,12 @@ class WikiPage(Page):
         data = fetch_article(page)
         article_data = data['query']['pages'][0]
         return article_data['revisions'][0]['slots']['main']['content']
+
+    def page_exists(self, page: str) -> bool:
+        """
+        Return True if and only if the page exists.
+        """
+        return article_exists(page)
 
         return template
 

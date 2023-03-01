@@ -10,6 +10,35 @@ env = os.getenv('ENV')
 url = os.getenv('BASE_URL')
 
 
+def article_exists(title):
+
+    req_op = {
+        'verb': 'HEAD',
+        'url': url,
+        'params': {
+            'action': 'query',
+            'prop': 'revisions|images',
+            'titles': title,
+            'rvprop': 'content',
+            'rvslots': '*',
+            'formatversion': '2',
+            'format': 'json',
+            'redirects': '1'
+        },
+        'session': False,
+        'stream': True
+    }
+
+    req = Session()
+    response = requests_helper(req, req_op, env)
+
+    # this returns a boolean if response.status
+    # is between 200-400, given the HTTP op follows
+    # redirect, it should confirm us that the resource
+    # actually exists?
+    return response.ok
+
+
 def fetch_article(title):
 
     req_op = {

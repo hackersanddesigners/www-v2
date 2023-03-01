@@ -7,7 +7,11 @@ def main(req_input, req_op, env: str):
     helper function to handle requests with no SSL check enabled
     """
 
-    if req_op['verb'] == 'GET':
+    if req_op['verb'] == 'HEAD':
+        req = Request(req_op['verb'],
+                      url=req_op['url'])
+
+    elif req_op['verb'] == 'GET':
         req = Request(req_op['verb'],
                       url=req_op['url'],
                       params=req_op['params'])
