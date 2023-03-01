@@ -1,6 +1,7 @@
+from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from fetch import fetch_article, fetch_file
+from fetch import article_exists, fetch_article, fetch_file
 from slugify import slugify
 import json
 from bs4 import BeautifulSoup
@@ -13,16 +14,20 @@ class WikiPage(Page):
         self.en_page = None
         self.categories = []
 
-    def page_load(self, page):
-        """Load the page indicated by "page" and return its body."""
-        return page['body']
-
     def page_exists(self, page):
         """Return True if and only if the page exists."""
         return
 
     def template_load(self, template):
         """Load the template indicated by "template" and return its body."""
+    def page_load(self, page: str) -> str:
+        """
+        Load the page indicated by "page" and return its body.
+        """
+        data = fetch_article(page)
+        article_data = data['query']['pages'][0]
+        return article_data['revisions'][0]['slots']['main']['content']
+
         return template
 
     def template_exists(self, template):
