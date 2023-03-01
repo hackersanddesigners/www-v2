@@ -53,3 +53,17 @@ generally speaking, we're using Semantic Media Wiki *only* for this feature, pri
 - `tools/<page>`: make wiki template with specific fields (repo URL, authors, license, etc)
 - `summer-academy`: ask juju if anything is missing or needed
 
+## process
+
+at last a decent understanding of how to use the powerful `wikitexthtml` package to handle the process of converting a MediaWiki article into an HTML document:
+
+- we receive a message from the wiki server that an article has been updated
+- we feed the title of the wiki document into `wikitexthtml` and get an instance of the document as a Page object:
+  - `wikitexthtml` allows itself to be modified and adjusted based on one's needs by extendig it as a class, and customizing its methods (eg check if the article exists and load it, check if a file exists and fetch it, etc) at will:
+  - we tailor this approach to our workflow of:
+    - check which type of update has happened by reading the wiki server message update (article creation, modification, deletion)
+    - accordingly create, update or delete a new, or possibly existing, HTML document, and use different degrees of caching (eg check if the files attached with a certain wiki article have changed, if not, do not re-fetch them from the wiki server, etc) in relation to it
+    - do pre- and post- processing operations to fix eventual data input malformation (from the wiki article syntax)
+    - we do all this by using our tailored-fit class methods accessible from the Page object we created
+    
+this helps to compact the existing WIP functions to work with the wiki article input data inside one class and keep things and the core workflow organized.
