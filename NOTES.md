@@ -67,3 +67,19 @@ at last a decent understanding of how to use the powerful `wikitexthtml` package
     - we do all this by using our tailored-fit class methods accessible from the Page object we created
     
 this helps to compact the existing WIP functions to work with the wiki article input data inside one class and keep things and the core workflow organized.
+    
+in terms of document "lifecycle", we want to:
+
+- fetch a newer version of a given wiki article, or delete it from out local HTML database; checking if the article exists does not help much in our case, as we receive a message update from the wiki server about a change happened to an existing, or just deleted, wiki article — so propably keeping the method `page_exists` seems unnecessary
+- check if any file attached to a given wiki article has been changed, as well as checking if compared to our local db version, any file has been deleted in the update
+  - this could have at least two approaches:
+    - trust blindly the wiki article and re-fetch every file from it
+    - check if an existing copy of the file is already present in our local db, check if it has changed, if yes fetch a newer copy of it
+  - but: how do you keep track of files that have been deleted from an article? i haven't checked this out yet, but the wiki message update could be able to give us this info; if not, we can anyway see if a file is still part of an article and if not (by cross checking the files we have locally) we could remove it
+    - this means though we keep files inside the same subfolder where the article lives?
+    - else how do you keep track of it by cross-checking?
+    - better would be to implement a method that checks which files have been removed from a given article, then check if those files are used anywhere else in the wiki (by doing a lookup to that specific file) and based on that info remove a given file from a shared folder with all the files used in the wiki
+    - this also brough up a question: we want to build a full archival system, therefore making local copies of files is necessary, yet if we run the main version of this frontend website of the wiki on the same server where we have the MediaWiki instance, we are duplicating a lots of data — not only images and videos, but also text information; this is not happening with the current version of the frontend which uses an REST API-based approach to retrieve data...
+    - we could either pass a flag / option and write more code to handle two use-cases (symlink-like / points resources to local MediaWiki instance, and full-archival approach), or stick with the full archival approach and duplicate all that data
+    - thing is: to keep the setup simple, we need to have a local server that listens to the UDP message being sent by the wiki server in any case /:
+    
