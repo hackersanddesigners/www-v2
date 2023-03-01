@@ -9,13 +9,6 @@ from urllib.parse import urlparse
 
 
 class WikiPage(Page):
-    def __init__(self, page):
-        super().__init__(page)
-        self.en_page = None
-        self.categories = []
-
-    def template_load(self, template):
-        """Load the template indicated by "template" and return its body."""
     def page_load(self, page: str) -> str:
         """
         Load the page indicated by "page" and return its body.
@@ -30,40 +23,93 @@ class WikiPage(Page):
         """
         return article_exists(page)
 
+    def template_load(self, template: str) -> str:
+        """
+        Load the template indicated by "template" and return its body.
+        """
+        print('template-load =>', [self, template])
+        # do we use templates?
         return template
 
-    def template_exists(self, template):
-        """Return True if and only if the template exists."""
+    def template_exists(self, template: str) -> bool:
+        """
+        Return True if and only if the template exists.
+        """
+        print('template-exists =>', [self, template])
+        # see above
         return
 
-    def file_exists(self, file):
-        """Return True if and only if the file (upload) exists."""
+    def file_exists(self, file: str) -> bool:
+        """
+        Return True if and only if the file (upload) exists:
+        - first we check if the file exists already on disk
+        - else we try to fetch it down and return if it succeeded or not
+        """
+        print('file-exists =>', [self, file])
+        # add func to fetch file part of an article
+        data = fetch_file(file)
         return file
 
-    def clean_url(self, url):
-        """Clean "url" (which is a wikilink) to become a valid URL to call."""
-        # print('clean-url =>', url)
+    def clean_url(self, url: str) -> str:
+        """
+        Clean "url" (which is a wikilink) to become a valid URL to call.
+        """
+        print('clean-url =>', [self, url])
+        # put func that clean up href between internal and external?
         return url
 
-    def clean_title(self, title):
-        """Clean "title" (which is a full pagename) to become more human readable."""
-        # print('clean-title =>', title)
+    def clean_title(self, title: str) -> str:
+        """
+        Clean "title" (which is a full pagename) to become more human readable.
+        """
+        print('clean-title =>', [self, title])
+        # do we use this? set it anyway for "future-proofness" / archeology
         return title
 
-    def file_get_link(self, url):
-        """Get the link to a file (for the "a href" of the File)."""
-        # print('file-get-link =>', url)
+    def file_get_link(self, url: str) -> str:
+        """
+        Get the link to a file (for the "a href" of the File).
+        """
+        print('file-get-link =>', [self, url])
+
+        # return correct file path format
         return url
 
-    def file_get_img(self, url, thumb):
-        """Get the "img src" to a file. If thumb is set, a thumb should be generated of that size."""
-        # print('file-get-img =>', [self, url, thumb])
+    def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
+        """
+        Get the "img src" to a file.
+        If thumb is set, a thumb should be generated of that size.
+        """
+        print('file-get-img =>', [self, url, thumb])
 
+        # return correct file path format
         return url
 
 
 def parser(data):
     article_data = data['query']['pages'][0]
+
+
+    test_gallery_html_1 = """<gallery caption="Sample gallery" widths="100px" heights="100px" perrow="6">
+File:Drenthe-Position.png|[[w:Drenthe|Drenthe]], the least crowded province
+File:Flevoland-Position.png
+File:Friesland-Position.png|[[w:Friesland|Friesland]] has many lakes
+File:Gelderland-Position.png
+File:Groningen-Position.png
+File:Limburg-Position.png
+File:Noord_Brabant-Position.png
+File:Noord_Holland-Position.png
+Overijssel-Position.png
+Utrecht-Position.png
+Zuid_Holland-Position.png|[[w:South Holland|South Holland]], the most crowded province
+Zeeland-Position.png|link=nl:Zeeland (provincie)
+</gallery>"""
+
+    test_gallery_html_2 = """<gallery mode=packed>
+Example.jpg|example of normal length caption maybe
+Line_sensor.JPG
+Example.jpg|example of normal length caption maybe
+</gallery>"""
 
     # TODO we've ended up converting article['body'] to HTML
     # using wikitextothtml, therefore keeping fields
