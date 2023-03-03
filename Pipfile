@@ -11,6 +11,7 @@ jinja2 = "*"
 slugify = "*"
 lxml = "*"
 bs4 = "*"
+arrow = "*"
 
 [dev-packages]
 

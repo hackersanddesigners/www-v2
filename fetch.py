@@ -1,13 +1,18 @@
 from dotenv import load_dotenv
 import os
+import time
+import arrow
 import shutil
 from requests import Session
 from requests_helper import main as requests_helper
+from requests_helper import query_continue
+from pretty_json_log import main as pretty_json_log
 load_dotenv()
 
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
+MEDIA_DIR = os.getenv('MEDIA_DIR')
 
 def article_exists(title):
 
@@ -60,7 +65,6 @@ def fetch_article(title):
     req = Session()
     response = requests_helper(req, req_op, ENV)
     data = response.json()
-    print('data =>', data)
 
     return data
 
@@ -100,68 +104,90 @@ def fetch_file(title):
         'params': {
             'action': 'query',
             'prop': 'revisions|imageinfo',
-            'iiprop': 'url',
+            'iiprop': 'url|timestamp',
             'titles': title,
-            'rvprop': 'content',
+            'rvprop': 'timestamp',
             'rvslots': '*',
             'formatversion': '2',
             'format': 'json',
             'redirects': '1'
         },
         'session': False,
-        'stream': True
+        'stream': False
     }
 
-    req = Session()
-    response = requests_helper(req, req_op, env)
-    data = response.json()
+    # we fetch all existing file revisions
+    # to determine if the version we have on disk
+    # has been updated meanwhile, by comparing timestamps?
 
-    # print('data =>', json.dumps(data, indent=2))
+    data = []
+    for response in query_continue(req_op, ENV):
+        if 'missing' in response['pages'][0]:
+            title = response['pages'][0]['title']
+            print(f"the image could not be found => {title}")
+            return None
 
-    # we assume we get back an array with 1 result
-    # we could map over in case of weird behaviour
-    data_file = data['query']['pages'][0]
-    file_url = data_file['imageinfo'][0]['url']
-    file_path = write_blob_to_disk(file_url)
+        else:
+            print('response =>', response)
+            data.append(response)
 
-    # return file_path
-    return {
-        'caption': data_file['revisions'][0]['slots']['main']['content'],
-        'url': '/' + '/'.join(file_path.split('/')[2:])
-    }
+    # -- read file from disk given file name
+    #    and diff between timestamps
+    file_last = data[0]['pages'][0]
+    file_revisions = file_last['revisions']
+
+    file_url = file_last['imageinfo'][0]['url']
+    file_path = file_url.split('/').pop()
+    img_path = os.path.abspath(MEDIA_DIR + '/' + file_path)
+
+    if os.path.exists(img_path):
+        print(f"img path exists => {img_path}")
+
+        mtime = os.path.getmtime(img_path)
+        file_ts = arrow.get(file_revisions[0]['timestamp']).to('local').timestamp()
+
+        if mtime < file_ts:
+            print('upstream file is newer than local copy. fetch copy!')
+            file_url = file_last['imageinfo'][0]['url']
+            write_blob_to_disk(file_path, file_url)
+
+        else:
+            print('upstream file has not been changed after local copy was made')
+
+    else:
+        print(f"img path not yet there => {img_path}")
+        file_url = file_last['imageinfo'][0]['url']
+        write_blob_to_disk(file_path, file_url)
+
+    # # return file_path
+    # return {
+    #     'caption': data_file['revisions'][0]['slots']['main']['content'],
+    #     'url': '/' + '/'.join(file_path.split('/')[2:])
+    # }
 
 
-def write_blob_to_disk(url):
-    # print('url =>', url)
-
-    dir_path = './wiki/assets/media'
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+def write_blob_to_disk(file_path, file_url):
+    # TODO move this on project init setup?
+    if not os.path.exists(MEDIA_DIR):
+        os.makedirs(MEDIA_DIR)
 
     req_op = {
         'verb': 'GET',
-        'url': url,
+        'url': file_url,
         'params': None,
         'session': False,
         'stream': True
     }
 
     req = Session()
-    response = requests_helper(req, req_op, env)
+    response = requests_helper(req, req_op, ENV)
 
     if response.status_code == 200:
-        img_filename = url.split('/')[-1]
-        img_path = dir_path + '/' + img_filename
+        with open(file_path, 'wb') as outf:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, outf)
+            print(f"File downloaded successfully! => {file_path}")
 
-        if not os.path.exists(img_path):
-            with open(img_path, 'wb') as outf:
-                response.raw.decode_content = True
-                shutil.copyfileobj(response.raw, outf)
-                # print('img downloaded successfully!')
+        del response
 
-            del r
-
-        # else:
-        #     print('image already exists!', img_filename)
-
-        return img_path
+        return file_path
