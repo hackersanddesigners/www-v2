@@ -60,20 +60,32 @@ def query_continue(req_op, env):
         req = request.copy()
         req.update(last_continue)
 
-        from urllib3.exceptions import InsecureRequestWarning
-        # suppress only the single warning from urllib3 needed.
-        requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+        # <https://stackoverflow.com/a/32282390>
+        # when working with local mediawiki and don't want
+        # to issue SSL cert for it
+        if env == 'dev':
+            from urllib3.exceptions import InsecureRequestWarning
+            # suppress only the single warning from urllib3 needed.
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-        response = requests.get(req_op['url'],
-                                params=req,
-                                verify=False).json()
+            response = requests.get(req_op['url'],
+                                    params=req,
+                                    verify=False)
 
-        if 'warnings' in response:
-            print(response['warnings'])
-        if 'query' in response:
-            yield response['query']
-        if 'continue' not in response:
-            print('query-continue over, break!')
+        else:
+            response = requests.get(req_op['url'],
+                                    params=req,
+                                    verify=True)
+
+        response.raise_for_status()
+
+        result = response.json()
+
+        if 'warnings' in result:
+            print(result['warnings'])
+        if 'query' in result:
+            yield result['query']
+        if 'continue' not in result:
             break
 
-        last_continue = response['continue']
+        last_continue = result['continue']
