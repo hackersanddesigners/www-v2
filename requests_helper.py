@@ -4,7 +4,12 @@ from requests import Request
 
 def main(req_input, req_op, env: str):
     """
-    helper function to handle requests with no SSL check enabled
+    helper function to handle requests with no SSL check enabled.
+    this func takes in:
+    - request input (request)
+    - request op (data w/ verb, url, params, etc)
+    - app env (dev, prod) to disable SSL verification if
+      running this program in a test environment
     """
 
     if req_op['verb'] == 'HEAD':
