@@ -6,15 +6,14 @@ from requests_helper import main as requests_helper
 load_dotenv()
 
 
-env = os.getenv('ENV')
-url = os.getenv('BASE_URL')
-
+ENV = os.getenv('ENV')
+URL = os.getenv('BASE_URL')
 
 def article_exists(title):
 
     req_op = {
         'verb': 'HEAD',
-        'url': url,
+        'url': URL,
         'params': {
             'action': 'query',
             'prop': 'revisions|images',
@@ -30,7 +29,7 @@ def article_exists(title):
     }
 
     req = Session()
-    response = requests_helper(req, req_op, env)
+    response = requests_helper(req, req_op, ENV)
 
     # this returns a boolean if response.status
     # is between 200-400, given the HTTP op follows
@@ -43,7 +42,7 @@ def fetch_article(title):
 
     req_op = {
         'verb': 'GET',
-        'url': url,
+        'url': URL,
         'params': {
             'action': 'query',
             'prop': 'revisions|images',
@@ -59,7 +58,7 @@ def fetch_article(title):
     }
 
     req = Session()
-    response = requests_helper(req, req_op, env)
+    response = requests_helper(req, req_op, ENV)
     data = response.json()
     print('data =>', data)
 
@@ -70,7 +69,7 @@ def fetch_file(title):
 
     req_op = {
         'verb': 'GET',
-        'url': url,
+        'url': URL,
         'params': {
             'action': 'query',
             'prop': 'revisions|imageinfo',
