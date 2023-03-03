@@ -42,3 +42,33 @@ def main(req_input, req_op, env: str):
     r.raise_for_status()
 
     return r
+
+
+# refs:
+# <https://www.mediawiki.org/wiki/API:Continue#Example_3:_Python_code_for_iterating_through_all_results>
+# <https://github.com/nyurik/pywikiapi/blob/master/pywikiapi/Site.py#L259>
+def query_continue(req_op, env):
+    request = req_op['params']
+    last_continue = {}
+
+    while True:
+        req = request.copy()
+        req.update(last_continue)
+
+        from urllib3.exceptions import InsecureRequestWarning
+        # suppress only the single warning from urllib3 needed.
+        requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+        response = requests.get(req_op['url'],
+                                params=req,
+                                verify=False).json()
+
+        if 'warnings' in response:
+            print(response['warnings'])
+        if 'query' in response:
+            yield response['query']
+        if 'continue' not in response:
+            print('query-continue over, break!')
+            break
+
+        last_continue = response['continue']
