@@ -65,6 +65,33 @@ def fetch_article(title):
     return data
 
 
+def file_exists(title):
+
+    req_op = {
+        'verb': 'HEAD',
+        'url': URL,
+        'params': {
+            'action': 'query',
+            'titles': title,
+            'formatversion': '2',
+            'format': 'json',
+            'redirects': '1'
+        },
+        'session': False,
+        'stream': True
+    }
+
+    req = Session()
+    response = requests_helper(req, req_op, ENV, False)
+
+    # this returns a boolean if response.status
+    # is between 200-400, given the HTTP op follows
+    # redirect, it should confirm us that the resource
+    # actually exists?
+    print('fetch-file-exists =>', response.ok)
+    return response.ok
+
+
 def fetch_file(title):
 
     req_op = {
