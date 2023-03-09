@@ -1,11 +1,9 @@
-def main(article: str, document):
+def main(page_slug: str, document: str):
 
-    with open('./wiki/%s.html' % article['slug'], 'w') as f:
+    with open('./wiki/%s.html' % page_slug, 'w') as f:
 
         try:
             f.write(document)
-            print('✓ %s-article "%s" has been correctly written to disk'
-                  % (article['slug'], article['title']))
+            print('✓ %s-article has been correctly written to disk' % page_slug)
         except Exception as e:
-            print('✕ error for %s-article "%s" =>'
-                  % (article['slug'], article['title']), e)
+            print('✕ error for %s-article "%s" =>' % page_slug, e)

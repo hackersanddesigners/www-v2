@@ -3,9 +3,12 @@ import os
 import traceback
 import socket
 import json
+from slugify import slugify
+from pretty_json_log import main as pretty_json_log
 from jinja2 import Environment, FileSystemLoader
-from fetch import fetch_article
-from parser import parser
+from fetch import fetch_article, article_exists
+from parser import parser, WikiPage
+import requests
 from write_to_disk import main as write_to_disk
 load_dotenv()
 
@@ -28,17 +31,22 @@ def main(SERVER_IP: str, SERVER_PORT: int):
     while True:
         data, addr = server_sock.recvfrom(2048)
         msg = json.loads(data)
-        print('msg =>', json.dumps(msg, indent=4))
+        pretty_json_log(msg)
 
         # -- we have the UPD message, let's fetch the full article now
         try:
-            data = fetch_article(msg['title'])
-            article = parser(data)
+            page_title = msg['title']
+            body_html = parser(page_title)
+
+            article =  {
+                "title": page_title,
+                "html": body_html,
+                "slug": slugify(page_title)
+            }
 
             t = env.get_template('article.html')
             document = t.render(article=article)
-
-            write_to_disk(article, document)
+            write_to_disk(article['slug'], document)
 
         except Exception as e:
             traceback.print_exc()

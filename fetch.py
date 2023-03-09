@@ -43,7 +43,7 @@ def article_exists(title):
     return response.ok
 
 
-def fetch_article(title):
+def fetch_article(title: str):
 
     req_op = {
         'verb': 'GET',
@@ -66,7 +66,7 @@ def fetch_article(title):
     response = requests_helper(req, req_op, ENV)
     data = response.json()
 
-    return data
+    return data['query']['pages'][0]
 
 
 def file_exists(title):
@@ -86,7 +86,7 @@ def file_exists(title):
     }
 
     req = Session()
-    response = requests_helper(req, req_op, ENV, False)
+    response = requests_helper(req, req_op, ENV)
 
     # this returns a boolean if response.status
     # is between 200-400, given the HTTP op follows
@@ -96,7 +96,7 @@ def file_exists(title):
     return response.ok
 
 
-def fetch_file(title):
+def fetch_file(title: str) -> bool:
 
     req_op = {
         'verb': 'GET',
@@ -118,17 +118,16 @@ def fetch_file(title):
 
     # we fetch all existing file revisions
     # to determine if the version we have on disk
-    # has been updated meanwhile, by comparing timestamps?
+    # has been updated meanwhile, by comparing timestamps
 
     data = []
     for response in query_continue(req_op, ENV):
         if 'missing' in response['pages'][0]:
             title = response['pages'][0]['title']
             print(f"the image could not be found => {title}")
-            return None
+            return False
 
         else:
-            print('response =>', response)
             data.append(response)
 
     # -- read file from disk given file name
@@ -159,11 +158,23 @@ def fetch_file(title):
         file_url = file_last['imageinfo'][0]['url']
         write_blob_to_disk(file_path, file_url)
 
-    # # return file_path
-    # return {
-    #     'caption': data_file['revisions'][0]['slots']['main']['content'],
-    #     'url': '/' + '/'.join(file_path.split('/')[2:])
-    # }
+
+    # if file:
+    # - has been found on upstream wiki to be existing
+    # - and has been downloaded (either by checking
+    #   if up-to-date local copy exists, or by fetching
+    #   a new copy of it)
+    # we return True (?)
+
+    return True
+
+    # -- return file caption and URL
+    #    instead of initiating another API call
+
+        # return {
+        #     'caption': data_file['revisions'][0]['slots']['main']['content'],
+        #     'url': '/' + '/'.join(file_path.split('/')[2:])
+        # }
 
 
 def write_blob_to_disk(file_path, file_url):

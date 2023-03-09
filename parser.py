@@ -1,21 +1,26 @@
+from dotenv import load_dotenv
+import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from fetch import article_exists, fetch_article, fetch_file
+from fetch import article_exists, fetch_article, fetch_file, file_exists
 from slugify import slugify
-import json
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from pretty_json_log import main as pretty_json_log
+load_dotenv()
 
+
+
+MEDIA_DIR = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
 class WikiPage(Page):
-    def page_load(self, page: str) -> str:
+
+    def page_load(self, page) -> str:
         """
         Load the page indicated by "page" and return its body.
         """
-        data = fetch_article(page)
-        article_data = data['query']['pages'][0]
-        return article_data['revisions'][0]['slots']['main']['content']
+        return page['revisions'][0]['slots']['main']['content']
 
     def page_exists(self, page: str) -> bool:
         """
@@ -45,10 +50,16 @@ class WikiPage(Page):
         - first we check if the file exists already on disk
         - else we try to fetch it down and return if it succeeded or not
         """
-        print('file-exists =>', [self, file])
-        # add func to fetch file part of an article
-        data = fetch_file(file)
-        return file
+        return file_exists(file)
+
+    def file_fetch(self, file: str) -> bool:
+        """
+        Fetch the file indicated by "file" and save it to disk,
+        only if a newer version of the one already saved to disk exists
+        (we use timestamps between local and upstream file for this)
+        """
+
+        return fetch_file(file)
 
     def clean_url(self, url: str) -> str:
         """
@@ -72,8 +83,7 @@ class WikiPage(Page):
         """
         print('file-get-link =>', [self, url])
 
-        # return correct file path format
-        return url
+        return f"{MEDIA_DIR}/{url}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
@@ -82,67 +92,51 @@ class WikiPage(Page):
         """
         print('file-get-img =>', [self, url, thumb])
 
-        # return correct file path format
-        return url
+        return f"{MEDIA_DIR}/{url}"
 
 
-def parser(data):
-    article_data = data['query']['pages'][0]
+def parser(page_title: str):
+    """
+    - fetch article from MW APIs
+    - instantiate WikiPage class
+    - get page body (HTML) and return it
+    """
+    
+    article = fetch_article(page_title)
 
-
-    test_gallery_html_1 = """<gallery caption="Sample gallery" widths="100px" heights="100px" perrow="6">
-File:Drenthe-Position.png|[[w:Drenthe|Drenthe]], the least crowded province
-File:Flevoland-Position.png
-File:Friesland-Position.png|[[w:Friesland|Friesland]] has many lakes
-File:Gelderland-Position.png
-File:Groningen-Position.png
-File:Limburg-Position.png
-File:Noord_Brabant-Position.png
-File:Noord_Holland-Position.png
-Overijssel-Position.png
-Utrecht-Position.png
-Zuid_Holland-Position.png|[[w:South Holland|South Holland]], the most crowded province
-Zeeland-Position.png|link=nl:Zeeland (provincie)
-</gallery>"""
-
-    test_gallery_html_2 = """<gallery mode=packed>
-Example.jpg|example of normal length caption maybe
-Line_sensor.JPG
-Example.jpg|example of normal length caption maybe
-</gallery>"""
-
-    # TODO we've ended up converting article['body'] to HTML
-    # using wikitextothtml, therefore keeping fields
-    # like `files` seems unnecessary?
-    article = {
-        'title': article_data['title'],
-        'id': article_data['pageid'],
-        'slug': slugify(article_data['title']),
-        'body': article_data['revisions'][0]['slots']['main']['content'],
-        'files': [],
-        'template': None,
-        'category': None,
-        'html': None
-    }
-
-    article = pre_process(article)
     wiki_page = WikiPage(article)
+    wiki_page_errors = wiki_page.errors
+    if len(wiki_page_errors) > 0:
+        for error in wiki_page_errors:
+            print('wiki-page err =>', error)
+
+    wiki_article = wiki_page.page_load(article)
+    pre_process(article, wiki_article)
+
+    for image in article['images']:
+       image_file = wiki_page.file_fetch(image['title'])
 
     body_html = wiki_page.render().html
     body_html = post_process(body_html)
-    article['html'] = body_html
 
-    # print('article (parsed) =>', json.dumps(article, indent=2))
-
-    return article
+    return body_html
 
 
-def pre_process(article):
-    """We take out any {{template}} and [[category:<>]] syntax,
-    before rendering the article. We also update wikilinks [[<>]] to point to
-    correct locations, so that WikiTextParser does its job just fine."""
+def pre_process(article, body: str):
+    """
+    - TODO if now we change in place, this needs to be adjusted
+      parse, save elsewhere and take out any {{template}}
+      and [[category:<>]] syntax, before rendering the article.
+    - update wikilinks [[<>]] to point to correct locations,
+      so that WikiTextParser does its job just fine.
+    - check for any malformed (and known / used) wiki tags,
+      for instance the gallery tag: either try to fix it
+      (if knowning how), or else report it somewhere so that
+      the wiki article can be fixed instead
+    """
 
-    article_wtp = wtp.parse(article['body'])
+    # body = article['revisions'][0]['slots']['main']['content']
+    article_wtp = wtp.parse(body)
 
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
@@ -153,7 +147,6 @@ def pre_process(article):
         article['template'] = template.name.strip()
         del template[:]
 
-
     for wikilink in article_wtp.wikilinks:
 
         if wikilink.title.lower().startswith('category:'):
@@ -162,14 +155,12 @@ def pre_process(article):
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
-            # download file to disk and fetch metadata
-            # print('wikilink file =>', wikilink.title)
+            print('wikilink file =>', wikilink)
 
-            title = wikilink.title
-            file_data = fetch_file(title)
-            article['files'].append(file_data)
+            # title = wikilink.title
 
-            wikilink.title = "File:%s|%s" % (file_data['url'], file_data['caption'])
+            # wikilink.title = "File:%s|%s" % (file_data['url'],
+            #                                  file_data['caption'])
 
         else:
             # convert normal wikilink to standard URL
@@ -184,30 +175,52 @@ def pre_process(article):
             # so we set wikilink.target to wikilink.title and wikilink.text
             # *then* we update wikilink.target to the slugified URL version
             # the main problem here is that we slugify all HTML pages we
-            # link to in the format `title-of-page.html` so if we live
+            # link to in the format `title-of-page.html` so if we leave
             # the link style like this, the page will never be found.
 
             wl_label = wikilink.target
             # TODO wikilink.title is set to be wikilink.target when using
             # wikitextohtml, so we need to run a post-process function
-            
+
             wikilink.title = wl_label
             wikilink.text = wikilink.text or wl_label
-            wikilink.target = article_url 
+            wikilink.target = article_url
 
+    print('article tags =>', article_wtp.get_tags())
+    for tag in article_wtp.get_tags():
 
-    # save pre-processed wikitext article to `body`
-    article['body'] = article_wtp.string
+        # TODO: scan through all wiki articles
+        # and save in db all tags as tag.name + tag.contents
+        # then check which ones are often malformed / needs care
 
-    # return updated article dictionary
-    return article
+        # make sure syntax is "strict"
+        # eg image syntax starts with `File:<filepath>`
+        # TODO: if a filepath is malformed and we know it
+        # does not exists in the wiki, what to do?
+        if tag.name == 'gallery':
+            gallery_files = tag.contents.split('\n')
+            gallery_files = [f.strip() for f in gallery_files if f]
+
+            gallery_contents = []
+            for gallery_f in gallery_files:
+                if not gallery_f.startswith('File:'):
+                    print('gallery file bad syntax =>', gallery_f)
+                    f = 'File:' + gallery_f
+                    gallery_contents.append(f)
+
+            tag.contents = '\n'.join(gallery_contents)
+            print('updated gallery tag =>', tag)
+
+    # update wiki_article instance
+    article['revisions'][0]['slots']['main']['content'] = article_wtp.string
 
 
 def post_process(article):
     """
     update HTML before saving to disk:
     - update wikilinks to set correct title attribute
-    - scan for a-href pointing to <https://hackersanddesigners.nl/...> and change them to be relative URLs?
+    - scan for a-href pointing to <https://hackersanddesigners.nl/...>
+      and change them to be relative URLs?
     """
 
     soup = BeautifulSoup(article, 'lxml')
@@ -223,12 +236,10 @@ def post_process(article):
             # and re-write the URL to be in relative format
             # TODO: URL should be following new URL format
 
-            print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
+            # print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
             url_parse = urlparse(link.attrs['href'])
             rel_url = url_parse.path
-            print('rel-url =>', rel_url)
-            # link.attrs['href'] = 
-
+            # print('rel-url =>', rel_url)
+            # link.attrs['href'] =
 
     return soup.prettify()
-    
