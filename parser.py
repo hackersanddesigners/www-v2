@@ -122,9 +122,6 @@ def parser(page_title: str):
 
 def pre_process(article, wiki_page, body: str) -> str:
     """
-    - TODO if now we change in place, this needs to be adjusted
-      parse, save elsewhere and take out any {{template}}
-      and [[category:<>]] syntax, before rendering the article.
     - update wikilinks [[<>]] to point to correct locations,
       so that WikiTextParser does its job just fine.
     - check for any malformed (and known / used) wiki tags,
@@ -141,11 +138,15 @@ def pre_process(article, wiki_page, body: str) -> str:
     article_wtp.insert(0, '__NOTOC__')
 
     for template in article_wtp.templates:
+        # save template value somewhere if needed
+        # before running below code
         article['template'] = template.name.strip()
         del template[:]
 
     for wikilink in article_wtp.wikilinks:
 
+        # save category value somewhere if needed
+        # before running below code
         if wikilink.title.lower().startswith('category:'):
             cat = wikilink.title.split(':')[-1]
             article['category'] = cat
@@ -154,10 +155,6 @@ def pre_process(article, wiki_page, body: str) -> str:
         elif wikilink.title.lower().startswith('file:'):
             print('wikilink file =>', wikilink.title)
             wiki_page.file_fetch(wikilink.title)
-
-            # title = wikilink.title
-            # wikilink.title = "File:%s|%s" % (file_data['url'],
-            #                                  file_data['caption'])
 
         else:
             # convert normal wikilink to standard URL
@@ -183,10 +180,6 @@ def pre_process(article, wiki_page, body: str) -> str:
             wikilink.text = wikilink.text or wl_label
             wikilink.target = article_url
 
-    # TODO do something w/ external links?
-    print('external-links =>', article_wtp.external_links)
-
-    print('article tags =>', article_wtp.get_tags())
     for tag in article_wtp.get_tags():
 
         # TODO: scan through all wiki articles
@@ -195,8 +188,10 @@ def pre_process(article, wiki_page, body: str) -> str:
 
         # make sure syntax is "strict"
         # eg image syntax starts with `File:<filepath>`
-        # TODO: if a filepath is malformed and we know it
+        # note: if a filepath is malformed and we know it
         # does not exists in the wiki, what to do?
+        #   => must be updated in the wiki; we don't try to fix
+        #   wiki content on-the-fly
         if tag.name == 'gallery':
             gallery_files = tag.contents.split('\n')
             gallery_files = [f.strip() for f in gallery_files if f]
@@ -227,17 +222,5 @@ def post_process(article):
     for link in links:
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
-
-        if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
-            # intercept abs-url pointing to root-level website
-            # (eg https://hackersanddesigners.nl, no subdomain)
-            # and re-write the URL to be in relative format
-            # TODO: URL should be following new URL format
-
-            # print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
-            url_parse = urlparse(link.attrs['href'])
-            rel_url = url_parse.path
-            # print('rel-url =>', rel_url)
-            # link.attrs['href'] =
 
     return soup.prettify()
