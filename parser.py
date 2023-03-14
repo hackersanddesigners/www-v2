@@ -110,11 +110,9 @@ def parser(page_title: str):
             print('wiki-page err =>', error)
 
     wiki_article = wiki_page.page_load(article)
-    pre_process(article, wiki_page, wiki_article)
-
-    # could do this in pre_process?
-    # for image in article['images']:
-    #    wiki_page.file_fetch(image['title'])
+    wiki_body = pre_process(article, wiki_page, wiki_article)
+    # update wiki_article instance
+    article['revisions'][0]['slots']['main']['content'] = wiki_body
 
     body_html = wiki_page.render().html
     body_html = post_process(body_html)
@@ -122,7 +120,7 @@ def parser(page_title: str):
     return body_html
 
 
-def pre_process(article, wiki_page, body: str):
+def pre_process(article, wiki_page, body: str) -> str:
     """
     - TODO if now we change in place, this needs to be adjusted
       parse, save elsewhere and take out any {{template}}
@@ -212,8 +210,7 @@ def pre_process(article, wiki_page, body: str):
 
             tag.contents = '\n'.join(gallery_contents)
 
-    # update wiki_article instance
-    article['revisions'][0]['slots']['main']['content'] = article_wtp.string
+    return article_wtp.string
 
 
 def post_process(article):
