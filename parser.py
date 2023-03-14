@@ -100,7 +100,7 @@ def parser(page_title: str):
     - instantiate WikiPage class
     - get page body (HTML) and return it
     """
-    
+
     article = fetch_article(page_title)
 
     wiki_page = WikiPage(article)
@@ -110,10 +110,11 @@ def parser(page_title: str):
             print('wiki-page err =>', error)
 
     wiki_article = wiki_page.page_load(article)
-    pre_process(article, wiki_article)
+    pre_process(article, wiki_page, wiki_article)
 
-    for image in article['images']:
-       image_file = wiki_page.file_fetch(image['title'])
+    # could do this in pre_process?
+    # for image in article['images']:
+    #    wiki_page.file_fetch(image['title'])
 
     body_html = wiki_page.render().html
     body_html = post_process(body_html)
@@ -121,7 +122,7 @@ def parser(page_title: str):
     return body_html
 
 
-def pre_process(article, body: str):
+def pre_process(article, wiki_page, body: str):
     """
     - TODO if now we change in place, this needs to be adjusted
       parse, save elsewhere and take out any {{template}}
@@ -134,7 +135,6 @@ def pre_process(article, body: str):
       the wiki article can be fixed instead
     """
 
-    # body = article['revisions'][0]['slots']['main']['content']
     article_wtp = wtp.parse(body)
 
     # <2022-10-13> as we are in the process of "designing our own TOC"
@@ -154,10 +154,10 @@ def pre_process(article, body: str):
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
-            print('wikilink file =>', wikilink)
+            print('wikilink file =>', wikilink.title)
+            wiki_page.file_fetch(wikilink.title)
 
             # title = wikilink.title
-
             # wikilink.title = "File:%s|%s" % (file_data['url'],
             #                                  file_data['caption'])
 
@@ -172,7 +172,7 @@ def pre_process(article, body: str):
             # [Title of Other Page]
             # and Mediawiki automatically converts that into a proper URL
             # so we set wikilink.target to wikilink.title and wikilink.text
-            # *then* we update wikilink.target to the slugified URL version
+            # *then* we update wikilink.target to the slugified URL version.
             # the main problem here is that we slugify all HTML pages we
             # link to in the format `title-of-page.html` so if we leave
             # the link style like this, the page will never be found.
@@ -184,6 +184,9 @@ def pre_process(article, body: str):
             wikilink.title = wl_label
             wikilink.text = wikilink.text or wl_label
             wikilink.target = article_url
+
+    # TODO do something w/ external links?
+    print('external-links =>', article_wtp.external_links)
 
     print('article tags =>', article_wtp.get_tags())
     for tag in article_wtp.get_tags():
@@ -208,7 +211,6 @@ def pre_process(article, body: str):
                     gallery_contents.append(f)
 
             tag.contents = '\n'.join(gallery_contents)
-            print('updated gallery tag =>', tag)
 
     # update wiki_article instance
     article['revisions'][0]['slots']['main']['content'] = article_wtp.string
