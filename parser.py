@@ -221,4 +221,21 @@ def post_process(article):
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
+        if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
+            # intercept abs-url pointing to root-level website
+            # (eg https://hackersanddesigners.nl, no subdomain)
+            # and re-write the URL to be in relative format
+            # eg point to a page in *this* wiki
+
+            # TODO: URL should be following new URL format,
+            #  design first new URL format
+
+            print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
+            url_parse = urlparse(link.attrs['href'])
+            rel_url = url_parse.path
+            # print('rel-url =>', rel_url)
+            # link.attrs['href'] =
+
+    
     return soup.prettify()
+
