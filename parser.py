@@ -64,8 +64,10 @@ class WikiPage(Page):
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
-        # convert it to slugified version so it correctly points to a filepath
-        return slugify(url)
+        # convert it to slugified version and then append `.html`
+        # so it correctly points to a filepath
+        new_url = slugify(url)
+        return f"{new_url}.html"
 
     def clean_title(self, title: str) -> str:
         """
@@ -171,10 +173,7 @@ def pre_process(article, wiki_page, body: str) -> str:
             # and Mediawiki automatically converts that into a proper URL,
             # so we set wikilink.text to either wikilink.text / wikilink.target
             # then wikilink.target is slugified afterwards in the WikiPage
-            # clean_url function
-
-            # TODO wikilink.title is set to be wikilink.target when using
-            # wikitextohtml, so we need to run a post-process function
+            # clean_url function.
 
             wikilink.text = wikilink.text or wikilink.target
 
@@ -228,7 +227,7 @@ def post_process(article):
             # eg point to a page in *this* wiki
 
             # TODO: URL should be following new URL format,
-            #  design first new URL format
+            # design first new URL format
 
             print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
             url_parse = urlparse(link.attrs['href'])
