@@ -3,6 +3,7 @@ import os
 import time
 import arrow
 import shutil
+import requests
 from requests import Session
 from requests_helper import main as requests_helper
 from requests_helper import query_continue
@@ -13,6 +14,7 @@ load_dotenv()
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
+MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
 def article_exists(title):
 
@@ -69,7 +71,7 @@ def fetch_article(title: str):
     return data['query']['pages'][0]
 
 
-def file_exists(title):
+def file_exists(title: str) -> bool:
 
     req_op = {
         'verb': 'HEAD',
@@ -82,8 +84,8 @@ def file_exists(title):
             'redirects': '1'
         },
         'session': False,
-        'stream': True
-    }
+        'stream': False
+       }
 
     req = Session()
     response = requests_helper(req, req_op, ENV)
@@ -133,31 +135,14 @@ def fetch_file(title: str) -> bool:
     # -- read file from disk given file name
     #    and diff between timestamps
     file_last = data[0]['pages'][0]
-    file_revisions = file_last['revisions']
+    img_path = make_img_path(file_last)
 
-    file_url = file_last['imageinfo'][0]['url']
-    file_path = file_url.split('/').pop()
-    img_path = os.path.abspath(MEDIA_DIR + '/' + file_path)
+    file_rev_ts = file_last['revisions'][0]['timestamp']
 
-    if os.path.exists(img_path):
-        print(f"img path exists => {img_path}")
-
-        mtime = os.path.getmtime(img_path)
-        file_ts = arrow.get(file_revisions[0]['timestamp']).to('local').timestamp()
-
-        if mtime < file_ts:
-            print('upstream file is newer than local copy. fetch copy!')
-            file_url = file_last['imageinfo'][0]['url']
-            write_blob_to_disk(file_path, file_url)
-
-        else:
-            print('upstream file has not been changed after local copy was made')
-
-    else:
-        print(f"img path not yet there => {img_path}")
+    t = check_file_revision(img_path, file_rev_ts)
+    if t:
         file_url = file_last['imageinfo'][0]['url']
-        write_blob_to_disk(file_path, file_url)
-
+        write_blob_to_disk(img_path, file_url)
 
     # if file:
     # - has been found on upstream wiki to be existing
@@ -171,10 +156,31 @@ def fetch_file(title: str) -> bool:
     # -- return file caption and URL
     #    instead of initiating another API call
 
-        # return {
-        #     'caption': data_file['revisions'][0]['slots']['main']['content'],
-        #     'url': '/' + '/'.join(file_path.split('/')[2:])
-        # }
+    # return {
+    #     'caption': data_file['revisions'][0]['slots']['main']['content'],
+    #     'url': '/' + '/'.join(file_path.split('/')[2:])
+    # }
+
+
+def make_img_path(file_last):
+    
+    file_url = file_last['imageinfo'][0]['url']
+    file_path = file_url.split('/').pop()
+    img_path = os.path.abspath(MEDIA_DIR + '/' + file_path)
+
+    return img_path
+
+
+def check_file_revision(img_path, file_revs):
+
+    if os.path.exists(img_path):
+        mtime = os.path.getmtime(img_path)
+        file_ts = arrow.get(file_revs).to('local').timestamp()
+
+        if mtime < file_ts:
+            return True
+
+    return False
 
 
 def write_blob_to_disk(file_path, file_url):
@@ -200,5 +206,3 @@ def write_blob_to_disk(file_path, file_url):
             print(f"File downloaded successfully! => {file_path}")
 
         del response
-
-        return file_path
