@@ -64,9 +64,8 @@ class WikiPage(Page):
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
-        print('clean-url =>', [self, url])
-        # put func that clean up href between internal and external?
-        return url
+        # convert it to slugified version so it correctly points to a filepath
+        return slugify(url)
 
     def clean_title(self, title: str) -> str:
         """
@@ -157,41 +156,40 @@ def pre_process(article, wiki_page, body: str) -> str:
             wiki_page.file_fetch(wikilink.title)
 
         else:
-            # convert normal wikilink to standard URL
+
+            # -- convert normal wikilink to standard URL
 
             # TODO should decide if articles are organized in a tree
             # or not, and so construct the URL accordingly
-            article_url = slugify(wikilink.title)
 
             # most times only a wikilink like this is added:
             # [Title of Other Page]
-            # and Mediawiki automatically converts that into a proper URL
-            # so we set wikilink.target to wikilink.title and wikilink.text
-            # *then* we update wikilink.target to the slugified URL version.
-            # the main problem here is that we slugify all HTML pages we
-            # link to in the format `title-of-page.html` so if we leave
-            # the link style like this, the page will never be found.
+            # wikilink.title => Title of Other Page
+            # wikilink.text => None
+            # wikilink.target => Title of Other Page
+            #
+            # and Mediawiki automatically converts that into a proper URL,
+            # so we set wikilink.text to either wikilink.text / wikilink.target
+            # then wikilink.target is slugified afterwards in the WikiPage
+            # clean_url function
 
-            wl_label = wikilink.target
             # TODO wikilink.title is set to be wikilink.target when using
             # wikitextohtml, so we need to run a post-process function
 
-            wikilink.title = wl_label
-            wikilink.text = wikilink.text or wl_label
-            wikilink.target = article_url
+            wikilink.text = wikilink.text or wikilink.target
 
     for tag in article_wtp.get_tags():
 
         # TODO: scan through all wiki articles
         # and save in db all tags as tag.name + tag.contents
         # then check which ones are often malformed / needs care
-
         # make sure syntax is "strict"
         # eg image syntax starts with `File:<filepath>`
         # note: if a filepath is malformed and we know it
         # does not exists in the wiki, what to do?
         #   => must be updated in the wiki; we don't try to fix
         #   wiki content on-the-fly
+
         if tag.name == 'gallery':
             gallery_files = tag.contents.split('\n')
             gallery_files = [f.strip() for f in gallery_files if f]
