@@ -12,6 +12,7 @@ slugify = "*"
 lxml = "*"
 bs4 = "*"
 arrow = "*"
+tomli = "*"
 
 [dev-packages]
 

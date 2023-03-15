@@ -86,6 +86,7 @@ def query_continue(req_op, env):
         if 'query' in result:
             yield result['query']
         if 'continue' not in result:
+            print('query-continue over, break!')
             break
 
         last_continue = result['continue']
