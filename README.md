@@ -46,7 +46,7 @@ the underlying idea is to make it easier to archive and distribute the website i
 
 we also save to HTML the article content so to have less breaking states of the website, and distribute that into the git repo too. we include images and other files part of each article.
 
-backing up the Mediawiki's SQL db that we run our website off is part of the plan too, but the whole MW system feels too complex and obscure to be worth it spending so much time on it.
+backing up the Mediawiki's SQL db that we run our website off is part of the plan too, but the whole MW system feels too complex and fragile to be worth spending so much time on it.
 
 once we have all the wiki data articles out we can do, anything!
 
