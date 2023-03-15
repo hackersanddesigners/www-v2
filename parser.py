@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from fetch import article_exists, fetch_article, fetch_file, file_exists
+from fetch import article_exists, fetch_file, file_exists
 from slugify import slugify
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -31,7 +31,7 @@ class WikiPage(Page):
         """
         Load the template indicated by "template" and return its body.
         """
-        print('template-load =>', [self, template])
+        # print('template-load =>', [self, template])
         # do we use templates?
         return template
 
@@ -39,7 +39,7 @@ class WikiPage(Page):
         """
         Return True if and only if the template exists.
         """
-        print('template-exists =>', [self, template])
+        # print('template-exists =>', [self, template])
         # see above
         return
 
@@ -73,7 +73,7 @@ class WikiPage(Page):
         """
         Clean "title" (which is a full pagename) to become more human readable.
         """
-        print('clean-title =>', [self, title])
+        # print('clean-title =>', [self, title])
         # do we use this? set it anyway for "future-proofness" / archeology
         return title
 
@@ -81,7 +81,7 @@ class WikiPage(Page):
         """
         Get the link to a file (for the "a href" of the File).
         """
-        print('file-get-link =>', [self, url])
+        # print('file-get-link =>', [self, url])
 
         return f"{MEDIA_DIR_URI}/{url}"
 
@@ -90,35 +90,9 @@ class WikiPage(Page):
         Get the "img src" to a file.
         If thumb is set, a thumb should be generated of that size.
         """
-        print('file-get-img =>', [self, url, thumb])
+        # print('file-get-img =>', [self, url, thumb])
 
         return f"{MEDIA_DIR_URI}/{url}"
-
-
-def parser(page_title: str):
-    """
-    - fetch article from MW APIs
-    - instantiate WikiPage class
-    - get page body (HTML) and return it
-    """
-
-    article = fetch_article(page_title)
-
-    wiki_page = WikiPage(article)
-    wiki_page_errors = wiki_page.errors
-    if len(wiki_page_errors) > 0:
-        for error in wiki_page_errors:
-            print('wiki-page err =>', error)
-
-    wiki_article = wiki_page.page_load(article)
-    wiki_body = pre_process(article, wiki_page, wiki_article)
-    # update wiki_article instance
-    article['revisions'][0]['slots']['main']['content'] = wiki_body
-
-    body_html = wiki_page.render().html
-    body_html = post_process(body_html)
-
-    return body_html
 
 
 def pre_process(article, wiki_page, body: str) -> str:
@@ -154,7 +128,7 @@ def pre_process(article, wiki_page, body: str) -> str:
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
-            print('wikilink file =>', wikilink.title)
+            # print('wikilink file =>', wikilink.title)
             wiki_page.file_fetch(wikilink.title)
 
         else:
@@ -220,7 +194,7 @@ def post_process(article):
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
-        if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
+        # if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
             # intercept abs-url pointing to root-level website
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
@@ -229,12 +203,35 @@ def post_process(article):
             # TODO: URL should be following new URL format,
             # design first new URL format
 
-            print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
-            url_parse = urlparse(link.attrs['href'])
-            rel_url = url_parse.path
+            # print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
+            # url_parse = urlparse(link.attrs['href'])
+            # rel_url = url_parse.path
             # print('rel-url =>', rel_url)
             # link.attrs['href'] =
 
-    
     return soup.prettify()
 
+
+def parser(article: str) -> str:
+    """
+    - instantiate WikiPage class
+    - get page body (HTML) and return it
+    """
+
+    print('parsing article, get files, fix links, etc...')
+
+    wiki_page = WikiPage(article)
+    wiki_page_errors = wiki_page.errors
+    if len(wiki_page_errors) > 0:
+        for error in wiki_page_errors:
+            print('wiki-page err =>', error)
+
+    wiki_article = wiki_page.page_load(article)
+    wiki_body = pre_process(article, wiki_page, wiki_article)
+    # update wiki_article instance
+    article['revisions'][0]['slots']['main']['content'] = wiki_body
+
+    body_html = wiki_page.render().html
+    body_html = post_process(body_html)
+
+    return body_html

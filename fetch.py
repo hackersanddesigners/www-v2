@@ -16,7 +16,7 @@ URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
 MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
-def article_exists(title):
+def article_exists(title) -> bool:
 
     req_op = {
         'verb': 'HEAD',
@@ -46,6 +46,7 @@ def article_exists(title):
 
 
 def fetch_article(title: str):
+    print('fetching article...')
 
     req_op = {
         'verb': 'GET',
@@ -94,7 +95,6 @@ def file_exists(title: str) -> bool:
     # is between 200-400, given the HTTP op follows
     # redirect, it should confirm us that the resource
     # actually exists?
-    print('fetch-file-exists =>', response.ok)
     return response.ok
 
 

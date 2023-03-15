@@ -3,12 +3,9 @@ import os
 import traceback
 import socket
 import json
-from slugify import slugify
 from pretty_json_log import main as pretty_json_log
 from jinja2 import Environment, FileSystemLoader
-from fetch import fetch_article, article_exists
-from parser import parser, WikiPage
-import requests
+from make_article import make_article
 from write_to_disk import main as write_to_disk
 load_dotenv()
 
@@ -35,20 +32,13 @@ def main(SERVER_IP: str, SERVER_PORT: int):
 
         # -- we have the UPD message, let's fetch the full article now
         try:
-            page_title = msg['title']
-            body_html = parser(page_title)
-
-            article =  {
-                "title": page_title,
-                "html": body_html,
-                "slug": slugify(page_title)
-            }
-
+            article = make_article(msg['title'])
             t = env.get_template('article.html')
             document = t.render(article=article)
             write_to_disk(article['slug'], document)
 
         except Exception as e:
+            print('make-article err =>', e)
             traceback.print_exc()
 
 
