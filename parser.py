@@ -11,9 +11,9 @@ from pretty_json_log import main as pretty_json_log
 load_dotenv()
 
 
-MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
-
 class WikiPage(Page):
+
+    MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
     def page_load(self, page) -> str:
         """
@@ -83,7 +83,7 @@ class WikiPage(Page):
         """
         # print('file-get-link =>', [self, url])
 
-        return f"{MEDIA_DIR_URI}/{url}"
+        return f"{self.MEDIA_DIR_URI}/{url}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
@@ -92,7 +92,7 @@ class WikiPage(Page):
         """
         # print('file-get-img =>', [self, url, thumb])
 
-        return f"{MEDIA_DIR_URI}/{url}"
+        return f"{self.MEDIA_DIR_URI}/{url}"
 
 
 def pre_process(article, wiki_page, body: str) -> str:
