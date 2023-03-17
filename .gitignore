@@ -4,3 +4,4 @@ settings.toml
 Icon[\]
 .DS_Store
 __pycache__
+env
