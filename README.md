@@ -115,3 +115,36 @@ then we need to restore all this data: <https://www.mediawiki.org/wiki/Manual:Re
 - copy LocalSettings.php
 
 see also the MediaWiki installation guide to setup an initial wiki from scratch: <https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki>. the MediaWiki instance can be installed next to this repo, or in any case elsewhere on the system. we need to communicate between the servers of both websites.
+
+
+## Local dev setup and TLS certificates
+
+install [mkcert](https://github.com/FiloSottile/mkcert) or similar to create a local certificate.
+
+for mkcert:
+
+```
+# if it is the first time, install it
+mkcert -install
+
+# then make local CA for current website, for instance
+mkcert hd-v2.nl
+```
+
+this will create two files in the current folder:
+
+- `hd-v2.nl-key.pem`
+_ `hd-v2.nl.pem`
+
+add an entry to `.env` with:
+
+```
+LOCAL_CA=hd-v2.nl.pem
+```
+
+if you have another name for your local certificate instead of `hd-v2`, use that name for the `.env` entry.
+
+after this you can use https also in the dev environment while using this codebase!
+
+
+

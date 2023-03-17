@@ -1,6 +1,8 @@
 import requests
 from requests import Request
 
+import httpx
+
 
 def main(req_input, req_op, env: str):
     """
@@ -52,7 +54,7 @@ def main(req_input, req_op, env: str):
 # refs:
 # <https://www.mediawiki.org/wiki/API:Continue#Example_3:_Python_code_for_iterating_through_all_results>
 # <https://github.com/nyurik/pywikiapi/blob/master/pywikiapi/Site.py#L259>
-def query_continue(req_op, env):
+async def query_continue(client, req_op, is_async):
     request = req_op['params']
     last_continue = {}
 
@@ -60,22 +62,10 @@ def query_continue(req_op, env):
         req = request.copy()
         req.update(last_continue)
 
-        # <https://stackoverflow.com/a/32282390>
-        # when working with local mediawiki and don't want
-        # to issue SSL cert for it
-        if env == 'dev':
-            from urllib3.exceptions import InsecureRequestWarning
-            # suppress only the single warning from urllib3 needed.
-            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-
-            response = requests.get(req_op['url'],
-                                    params=req,
-                                    verify=False)
-
-        else:
-            response = requests.get(req_op['url'],
-                                    params=req,
-                                    verify=True)
+        if is_async:
+            response = await client.get(req_op['url'], params=req)
+        # else:
+        #     response = client.get(req_op['url'], params=req)
 
         response.raise_for_status()
 
