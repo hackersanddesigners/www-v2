@@ -3,10 +3,10 @@ import os
 import traceback
 import socket
 import json
-from pretty_json_log import main as pretty_json_log
+from app.pretty_json_log import main as pretty_json_log
 from jinja2 import Environment, FileSystemLoader
-from make_article import make_article
-from write_to_disk import main as write_to_disk
+from app.make_article import make_article
+from app.write_to_disk import main as write_to_disk
 load_dotenv()
 
 
@@ -17,7 +17,7 @@ def main(SERVER_IP: str, SERVER_PORT: int):
     - parse article from wikitext and transform it to HTML
     """
 
-    env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
+    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
 
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_sock.bind((SERVER_IP, SERVER_PORT))

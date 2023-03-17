@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  {% if article.articles | length > 0 %}
+  <ul>
+  {% for article in article.articles %}
+    <li><a href="/{{ article.title | slug }}.html">{{ article.title }}</a>, {{ article.timestamp }}</li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+</main>
+{% endblock %}

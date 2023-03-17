@@ -2,8 +2,12 @@ from dotenv import load_dotenv
 import os
 import tomli
 from requests import Session
-from requests_helper import main as requests_helper
 from requests_helper import query_continue
+from jinja2 import Environment, FileSystemLoader
+from make_article import make_article
+from write_to_disk import main as write_to_disk
+from save_article import x as save_article
+from templates import make_index
 load_dotenv()
 
 
@@ -64,13 +68,16 @@ def main():
 
     cats = config['wiki']['categories']
 
+    articles = []
     for cat in cats:
         results = get_category(cat)
-        for r in results:
-            print(f"r => {r}")
-
+        articles.extend(results)
         print(f"cat:{cat} => {len(results)}")
 
+    for article in articles:
+        save_article(article['title'])
+
+    make_index(articles)
 
 # -- run everything
 main()

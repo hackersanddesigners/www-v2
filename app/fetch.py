@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 import os
-import time
 import arrow
 import shutil
-import requests
 from requests import Session
 from requests_helper import main as requests_helper
 from requests_helper import query_continue
