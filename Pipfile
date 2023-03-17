@@ -13,6 +13,7 @@ lxml = "*"
 bs4 = "*"
 arrow = "*"
 tomli = "*"
+fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
 
