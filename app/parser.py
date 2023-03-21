@@ -83,7 +83,7 @@ class WikiPage(Page):
         """
         # print('file-get-link =>', [self, url])
 
-        return f"{self.MEDIA_DIR_URI}/{url}"
+        return f"/{self.MEDIA_DIR_URI}/{url}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
@@ -92,7 +92,7 @@ class WikiPage(Page):
         """
         # print('file-get-img =>', [self, url, thumb])
 
-        return f"{self.MEDIA_DIR_URI}/{url}"
+        return f"/{self.MEDIA_DIR_URI}/{url}"
 
 
 async def pre_process(article, wiki_page, body: str) -> str:
