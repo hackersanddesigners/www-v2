@@ -6,3 +6,6 @@ Icon[\]
 __pycache__
 env
 *.pem
+
+.devenv*
+devenv.local.nix
