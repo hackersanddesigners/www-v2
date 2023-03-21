@@ -165,6 +165,7 @@ async def pre_process(article, wiki_page, body: str) -> str:
 
         if tag.name == 'gallery':
             gallery_files = tag.contents.split('\n')
+            gallery_files = [f.split('|')[0] for f in gallery_files]
             gallery_files = [f.strip() for f in gallery_files if f]
 
             gallery_contents = []
