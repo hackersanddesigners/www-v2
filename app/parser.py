@@ -21,11 +21,11 @@ class WikiPage(Page):
         """
         return page['revisions'][0]['slots']['main']['content']
 
-    def page_exists(self, page: str) -> bool:
+    async def page_exists(self, page: str) -> bool:
         """
         Return True if and only if the page exists.
         """
-        return article_exists(page)
+        return await article_exists(page, None)
 
     def template_load(self, template: str) -> str:
         """
@@ -51,14 +51,14 @@ class WikiPage(Page):
         """
         return file_exists(file)
 
-    def file_fetch(self, file: str) -> bool:
+    async def file_fetch(self, file: str) -> bool:
         """
         Fetch the file indicated by "file" and save it to disk,
         only if a newer version of the one already saved to disk exists
         (we use timestamps between local and upstream file for this)
         """
 
-        return fetch_file(file)
+        return await fetch_file(file)
 
     def clean_url(self, url: str) -> str:
         """
@@ -95,7 +95,7 @@ class WikiPage(Page):
         return f"{self.MEDIA_DIR_URI}/{url}"
 
 
-def pre_process(article, wiki_page, body: str) -> str:
+async def pre_process(article, wiki_page, body: str) -> str:
     """
     - update wikilinks [[<>]] to point to correct locations,
       so that WikiTextParser does its job just fine.
@@ -128,8 +128,8 @@ def pre_process(article, wiki_page, body: str) -> str:
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
-            # print('wikilink file =>', wikilink.title)
-            wiki_page.file_fetch(wikilink.title)
+            print('wikilink file =>', wikilink.title)
+            await wiki_page.file_fetch(wikilink.title)
 
         else:
 
@@ -172,6 +172,7 @@ def pre_process(article, wiki_page, body: str) -> str:
                 if not gallery_f.startswith('File:'):
                     print('gallery file bad syntax =>', gallery_f)
                     f = 'File:' + gallery_f
+                    await wiki_page.file_fetch(f)
                     gallery_contents.append(f)
 
             tag.contents = '\n'.join(gallery_contents)
@@ -212,7 +213,7 @@ def post_process(article):
     return soup.prettify()
 
 
-def parser(article: str) -> str:
+async def parser(article: str) -> str:
     """
     - instantiate WikiPage class
     - get page body (HTML) and return it
@@ -227,7 +228,7 @@ def parser(article: str) -> str:
             print('wiki-page err =>', error)
 
     wiki_article = wiki_page.page_load(article)
-    wiki_body = pre_process(article, wiki_page, wiki_article)
+    wiki_body = await pre_process(article, wiki_page, wiki_article)
     # update wiki_article instance
     article['revisions'][0]['slots']['main']['content'] = wiki_body
 

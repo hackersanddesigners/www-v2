@@ -15,6 +15,7 @@ arrow = "*"
 tomli = "*"
 fastapi = {extras = ["all"], version = "*"}
 httpx = "*"
+aiofiles = "*"
 
 [dev-packages]
 

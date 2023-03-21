@@ -2,10 +2,12 @@ from dotenv import load_dotenv
 import os
 import arrow
 import shutil
-from requests import Session
+import httpx
 from requests_helper import main as requests_helper
 from requests_helper import query_continue
 from pretty_json_log import main as pretty_json_log
+from pathlib import Path
+import aiofiles
 load_dotenv()
 
 
@@ -14,7 +16,8 @@ URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
 MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
-def article_exists(title) -> bool:
+
+async def article_exists(title, client) -> bool:
 
     req_op = {
         'verb': 'HEAD',
@@ -29,21 +32,24 @@ def article_exists(title) -> bool:
             'format': 'json',
             'redirects': '1'
         },
-        'session': False,
-        'stream': True
+        'stream': False
     }
 
-    req = Session()
-    response = requests_helper(req, req_op, ENV)
+    if client is None:
+        with httpx.Client() as client:
+            response = await requests_helper(client, req_op)
+
+    response = await requests_helper(client, req_op)
 
     # this returns a boolean if response.status
-    # is between 200-400, given the HTTP op follows
+    # is between 200-299, given the HTTP op follows
     # redirect, it should confirm us that the resource
-    # actually exists?
-    return response.ok
+    # actually exists.
+    # return response.is_success
+    return response.is_success
 
 
-def fetch_article(title: str):
+async def fetch_article(title: str, client):
     print('fetching article...')
 
     req_op = {
@@ -59,18 +65,16 @@ def fetch_article(title: str):
             'format': 'json',
             'redirects': '1'
         },
-        'session': False,
-        'stream': True
+        'stream': False
     }
 
-    req = Session()
-    response = requests_helper(req, req_op, ENV)
+    response = await requests_helper(client, req_op)
     data = response.json()
 
     return data['query']['pages'][0]
 
 
-def file_exists(title: str) -> bool:
+async def file_exists(title: str) -> bool:
 
     req_op = {
         'verb': 'HEAD',
@@ -82,22 +86,21 @@ def file_exists(title: str) -> bool:
             'format': 'json',
             'redirects': '1'
         },
-        'session': False,
         'stream': False
        }
 
-    req = Session()
-    response = requests_helper(req, req_op, ENV)
+    with httpx.Client() as client:
+        response = await requests_helper(client, req_op)
 
-    # this returns a boolean if response.status
-    # is between 200-400, given the HTTP op follows
-    # redirect, it should confirm us that the resource
-    # actually exists?
-    return response.ok
+        # this returns a boolean if response.status
+        # is between 200-400, given the HTTP op follows
+        # redirect, it should confirm us that the resource
+        # actually exists?
+        # return response.ok
+        return response.is_success
 
 
-def fetch_file(title: str) -> bool:
-
+async def fetch_file(title: str) -> bool:
     req_op = {
         'verb': 'GET',
         'url': URL,
@@ -112,7 +115,6 @@ def fetch_file(title: str) -> bool:
             'format': 'json',
             'redirects': '1'
         },
-        'session': False,
         'stream': False
     }
 
@@ -121,26 +123,40 @@ def fetch_file(title: str) -> bool:
     # has been updated meanwhile, by comparing timestamps
 
     data = []
-    for response in query_continue(req_op, ENV):
-        if 'missing' in response['pages'][0]:
-            title = response['pages'][0]['title']
-            print(f"the image could not be found => {title}")
-            return False
+    if ENV == 'dev':
+        base_dir = Path(__file__).parent.parent
+        import ssl
+        context = ssl.create_default_context()
+        LOCAL_CA = os.getenv('LOCAL_CA')
+        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
 
-        else:
-            data.append(response)
+        async with httpx.AsyncClient(verify=context) as client:
+            async for response in query_continue(client, req_op):
+                print('fetch-image res =>', response) 
+                if 'missing' in response['pages'][0]:
+                    title = response['pages'][0]['title']
+                    print(f"the image could not be found => {title}")
+                    return False
+
+                else:
+                    data.append(response)
 
     # -- read file from disk given file name
     #    and diff between timestamps
     file_last = data[0]['pages'][0]
+    file_url = file_last['imageinfo'][0]['url']
     img_path = make_img_path(file_last)
 
-    file_rev_ts = file_last['revisions'][0]['timestamp']
+    if os.path.exists(img_path):
+        file_rev_ts = file_last['revisions'][0]['timestamp']
+        t = check_file_revision(img_path, file_rev_ts)
 
-    t = check_file_revision(img_path, file_rev_ts)
-    if t:
-        file_url = file_last['imageinfo'][0]['url']
-        write_blob_to_disk(img_path, file_url)
+        if t:
+            await write_blob_to_disk(img_path, file_url)
+
+    else:
+        await write_blob_to_disk(img_path, file_url)
+            
 
     # if file:
     # - has been found on upstream wiki to be existing
@@ -161,7 +177,7 @@ def fetch_file(title: str) -> bool:
 
 
 def make_img_path(file_last):
-    
+
     file_url = file_last['imageinfo'][0]['url']
     file_path = file_url.split('/').pop()
     img_path = os.path.abspath(MEDIA_DIR + '/' + file_path)
@@ -181,7 +197,7 @@ def check_file_revision(img_path, file_revs):
     return False
 
 
-def write_blob_to_disk(file_path, file_url):
+async def write_blob_to_disk(file_path, file_url):
     # TODO move this on project init setup?
     if not os.path.exists(MEDIA_DIR):
         os.makedirs(MEDIA_DIR)
@@ -190,17 +206,23 @@ def write_blob_to_disk(file_path, file_url):
         'verb': 'GET',
         'url': file_url,
         'params': None,
-        'session': False,
         'stream': True
     }
 
-    req = Session()
-    response = requests_helper(req, req_op, ENV)
+    if ENV == 'dev':
+        base_dir = Path(__file__).parent.parent
+        import ssl
+        context = ssl.create_default_context()
+        LOCAL_CA = os.getenv('LOCAL_CA')
+        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
 
-    if response.status_code == 200:
-        with open(file_path, 'wb') as outf:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, outf)
-            print(f"File downloaded successfully! => {file_path}")
+        async with httpx.AsyncClient(verify=context) as client:
+            async with client.stream('GET', file_url) as response:
+                async with aiofiles.open(file_path, mode='wb') as f:
+                    async for chunk in response.aiter_bytes():
+                        await f.write(chunk)
 
-        del response
+
+    else:
+        async with httpx.AsyncClient(verify=context) as client:
+            response = await requests_helper(client, req_op)

@@ -8,7 +8,7 @@ from pathlib import Path
 from requests_helper import query_continue
 import asyncio
 
-from save_article import x as save_article
+from save_article import save_article
 from templates import make_index
 load_dotenv()
 
@@ -54,7 +54,7 @@ async def main():
             context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
 
             async with httpx.AsyncClient(verify=context) as client:
-                async for response in query_continue(client, req_op, True):
+                async for response in query_continue(client, req_op):
                     x = response['categorymembers']
                     if len(x) > 0 and 'missing' in x[0]:
                         title = x[0]['title']
@@ -98,8 +98,16 @@ async def main():
         articles.extend(results)
         print(f"cat:{cat} => {len(results)}")
 
-    # for article in articles:
-    #     save_article(article['title'])
+    if ENV == 'dev':
+        base_dir = Path(__file__).parent.parent
+        import ssl
+        context = ssl.create_default_context()
+        LOCAL_CA = os.getenv('LOCAL_CA')
+        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
+
+        async with httpx.AsyncClient(verify=context) as client:
+            for article in articles:
+                await save_article(article['title'], client)
 
     make_index(articles)
 
@@ -107,4 +115,4 @@ async def main():
 asyncio.run(main())
 
 # if __name__ == 'main':
-#     main()
+#     asyncio.run(main())

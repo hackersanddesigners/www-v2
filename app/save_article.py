@@ -2,8 +2,9 @@ from jinja2 import Environment, FileSystemLoader
 from make_article import make_article
 from write_to_disk import main as write_to_disk
 
-def x(article_title):
-    article = make_article(article_title)
+
+async def save_article(article_title, client):
+    article = await make_article(article_title, client)
 
     env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
     t = env.get_template('article.html')
