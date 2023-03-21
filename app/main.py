@@ -6,5 +6,13 @@ from pathlib import Path
 app = FastAPI()
 
 base_dir = Path(__file__).parent.parent
-app.mount("/", StaticFiles(directory=base_dir / "wiki", html=True), name="wiki")
-app.mount("/static", StaticFiles(directory=base_dir / "static"), name="static")
+
+app.mount("/",
+          StaticFiles(directory=base_dir / "wiki", html=True),
+          name="wiki")
+app.mount("/assets/media",
+          StaticFiles(directory=base_dir / "wiki/assets/media"),
+          name="media")
+app.mount("/static",
+          StaticFiles(directory=base_dir / "static"),
+          name="static")
