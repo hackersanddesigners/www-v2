@@ -23,11 +23,18 @@ class WikiPage(Page):
 
         return page['revisions'][0]['slots']['main']['content']
 
-    async def page_exists(self, page: str) -> bool:
+    def page_exists(self, page: str) -> bool:
         """
         Return True if and only if the page exists.
+        (check if article exists in the fs)
         """
-        return await article_exists(page, None)
+
+        # TODO check when we're using this func
+        # as it slows down build_wiki of 5 seconds
+        # and we could move this check elsewhere
+        # and doing it async
+        # return article_exists(page)
+        return
 
     def template_load(self, template: str) -> str:
         """
