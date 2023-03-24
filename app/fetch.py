@@ -6,6 +6,7 @@ from requests_helper import main as requests_helper
 from requests_helper import query_continue, create_context
 from pretty_json_log import main as pretty_json_log
 from pathlib import Path
+from slugify import slugify
 import aiofiles
 load_dotenv()
 
@@ -15,38 +16,11 @@ URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
 
 
-async def article_exists(title, client) -> bool:
+def article_exists(title) -> bool:
     WIKI_DIR = os.getenv('WIKI_DIR')
     file_path = f"{WIKI_DIR}/{slugify(title)}.html"
 
-    req_op = {
-        'verb': 'HEAD',
-        'url': URL,
-        'params': {
-            'action': 'query',
-            'prop': 'revisions|images',
-            'titles': title,
-            'rvprop': 'content',
-            'rvslots': '*',
-            'formatversion': '2',
-            'format': 'json',
-            'redirects': '1'
-        },
-        'stream': False
-    }
-
-    if client is None:
-        with httpx.Client() as client:
-            response = await requests_helper(client, req_op)
-
-    response = await requests_helper(client, req_op)
-
-    # this returns a boolean if response.status
-    # is between 200-299, given the HTTP op follows
-    # redirect, it should confirm us that the resource
-    # actually exists.
-    # return response.is_success
-    return response.is_success
+    return Path(file_path).is_file()
 
 
 async def fetch_article(title: str, client):
