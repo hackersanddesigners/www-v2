@@ -1,12 +1,13 @@
 from dotenv import load_dotenv
 import sys
 import os
-from requests import Session
-from requests_helper import main as requests_helper
+import asyncio
+import httpx
+from requests_helper import create_context
 load_dotenv()
 
 
-def main(env: str, input_page: str):
+async def main(ENV: str, input_page: str):
     """
     this func helps to test the whole workflow
     by triggering a change in a wiki article and
@@ -17,92 +18,71 @@ def main(env: str, input_page: str):
     and update the given article (passed as arg)
     """
 
-    s = Session()
+    URL = os.getenv('BASE_URL')
+    BOT = {'usr': os.getenv('BOT_USR'), 'pwd': os.getenv('BOT_PWD')}
 
-    url = os.getenv('BASE_URL')
-    bot = {'usr': os.getenv('BOT_USR'), 'pwd': os.getenv('BOT_PWD')}
+    context = create_context(ENV)
+    async with httpx.AsyncClient(verify=context) as client: 
 
-    # GET request to fetch login token
-    req_op_token = {
-        'verb': 'GET',
-        'url': url,
-        'params': {
+        # GET request to fetch login token
+        params_token = {
             'action': 'query',
             'meta': 'tokens',
             'type': 'login',
+            'formatversion': '2',
             'format': 'json'
-        },
-        'session': True,
-        'stream': True
-    }
-    res_token = requests_helper(s, req_op_token, env)
-
-    res_token_data = res_token.json()
-    login_token = res_token_data['query']['tokens']['logintoken']
-
-    # user bot credentials to log-in
-    # make bot via `Special:BotPasswords`,
-    # for `lgname`, `lgpassword`
-    req_op_login = {
-        'verb': 'POST',
-        'url': url,
-        'params': {
+        }
+        res_token = await client.get(URL, params=params_token)
+        res_token_data = res_token.json()
+        login_token = res_token_data['query']['tokens']['logintoken']
+        
+        # user bot credentials to log-in
+        # make bot via `Special:BotPasswords`,
+        # for `lgname`, `lgpassword`
+        params_login = {
             'action': 'login',
-            'lgname': bot['usr'],
-            'lgpassword': bot['pwd'],
+            'lgname': BOT['usr'],
+            'lgpassword': BOT['pwd'],
             'lgtoken': login_token,
+            'formatversion': '2',
             'format': 'json'
-        },
-        'session': True,
-        'stream': True
-    }
+        }
 
-    requests_helper(s, req_op_login, env)
+        await client.post(URL, data=params_login)
 
-    # GET request to fetch CSRF token
-    req_op_csrf = {
-        'verb': 'GET',
-        'url': url,
-        'params': {
+        # GET request to fetch CSRF token
+        params_csrf = {
             'action': 'query',
             'meta': 'tokens',
+            'formatversion': '2',
             'format': 'json'
-        },
-        'session': True,
-        'stream': True
-    }
+        }
 
-    res_csrf = requests_helper(s, req_op_csrf, env)
-    res_csrf_data = res_csrf.json()
-    csrf_token = res_csrf_data['query']['tokens']['csrftoken']
+        res_csrf = await client.get(URL, params=params_csrf)
+        res_csrf_data = res_csrf.json()
+        csrf_token = res_csrf_data['query']['tokens']['csrftoken']
 
-    # POST request to edit a page
-    req_op_update = {
-        'verb': 'POST',
-        'url': url,
-        'params': {
+        # POST request to edit a page
+        params_update = {
             'action': 'edit',
             'title': input_page,
             'token': csrf_token,
             'format': 'json',
             'appendtext': 'Hello'
-        },
-        'session': True,
-        'stream': True
-    }
+        }
 
-    res_update = requests_helper(s, req_op_update, env)
-    res_update_data = res_update.json()
-    print('res POST req =>', res_update_data)
+        res_update = await client.post(URL, data=params_update)
+        res_update_data = res_update.json()
+        print('res POST req =>', res_update_data)
 
-    # the POST request update the article and
-    # send a message update to our server.py
-    # which is listening for UDP datagrams
+        # the POST request update the article and
+        # send a message update to our server.py
+        # which is listening for UDP datagrams
 
 
 if __name__ == "__main__":
 
-    env = os.getenv('ENV')
+    ENV = os.getenv('ENV')
     input_page = None
 
     if (len(sys.argv) == 1):
@@ -113,4 +93,5 @@ if __name__ == "__main__":
     else:
         input_page = sys.argv[1]
 
-    main(env, input_page)
+
+    asyncio.run(main(ENV, input_page))
