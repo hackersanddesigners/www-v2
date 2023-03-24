@@ -1,4 +1,4 @@
-from fetch import article_exists, fetch_article
+from fetch import fetch_article
 from parser import parser
 from slugify import slugify
 from jinja2 import Environment, FileSystemLoader
