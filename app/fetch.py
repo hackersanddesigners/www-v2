@@ -55,21 +55,16 @@ def file_exists(title: str) -> bool:
 
 
 async def fetch_file(title: str) -> bool:
-    req_op = {
-        'verb': 'GET',
-        'url': URL,
-        'params': {
-            'action': 'query',
-            'prop': 'revisions|imageinfo',
-            'iiprop': 'url|timestamp',
-            'titles': title,
-            'rvprop': 'timestamp',
-            'rvslots': '*',
-            'formatversion': '2',
-            'format': 'json',
-            'redirects': '1'
-        },
-        'stream': False
+    params = {
+        'action': 'query',
+        'prop': 'revisions|imageinfo',
+        'iiprop': 'url|timestamp',
+        'titles': title,
+        'rvprop': 'timestamp',
+        'rvslots': '*',
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1'
     }
 
     # we fetch all existing file revisions
@@ -77,7 +72,6 @@ async def fetch_file(title: str) -> bool:
     # has been updated meanwhile, by comparing timestamps
 
     data = []
-    
     context = create_context(ENV)
     async with httpx.AsyncClient(verify=context) as client:
         async for response in query_continue(client, URL, params):
@@ -107,21 +101,13 @@ async def fetch_file(title: str) -> bool:
             
 
     # if file:
-    # - has been found on upstream wiki to be existing
+    # - has been found on upstream wiki to exist
     # - and has been downloaded (either by checking
     #   if up-to-date local copy exists, or by fetching
     #   a new copy of it)
     # we return True (?)
 
     return True
-
-    # -- return file caption and URL
-    #    instead of initiating another API call
-
-    # return {
-    #     'caption': data_file['revisions'][0]['slots']['main']['content'],
-    #     'url': '/' + '/'.join(file_path.split('/')[2:])
-    # }
 
 
 def make_img_path(file_last):
