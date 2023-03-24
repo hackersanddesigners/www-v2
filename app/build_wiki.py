@@ -67,12 +67,11 @@ async def get_category(cat: str):
         config = tomli.load(fp)
 
     cats = config['wiki']['categories']
-
-    articles = []
+    cat_tasks = []
     for cat in cats:
-        results = await get_category(cat)
-        articles.extend(results)
-        print(f"cat:{cat} => {len(results)}")
+        cat_tasks.append(asyncio.ensure_future(get_category(cat)))
+
+    articles = await asyncio.gather(*cat_tasks)
 
     if ENV == 'dev':
         base_dir = Path(__file__).parent.parent
