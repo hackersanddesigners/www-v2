@@ -20,6 +20,7 @@ class WikiPage(Page):
         """
         Load the page indicated by "page" and return its body.
         """
+
         return page['revisions'][0]['slots']['main']['content']
 
     async def page_exists(self, page: str) -> bool:
@@ -32,6 +33,7 @@ class WikiPage(Page):
         """
         Load the template indicated by "template" and return its body.
         """
+
         # print('template-load =>', [self, template])
         # do we use templates?
         return template
@@ -40,6 +42,7 @@ class WikiPage(Page):
         """
         Return True if and only if the template exists.
         """
+
         # print('template-exists =>', [self, template])
         # see above
         return
@@ -50,7 +53,10 @@ class WikiPage(Page):
         - first we check if the file exists already on disk
         - else we try to fetch it down and return if it succeeded or not
         """
-        return file_exists(file)
+
+        # we're doing our checks directly in file_fetch
+        # return file_exists(file)
+        return
 
     async def file_fetch(self, file: str) -> bool:
         """
@@ -65,8 +71,10 @@ class WikiPage(Page):
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
+
         # convert it to slugified version and then append `.html`
         # so it correctly points to a filepath
+
         new_url = slugify(url)
         return f"{new_url}.html"
 
@@ -74,6 +82,7 @@ class WikiPage(Page):
         """
         Clean "title" (which is a full pagename) to become more human readable.
         """
+
         # print('clean-title =>', [self, title])
         # do we use this? set it anyway for "future-proofness" / archeology
         return title
@@ -226,7 +235,7 @@ async def parser(article: str) -> str:
     - get page body (HTML) and return it
     """
 
-    print('parsing article, get files, fix links, etc...')
+    print(f"parsing article {article['title']}...")
 
     wiki_page = WikiPage(article)
     wiki_page_errors = wiki_page.errors
@@ -236,10 +245,13 @@ async def parser(article: str) -> str:
 
     wiki_article = wiki_page.page_load(article)
     wiki_body = await pre_process(article, wiki_page, wiki_article)
+
     # update wiki_article instance
     article['revisions'][0]['slots']['main']['content'] = wiki_body
 
     body_html = wiki_page.render().html
     body_html = post_process(body_html)
+
+    print(f"parsed {article['title']}!")
 
     return body_html
