@@ -3,7 +3,7 @@ import os
 import arrow
 import httpx
 from requests_helper import main as requests_helper
-from requests_helper import query_continue
+from requests_helper import query_continue, create_context
 from pretty_json_log import main as pretty_json_log
 from pathlib import Path
 import aiofiles
