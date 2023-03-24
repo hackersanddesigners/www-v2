@@ -8,6 +8,7 @@ from slugify import slugify
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from pretty_json_log import main as pretty_json_log
+import asyncio
 load_dotenv()
 
 
@@ -118,6 +119,7 @@ async def pre_process(article, wiki_page, body: str) -> str:
         article['template'] = template.name.strip()
         del template[:]
 
+    tasks = []
     for wikilink in article_wtp.wikilinks:
 
         # save category value somewhere if needed
@@ -128,8 +130,8 @@ async def pre_process(article, wiki_page, body: str) -> str:
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
-            print('wikilink file =>', wikilink.title)
-            await wiki_page.file_fetch(wikilink.title)
+            task = wiki_page.file_fetch(wikilink.title)
+            tasks.append(asyncio.ensure_future(task))
 
         else:
 
@@ -151,6 +153,8 @@ async def pre_process(article, wiki_page, body: str) -> str:
 
             wikilink.text = wikilink.text or wikilink.target
 
+    await asyncio.gather(*tasks)
+
     for tag in article_wtp.get_tags():
 
         # TODO: scan through all wiki articles
@@ -169,14 +173,18 @@ async def pre_process(article, wiki_page, body: str) -> str:
             gallery_files = [f.strip() for f in gallery_files if f]
 
             gallery_contents = []
+            tasks = []
             for gallery_f in gallery_files:
                 if not gallery_f.startswith('File:'):
-                    print('gallery file bad syntax =>', gallery_f)
                     f = 'File:' + gallery_f
-                    await wiki_page.file_fetch(f)
                     gallery_contents.append(f)
 
+                    task = wiki_page.file_fetch(f)
+                    tasks.append(asyncio.ensure_future(task))
+
             tag.contents = '\n'.join(gallery_contents)
+
+            await asyncio.gather(*tasks)
 
     return article_wtp.string
 
