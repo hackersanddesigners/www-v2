@@ -5,7 +5,7 @@ import tomli
 import httpx
 from pathlib import Path
 
-from requests_helper import query_continue
+from requests_helper import query_continue, create_context
 import asyncio
 
 from save_article import save_article
@@ -23,58 +23,34 @@ async def main():
     pages from the MediaWiki instance
     """
 
-    async def get_category(cat: str):
-        req_op = {
-            'verb': 'GET',
-            'url': URL,
-            'params': {
-                'action': 'query',
-                'list': 'categorymembers',
-                'cmtitle': f"Category:{cat}",
-                'cmlimit': '50',
-                'cmprop': 'ids|title|timestamp',
-                # 'cmsort': 'timestamp',
-                # 'cmdir': 'asc',
-                'formatversion': '2',
-                'format': 'json',
-                'redirects': '1',
-            },
-            'session': False,
-            'stream': False
-           }
+async def get_category(cat: str):
 
+    params = {
+        'action': 'query',
+        'list': 'categorymembers',
+        'cmtitle': f"Category:{cat}",
+        'cmlimit': '50',
+        'cmprop': 'ids|title|timestamp',
+        # 'cmsort': 'timestamp',
+        # 'cmdir': 'asc',
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1',
+    }
+
+    context = create_context(ENV)
+    async with httpx.AsyncClient(verify=context) as client:
         data = []
+        async for response in query_continue(client, URL, params):
 
-        # TODO DRY this code
-        if ENV == 'dev':
-            base_dir = Path(__file__).parent.parent
-            import ssl
-            context = ssl.create_default_context()
-            LOCAL_CA = os.getenv('LOCAL_CA')
-            context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
-
-            async with httpx.AsyncClient(verify=context) as client:
-                async for response in query_continue(client, req_op):
-                    x = response['categorymembers']
-                    if len(x) > 0 and 'missing' in x[0]:
-                        title = x[0]['title']
-                        print(f"the page could not be found => {title}")
-                        return False
-
-                    else:
-                        data.extend(x)
-
-        else:
-            with httpx.Client() as client:
-                for response in query_continue(client, req_op, ENV):
-                    x = response['categorymembers']
-                    if len(x) > 0 and 'missing' in x[0]:
-                        title = x[0]['title']
-                        print(f"the page could not be found => {title}")
-                        return False
-
-                    else:
-                        data.extend(x)
+            cat = response['categorymembers']
+            if len(cat) > 0 and 'missing' in cat[0]:
+                title = cat[0]['title']
+                print(f"the page could not be found => {title}")
+                return False
+            
+            else:
+                data.extend(cat)
 
         return data
 
