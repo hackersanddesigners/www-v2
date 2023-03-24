@@ -1,4 +1,23 @@
+from dotenv import load_dotenv
+import os
+from pathlib import Path
 import httpx
+load_dotenv()
+
+
+def create_context(ENV):
+    if ENV == 'dev':
+        base_dir = Path(__file__).parent.parent
+        import ssl
+        context = ssl.create_default_context()
+        LOCAL_CA = os.getenv('LOCAL_CA')
+        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
+
+        return context
+
+    else:
+        # True use default CA bundle
+        return True
 
 
 async def main(client, req_op):
