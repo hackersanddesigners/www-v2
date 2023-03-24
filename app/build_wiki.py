@@ -110,6 +110,7 @@ async def main():
                 await save_article(article['title'], client)
 
     make_index(articles)
+    await make_index(articles)
 
 # -- run everything
 asyncio.run(main())

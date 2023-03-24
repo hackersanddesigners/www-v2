@@ -1,9 +1,9 @@
-def main(page_slug: str, document: str):
+import aiofiles
 
-    with open('./wiki/%s.html' % page_slug, 'w') as f:
-
+async def main(page_slug: str, document: str):
+    async with aiofiles.open(f"./wiki/{page_slug}.html", mode='w') as f:
         try:
-            f.write(document)
-            print('✓ %s-article has been correctly written to disk' % page_slug)
+            await f.write(document)
+            print(f"✓ {page_slug}-article has been correctly written to disk")
         except Exception as e:
-            print('✕ error for %s-article "%s" =>' % page_slug, e)
+            print(f"✕ error for {page_slug}-article => {e}")

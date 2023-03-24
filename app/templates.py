@@ -7,7 +7,7 @@ def make_url_slug(url: str):
     return slugify(url)
 
 
-def make_index(articles):
+async def make_index(articles):
     env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
     env.filters['slug'] = make_url_slug
     t = env.get_template('index.html')
@@ -19,4 +19,4 @@ def make_index(articles):
     }
 
     document = t.render(article=article)
-    write_to_disk(article['slug'], document)
+    await write_to_disk(article['slug'], document)
