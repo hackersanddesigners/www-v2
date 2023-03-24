@@ -3,12 +3,11 @@ import os
 import tomli
 
 import httpx
-from pathlib import Path
 
 from requests_helper import query_continue, create_context
 import asyncio
 
-from save_article import save_article
+from build_article import make_article, save_article
 from templates import make_index
 load_dotenv()
 
@@ -17,11 +16,6 @@ ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 
 
-async def main():
-    """
-    this function (re-)build the entire wiki by fetching a set of specific
-    pages from the MediaWiki instance
-    """
 
 async def get_category(cat: str):
 
@@ -54,8 +48,12 @@ async def get_category(cat: str):
 
         return data
 
-    # TODO would be nice to start a request Session and
-    # then loop over each category as "one" operation
+
+async def main():
+    """
+    this function (re-)build the entire wiki by fetching a set of specific
+    pages from the MediaWiki instance
+    """
 
     # / summer academies
     # these pages are queried by `Category:Event` and `Type:HDSA<year>`
@@ -63,32 +61,43 @@ async def get_category(cat: str):
     # each page in the list on its own, therefore upon mapping over Event pages
     # we can "manually" pick them apart by Type:HDSA<year>
 
-    with open("settings.toml", mode="rb") as fp:
-        config = tomli.load(fp)
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
 
     cats = config['wiki']['categories']
     cat_tasks = []
     for cat in cats:
-        cat_tasks.append(asyncio.ensure_future(get_category(cat)))
+        task = get_category(cat)
+        cat_tasks.append(asyncio.ensure_future(task))
 
     articles = await asyncio.gather(*cat_tasks)
 
-    if ENV == 'dev':
-        base_dir = Path(__file__).parent.parent
-        import ssl
-        context = ssl.create_default_context()
-        LOCAL_CA = os.getenv('LOCAL_CA')
-        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
+    # flat nested list
+    articles = [article for subarticle in articles for article in subarticle]
 
-        async with httpx.AsyncClient(verify=context) as client:
-            for article in articles:
-                await save_article(article['title'], client)
+    context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0)
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
-    make_index(articles)
+        art_tasks = []
+        for article in articles:
+            task = make_article(article['title'], client)
+            art_tasks.append(asyncio.ensure_future(task))
+
+        articles = await asyncio.gather(*art_tasks)
+
+        print(f"articles: {len(articles)}")
+
+        save_tasks = []
+        for article in articles:
+            task = save_article(article)
+            save_tasks.append(asyncio.ensure_future(task))
+
+        await asyncio.gather(*save_tasks)
+            
+
     await make_index(articles)
 
 # -- run everything
 asyncio.run(main())
-
-# if __name__ == 'main':
-#     asyncio.run(main())
+print("--- %s seconds ---" % (time.time() - start_time))
