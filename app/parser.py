@@ -14,7 +14,7 @@ load_dotenv()
 
 class WikiPage(Page):
 
-    MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
+    MEDIA_DIR = os.getenv('MEDIA_DIR')
 
     def page_load(self, page) -> str:
         """
@@ -82,18 +82,16 @@ class WikiPage(Page):
         """
         Get the link to a file (for the "a href" of the File).
         """
-        # print('file-get-link =>', [self, url])
 
-        return f"/{self.MEDIA_DIR_URI}/{url}"
+        return f"/{self.MEDIA_DIR}/{url}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
         Get the "img src" to a file.
         If thumb is set, a thumb should be generated of that size.
         """
-        # print('file-get-img =>', [self, url, thumb])
 
-        return f"/{self.MEDIA_DIR_URI}/{url}"
+        return f"/{self.MEDIA_DIR}/{url}"
 
 
 async def pre_process(article, wiki_page, body: str) -> str:

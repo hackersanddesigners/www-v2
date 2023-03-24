@@ -13,10 +13,11 @@ load_dotenv()
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
-MEDIA_DIR_URI = '/'.join(os.getenv('MEDIA_DIR').split('/')[2:])
 
 
 async def article_exists(title, client) -> bool:
+    WIKI_DIR = os.getenv('WIKI_DIR')
+    file_path = f"{WIKI_DIR}/{slugify(title)}.html"
 
     req_op = {
         'verb': 'HEAD',
@@ -194,8 +195,9 @@ def check_file_revision(img_path, file_revs):
 
 async def write_blob_to_disk(file_path, file_url):
     # TODO move this on project init setup?
-    if not os.path.exists(MEDIA_DIR):
-        os.makedirs(MEDIA_DIR)
+    media_path = os.path.abspath(MEDIA_DIR)
+    if not os.path.exists(media_path):
+        os.makedirs(media_path)
 
     req_op = {
         'verb': 'GET',
