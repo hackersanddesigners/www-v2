@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 import arrow
-import shutil
 import httpx
 from requests_helper import main as requests_helper
 from requests_helper import query_continue
@@ -125,23 +124,17 @@ async def fetch_file(title: str) -> bool:
     # has been updated meanwhile, by comparing timestamps
 
     data = []
-    if ENV == 'dev':
-        base_dir = Path(__file__).parent.parent
-        import ssl
-        context = ssl.create_default_context()
-        LOCAL_CA = os.getenv('LOCAL_CA')
-        context.load_verify_locations(cafile=f"{base_dir}/{LOCAL_CA}")
+    
+    context = create_context(ENV)
+    async with httpx.AsyncClient(verify=context) as client:
+        async for response in query_continue(client, URL, params):
+            if 'missing' in response['pages'][0]:
+                title = response['pages'][0]['title']
+                print(f"the image could not be found => {title}")
+                return False
 
-        async with httpx.AsyncClient(verify=context) as client:
-            async for response in query_continue(client, req_op):
-                print('fetch-image res =>', response) 
-                if 'missing' in response['pages'][0]:
-                    title = response['pages'][0]['title']
-                    print(f"the image could not be found => {title}")
-                    return False
-
-                else:
-                    data.append(response)
+            else:
+                data.append(response)
 
     # -- read file from disk given file name
     #    and diff between timestamps
