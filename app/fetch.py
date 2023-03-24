@@ -50,31 +50,33 @@ async def article_exists(title, client) -> bool:
 
 
 async def fetch_article(title: str, client):
-    print('fetching article...')
+    print(f"fetching article {title}...")
 
-    req_op = {
-        'verb': 'GET',
-        'url': URL,
-        'params': {
-            'action': 'query',
-            'prop': 'revisions|images',
-            'titles': title,
-            'rvprop': 'content',
-            'rvslots': '*',
-            'formatversion': '2',
-            'format': 'json',
-            'redirects': '1'
-        },
-        'stream': False
+    params = {
+        'action': 'query',
+        'prop': 'revisions|images',
+        'titles': title,
+        'rvprop': 'content',
+        'rvslots': '*',
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1'
     }
 
-    response = await requests_helper(client, req_op)
-    data = response.json()
+    try:
+        response = await client.get(URL, params=params)
+        data = response.json()
 
-    return data['query']['pages'][0]
+        response.raise_for_status()
+
+        return data['query']['pages'][0]
+
+    except httpx.HTTPError as exc:
+        print(f"get-article err => {exc}")
+        return None
 
 
-async def file_exists(title: str) -> bool:
+def file_exists(title: str) -> bool:
 
     req_op = {
         'verb': 'HEAD',
