@@ -51,29 +51,7 @@ async def fetch_article(title: str, client):
 
 
 def file_exists(title: str) -> bool:
-
-    req_op = {
-        'verb': 'HEAD',
-        'url': URL,
-        'params': {
-            'action': 'query',
-            'titles': title,
-            'formatversion': '2',
-            'format': 'json',
-            'redirects': '1'
-        },
-        'stream': False
-       }
-
-    with httpx.Client() as client:
-        response = await requests_helper(client, req_op)
-
-        # this returns a boolean if response.status
-        # is between 200-400, given the HTTP op follows
-        # redirect, it should confirm us that the resource
-        # actually exists?
-        # return response.ok
-        return response.is_success
+    pass
 
 
 async def fetch_file(title: str) -> bool:
