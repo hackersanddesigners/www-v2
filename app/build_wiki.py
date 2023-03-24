@@ -7,6 +7,8 @@ import httpx
 from requests_helper import query_continue, create_context
 import asyncio
 
+import time
+
 from build_article import make_article, save_article
 from templates import make_index
 load_dotenv()
@@ -15,6 +17,7 @@ load_dotenv()
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 
+start_time = time.time()
 
 
 async def get_category(cat: str):
