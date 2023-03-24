@@ -71,6 +71,7 @@ async def main():
         cat_tasks.append(asyncio.ensure_future(task))
 
     articles = await asyncio.gather(*cat_tasks)
+    # articles = await asyncio.gather(*[get_category(cat) for cat in cats])
 
     # flat nested list
     articles = [article for subarticle in articles for article in subarticle]
@@ -85,6 +86,7 @@ async def main():
             art_tasks.append(asyncio.ensure_future(task))
 
         articles = await asyncio.gather(*art_tasks)
+        # articles = await asyncio.gather(*[make_article(article['title'], client) for article in articles])
 
         print(f"articles: {len(articles)}")
 
@@ -94,6 +96,7 @@ async def main():
             save_tasks.append(asyncio.ensure_future(task))
 
         await asyncio.gather(*save_tasks)
+        # await asyncio.gather(*[save_article(article) for article in articles])
             
 
     await make_index(articles)
