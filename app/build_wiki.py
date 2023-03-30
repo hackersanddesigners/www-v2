@@ -4,7 +4,7 @@ import tomli
 
 import httpx
 
-from requests_helper import query_continue, create_context
+from fetch import query_continue, create_context
 import asyncio
 
 import time
