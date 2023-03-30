@@ -77,45 +77,9 @@ then run `python app/server.py` and make a change to a wiki article using MW web
 
 ## mediawiki
 
-a local instance of mediawiki must be run, in order to have this software working correctly. 
+a local instance of mediawiki must be run, in order to have this software working correctly.
 
-we need to export:
-
-- SQL database
-- images folder
-- LocalSettings.php
-- XML dump
-
-to export a copy of an existing (possibly online) database, do:
-
-```
-mysqldump -h hostname -u userid -p --default-character-set=whatever dbname > backup.sql
-```
-
-> Substituting hostname, userid, whatever, and dbname as appropriate. All four may be found in your LocalSettings.php (LSP) file. hostname may be found under $wgDBserver; by default it is localhost. userid may be found under $wgDBuser, whatever may be found under $wgDBTableOptions, where it is listed after DEFAULT CHARSET=.
-
-see this article for more details: <https://www.mediawiki.org/wiki/Manual:Backing_up_a_wiki#Mysqldump_from_the_command_line>
-
-for the images folder and LocalSettings.php, make a backup from the Mediawiki instance running online.
-
-to export a dump of the XML data, do:
-
-```
-cd /path/to/mediawiki/ && cd maintenance
-
-php dumpBackup.php --full --quiet > dump.xml
-```
-
-then we need to restore all this data: <https://www.mediawiki.org/wiki/Manual:Restoring_a_wiki_from_backup>.
-
-- re-create database
-- import database
-- import XML dump
-- copy images folder
-- copy LocalSettings.php
-
-see also the MediaWiki installation guide to setup an initial wiki from scratch: <https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki>. the MediaWiki instance can be installed next to this repo, or in any case elsewhere on the system. we need to communicate between the servers of both websites.
-
+check this repo to set up a MW instance: <https://github.com/hackersanddesigners/hd-mw>
 
 ## Local dev setup and TLS certificates
 
