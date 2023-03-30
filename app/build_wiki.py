@@ -10,13 +10,7 @@ from build_article import make_article, save_article
 load_dotenv()
 
 
-ENV = os.getenv('ENV')
-URL = os.getenv('BASE_URL')
-
-start_time = time.time()
-
-
-async def get_category(cat: str):
+async def get_category(URL: str, cat: str):
 
     params = {
         'action': 'query',
@@ -48,7 +42,7 @@ async def get_category(cat: str):
         return data
 
 
-async def main():
+async def main(ENV: str, URL: str):
     """
     this function (re-)build the entire wiki by fetching a set of specific
     pages from the MediaWiki instance
@@ -66,7 +60,7 @@ async def main():
     cats = config['wiki']['categories']
     cat_tasks = []
     for cat in cats:
-        task = get_category(cat)
+        task = get_category(URL, cat)
         cat_tasks.append(asyncio.ensure_future(task))
 
     articles = await asyncio.gather(*cat_tasks)
@@ -103,6 +97,13 @@ async def main():
 
     await make_index(articles)
 
-# -- run everything
-asyncio.run(main())
-print("--- %s seconds ---" % (time.time() - start_time))
+if __name__ == '__main__':
+
+    ENV = os.getenv('ENV')
+    URL = os.getenv('BASE_URL')
+
+    start_time = time.time()
+
+    # -- run everything
+    asyncio.run(main(ENV, URL))
+    print("--- %s seconds ---" % (time.time() - start_time))
