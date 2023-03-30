@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import os
 import arrow
 import httpx
-from pretty_json_log import main as pretty_json_log
 from pathlib import Path
 from slugify import slugify
 import aiofiles
