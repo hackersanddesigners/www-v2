@@ -1,7 +1,6 @@
 from fetch import fetch_article
 from parser import parser
 from slugify import slugify
-from jinja2 import Environment, FileSystemLoader
 from write_to_disk import main as write_to_disk
 
 
@@ -25,11 +24,8 @@ async def make_article(page_title: str, client):
         return article
 
 
-async def save_article(article: str | None):
+async def save_article(article: str | None, t, sem):
 
     if article is not None:
-        env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
-        t = env.get_template('article.html')
         document = t.render(article=article)
-
-        await write_to_disk(article['slug'], document)
+        await write_to_disk(article['slug'], document, sem)
