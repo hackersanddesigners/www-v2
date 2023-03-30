@@ -7,14 +7,23 @@ from write_to_disk import main as write_to_disk
 load_dotenv()
 
 
+def get_template(template: str, filters):
+    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
+    if filters is not None:
+        for k,v in filters.items():
+            env.filters[k] = v
+
+    t = env.get_template(f"{template}.html")
+    return t
+    
+
 def make_url_slug(url: str):
     return slugify(url)
 
 
 async def make_index(articles):
-    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
-    env.filters['slug'] = make_url_slug
-    t = env.get_template('index.html')
+    filters = {'slug': make_url_slug}
+    template = get_template('index', filters)
 
     article = {
         'title': 'Index',
@@ -22,6 +31,6 @@ async def make_index(articles):
         'articles': articles
     }
 
-    sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
-    document = t.render(article=article)
+    sem = None
+    document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)

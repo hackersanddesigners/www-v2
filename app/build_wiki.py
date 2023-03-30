@@ -5,9 +5,8 @@ import httpx
 from fetch import query_continue, create_context
 import asyncio
 import time
-from jinja2 import Environment, FileSystemLoader
+from templates import get_template, make_index
 from build_article import make_article, save_article
-from templates import make_index
 load_dotenv()
 
 
@@ -75,12 +74,9 @@ async def main():
     # flat nested list
     articles = [article for subarticle in articles for article in subarticle]
 
+    template = get_template('article', None)
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0)
-
-    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
-    t = env.get_template('article.html')
-
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         art_tasks = []
@@ -99,7 +95,7 @@ async def main():
         sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
         save_tasks = []
         for article in articles:
-            task = save_article(article, t, sem)
+            task = save_article(article, template, sem)
             save_tasks.append(asyncio.ensure_future(task))
 
         await asyncio.gather(*save_tasks)

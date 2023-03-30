@@ -24,8 +24,8 @@ async def make_article(page_title: str, client):
         return article
 
 
-async def save_article(article: str | None, t, sem):
+async def save_article(article: str | None, template, sem):
 
     if article is not None:
-        document = t.render(article=article)
+        document = template.render(article=article)
         await write_to_disk(article['slug'], document, sem)
