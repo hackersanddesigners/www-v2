@@ -73,7 +73,7 @@ $wgRCFeeds['had-py'] = array(
 ```
 
 
-then run `python server.py` and make a change to a wiki article using MW web interface: a message should appear on the terminal, detecting which page has been modified.
+then run `python app/server.py` and make a change to a wiki article using MW web interface: a message should appear on the terminal, detecting which page has been modified.
 
 ## mediawiki
 
@@ -147,4 +147,11 @@ if you have another name for your local certificate instead of `hd-v2`, use that
 after this you can use https also in the dev environment while using this codebase!
 
 
+## commands
+
+currently available commands:
+
+- `python app/server.py`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build-article.py` functions to parse and save a new version of the received article to disk
+- `python app/build-wiki.py`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
+- `python app/make-change-in-wiki.py`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change
 
