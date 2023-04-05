@@ -5,6 +5,7 @@ import httpx
 from pathlib import Path
 from slugify import slugify
 import aiofiles
+from log_to_file import main as log
 load_dotenv()
 
 
@@ -54,7 +55,12 @@ async def query_continue(client, url, params):
             last_continue = result['continue']
 
         except httpx.TimeoutException as exception:
-            print(f"query-continue e => {params['titles']}")
+            # print(f"query-continue e => {params['titles']}")
+
+            sem = None
+            msg = f"query-continue e => {params['titles']}\n"
+            await log('error', msg, sem)
+            
  
 
 def article_exists(title) -> bool:
@@ -118,7 +124,11 @@ async def fetch_file(title: str) -> bool:
         async for response in query_continue(client, URL, params):
             if 'missing' in response['pages'][0]:
                 title = response['pages'][0]['title']
-                print(f"the image could not be found => {title}")
+                msg = f"the image could not be found => {title}\n"
+                sem = None
+
+                await log('error', msg, sem)
+
                 return False
 
             else:

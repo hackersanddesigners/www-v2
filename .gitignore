@@ -9,3 +9,5 @@ env
 
 .devenv*
 devenv.local.nix
+
+logs
