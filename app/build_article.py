@@ -2,6 +2,7 @@ from fetch import fetch_article
 from parser import parser
 from slugify import slugify
 from write_to_disk import main as write_to_disk
+from delete_article import delete_article
 
 
 async def make_article(page_title: str, client):
@@ -19,9 +20,16 @@ async def make_article(page_title: str, client):
 
     else:
         # TODO handle article remove from local wiki
-        print('article not found! it could have been deleted and we got notified about it')
+        print('article not found! it could have been deleted meanwhile and we got notified about it')
 
-        return article
+        # check if there's a copy of article in `wiki/` and
+        # if yes, remove it?
+
+        try:
+            await delete_article(page_title)
+
+        except Exception as e:
+            print(f"delete article err => {e}")
 
 
 async def save_article(article: str | None, template, sem):

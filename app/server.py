@@ -9,6 +9,7 @@ from pretty_json_log import main as pretty_json_log
 from templates import get_template
 from fetch import create_context
 from build_article import make_article, save_article
+from delete_article import delete_article
 import asyncio
 load_dotenv()
 
@@ -37,14 +38,25 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             msg = json.loads(data)
             pretty_json_log(msg)
 
-            # -- we have the UPD message, let's fetch the full article now
-            try:
-                article = await make_article(msg['title'], client)
-                await save_article(article, template, sem)
+            # -- we have the UPD message, let's read the operation
+            #    type (new, edit, delete) and run appropriate function
 
-            except Exception as e:
-                print('make-article err =>', e)
-                traceback.print_exc()
+            if msg['type'] in ['new', 'edit']:
+                try:
+                    article = await make_article(msg['title'], client)
+                    await save_article(article, template, sem)
+
+                except Exception as e:
+                    print(f"make-article err => {e}")
+                    traceback.print_exc()
+
+            elif msg['type'] == 'log' and msg['log_action'] == 'delete':
+                try:
+                    await delete_article(msg['title'])
+
+                except Exception as e:
+                    print(f"delete article err => {e}")
+                    traceback.print_exc()
 
 
 if __name__ == '__main__':
