@@ -1,16 +1,18 @@
 from fetch import fetch_article
 from parser import parser
+from bs4 import BeautifulSoup
 from slugify import slugify
+import aiofiles
+from aiofiles import os
 from write_to_disk import main as write_to_disk
-from delete_article import delete_article
 
 
 async def make_article(page_title: str, client):
 
-    article = await fetch_article(page_title, client)
+    article, redirect_target = await fetch_article(page_title, client)
 
     if article is not None:
-        body_html = await parser(article)
+        body_html = await parser(article, redirect_target)
 
         return {
             "title": page_title,
@@ -30,6 +32,29 @@ async def make_article(page_title: str, client):
 
         except Exception as e:
             print(f"delete article err => {e}")
+
+
+async def redirect_article(page_title: str, redirect_target: str):
+
+    fn = f"./wiki/{slugify(page_title)}.html"
+    print(f"redirect-article => {fn}")
+
+    if await os.path.exists(fn):
+        async with aiofiles.open(fn, mode='r') as f:
+            tree = await f.read()
+            soup = BeautifulSoup(tree, 'lxml')
+            
+            main_h1 = soup.body.main.h1
+            redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+
+            main_h1.insert_after(redirect)
+            output = soup.prettify(formatter=None)
+
+        async with aiofiles.open(fn, mode='w') as f:
+            await f.write(output)
+
+    else:
+        print(f"redirect-article: {page_title} not found, nothing done")
 
 
 async def save_article(article: str | None, template, sem):

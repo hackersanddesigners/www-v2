@@ -118,6 +118,7 @@ async def pre_process(article, wiki_page, body: str) -> str:
       for instance the gallery tag: either try to fix it
       (if knowning how), or else report it somewhere so that
       the wiki article can be fixed instead
+    - if redirect is not None, extend article.body w/ redirect link
     """
 
     article_wtp = wtp.parse(body)
@@ -125,7 +126,7 @@ async def pre_process(article, wiki_page, body: str) -> str:
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
-    article_wtp.insert(0, '__NOTOC__')
+    article_wtp.insert(0, '__NOTOC__')        
 
     for template in article_wtp.templates:
         # save template value somewhere if needed
@@ -203,17 +204,25 @@ async def pre_process(article, wiki_page, body: str) -> str:
     return article_wtp.string
 
 
-def post_process(article):
+def post_process(article: str, redirect_target: str | None = None):
     """
     update HTML before saving to disk:
+    - add redirect text + link, if necessary
     - update wikilinks to set correct title attribute
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs?
     """
 
     soup = BeautifulSoup(article, 'lxml')
-    links = soup.find_all('a')
 
+    # we insert some custom HTML to add a reference
+    # that the current article has been moved to another URL
+    if redirect_target is not None:
+        redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+
+        soup.body.insert(0, redirect)
+
+    links = soup.find_all('a')
     for link in links:
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
@@ -233,13 +242,16 @@ def post_process(article):
             # print('rel-url =>', rel_url)
             # link.attrs['href'] =
 
-    return soup.prettify()
+    t = "".join(str(item) for item in soup.body.contents)
+    return t
 
 
-async def parser(article: str) -> str:
+async def parser(article: str, redirect_target: str | None = None) -> str:
     """
     - instantiate WikiPage class
-    - get page body (HTML) and return it
+    - if redirect is not None, make custom HTML page
+    - else, get page body (HTML)
+    - return either version
     """
 
     print(f"parsing article {article['title']}...")
@@ -257,7 +269,7 @@ async def parser(article: str) -> str:
     article['revisions'][0]['slots']['main']['content'] = wiki_body
 
     body_html = wiki_page.render().html
-    body_html = post_process(body_html)
+    body_html = post_process(body_html, redirect_target)
 
     print(f"parsed {article['title']}!")
 

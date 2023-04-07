@@ -8,8 +8,7 @@ from pretty_json_log import main as pretty_json_log
 # from jinja2 import Environment, FileSystemLoader
 from templates import get_template
 from fetch import create_context
-from build_article import make_article, save_article
-from delete_article import delete_article
+from build_article import make_article, redirect_article, save_article, delete_article
 import asyncio
 load_dotenv()
 
@@ -50,13 +49,37 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     print(f"make-article err => {e}")
                     traceback.print_exc()
 
-            elif msg['type'] == 'log' and msg['log_action'] == 'delete':
-                try:
-                    await delete_article(msg['title'])
+            elif msg['type'] == 'log':
+                if msg['log_action'] == 'delete':
+                    try:
+                        await delete_article(msg['title'])
 
-                except Exception as e:
-                    print(f"delete article err => {e}")
-                    traceback.print_exc()
+                    except Exception as e:
+                        print(f"delete article err => {e}")
+                        traceback.print_exc()
+
+                elif msg['log_action'] == 'move':
+                    try:
+                        redirect = msg['log_params']
+
+                        # no-redirect:
+                        # - 0 => make redirect
+                        # - 1 => no redirect
+                        make_redirect = False
+                        if redirect['noredir'] == '0':
+                            make_redirect = True
+
+                        if make_redirect:
+                            source_article = await redirect_article(msg['title'], redirect['target'])
+                            await save_article(source_article, template, sem)
+
+                        target_article = await make_article(redirect['target'], client)
+                        await save_article(target_article, template, sem)
+                        
+
+                    except Exception as e:
+                        print(f"move article err => {e}")
+                        traceback.print_exc()
 
 
 if __name__ == '__main__':

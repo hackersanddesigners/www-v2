@@ -90,11 +90,20 @@ async def fetch_article(title: str, client):
 
         response.raise_for_status()
 
-        return data['query']['pages'][0]
+        article = None
+        redirect_target = None
+        if 'pages' in data['query']:
+            article = data['query']['pages'][0]
+
+        if 'redirects' in data['query']:
+            redirect_target = data['query']['redirects'][0]['to']
+
+        return article, redirect_target
+          
 
     except httpx.HTTPError as exc:
         print(f"get-article err => {exc}")
-        return None
+        return None, None
 
 
 def file_exists(title: str) -> bool:
