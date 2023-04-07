@@ -18,9 +18,6 @@ def get_template(template: str, filters):
     
 
 def make_url_slug(url: str):
-    # TODO url should never be Undefined or None
-    # though, should figure out why this is
-    # happening
     if url:
         return slugify(url)
     return url
