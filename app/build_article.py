@@ -62,3 +62,18 @@ async def save_article(article: str | None, template, sem):
     if article is not None:
         document = template.render(article=article)
         await write_to_disk(article['slug'], document, sem)
+
+
+async def delete_article(page_title: str):
+    """
+    remove local wiki article, if it exists
+    """
+
+    fn = f"wiki/{slugify(page_title)}.html"
+
+    if await os.path.exists(fn):
+        await os.remove(fn)
+        print(f"delete-article: {page_title} removed")
+
+    else:
+        print(f"delete-article: {page_title} not found, nothing done")
