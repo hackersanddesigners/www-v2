@@ -29,10 +29,6 @@ class WikiPage(Page):
         (check if article exists in the fs)
         """
 
-        # TODO check when we're using this func
-        # as it slows down build_wiki of 5 seconds
-        # and we could move this check elsewhere
-        # and doing it async
         # return article_exists(page)
         return
 
@@ -174,7 +170,8 @@ async def pre_process(article, wiki_page, body: str) -> str:
 
         # TODO: scan through all wiki articles
         # and save in db all tags as tag.name + tag.contents
-        # then check which ones are often malformed / needs care
+        # then check which ones are often malformed / needs care;
+        #
         # make sure syntax is "strict"
         # eg image syntax starts with `File:<filepath>`
         # note: if a filepath is malformed and we know it
