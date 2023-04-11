@@ -7,7 +7,6 @@ from fetch import article_exists, fetch_file, file_exists
 from slugify import slugify
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from pretty_json_log import main as pretty_json_log
 import asyncio
 load_dotenv()
 
@@ -267,14 +266,17 @@ async def parser(article: str, redirect_target: str | None = None) -> str:
             print('wiki-page err =>', error)
 
     wiki_article = wiki_page.page_load(article)
-    wiki_body = await pre_process(article, wiki_page, wiki_article)
+    # print('wiki_article =>', wiki_article)
 
-    # update wiki_article instance
-    article['revisions'][0]['slots']['main']['content'] = wiki_body
+    if wiki_article is not None:
+        wiki_body = await pre_process(article, wiki_page, wiki_article)
 
-    body_html = wiki_page.render().html
-    body_html = post_process(body_html, redirect_target)
+        # update wiki_article instance
+        article['revisions'][0]['slots']['main']['content'] = wiki_body
 
-    print(f"parsed {article['title']}!")
+        body_html = wiki_page.render().html
+        body_html = post_process(body_html, redirect_target)
 
-    return body_html
+        print(f"parsed {article['title']}!")
+
+        return body_html
