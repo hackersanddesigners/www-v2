@@ -115,7 +115,7 @@ after this you can use https also in the dev environment while using this codeba
 
 currently available commands:
 
-- `python app/server.py`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build-article.py` functions to parse and save a new version of the received article to disk
-- `python app/build-wiki.py`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
-- `python app/make-change-in-wiki.py`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change
+- `python app/server.py`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
+- `python app/build_wiki.py`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
+- `python app/make_change_in_wiki.py`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change
 
