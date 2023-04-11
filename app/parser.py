@@ -239,9 +239,16 @@ def post_process(article: str, redirect_target: str | None = None):
             # print('rel-url =>', rel_url)
             # link.attrs['href'] =
 
-    t = "".join(str(item) for item in soup.body.contents)
-    return t
 
+    # the wiki article can be empty
+    # therefore soup.contents is an empty list
+    if len(soup.contents) > 0:
+        t = "".join(str(item) for item in soup.body.contents)
+        return t
+
+    else:
+        return article
+        
 
 async def parser(article: str, redirect_target: str | None = None) -> str:
     """

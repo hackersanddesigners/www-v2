@@ -92,8 +92,13 @@ async def fetch_article(title: str, client):
 
         article = None
         redirect_target = None
+
         if 'pages' in data['query']:
             article = data['query']['pages'][0]
+
+            # ns: -1 is part of Special Pages, we don't parse those
+            if article['ns'] == -1:
+                article = None
 
         if 'redirects' in data['query']:
             redirect_target = data['query']['redirects'][0]['to']
