@@ -1,0 +1,83 @@
+:root {
+    --c-white: #fff;
+    --c-black: #000;
+    --f-serif: serif;
+    --f-sans: sans-serif;
+}
+
+/* basic reset */
+
+html {
+    box-sizing: border-box
+}
+
+*, *:before, *:after {
+    box-sizing: inherit
+}
+
+html, body,
+h1, h2, h3, h4, h5, h6,
+p,
+ol, ul, li,
+figure {
+    margin: 0;
+    padding: 0
+}
+
+img {
+    max-width: 100%;
+}
+
+
+.x {
+    display: flex;
+}
+
+.xdr {
+    flex-direction: row;
+}
+
+.xw {
+    flex-wrap: wrap;
+}
+
+.w30 {
+    width: 30%;
+}
+
+.table-container {
+    width: 100%;
+    overflow: scroll;
+}
+
+.table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    position: sticky;
+    top: 0;
+    background-color: red;
+}
+
+.table thead th {
+    text-align: left;
+}
+
+.table thead th {
+    padding-bottom: 0.25rem;
+}
+
+.table tbody tr:first-child td {
+    padding-top: 0.5rem;
+}
+
+.table tbody td {
+    padding: 0.25rem 0;
+}
+
+.table tbody tr:hover {
+    background-color: red;
+}
