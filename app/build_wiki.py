@@ -9,6 +9,7 @@ from templates import get_template, make_event_index
 from build_article import make_article, save_article
 import json
 from slugify import slugify
+from copy_assets import main as copy_assets
 load_dotenv()
 
 
@@ -119,6 +120,9 @@ async def main(ENV: str, URL: str):
                 articles_metadata = [item[1] for item in prepared_articles]
 
             event_index = await make_event_index(articles_metadata, cat)
+
+
+            copy_assets()
             return
 
             # save single article
@@ -129,6 +133,7 @@ async def main(ENV: str, URL: str):
 
             await asyncio.gather(*save_tasks)
             
+
 
     # await make_index(articles)
 
