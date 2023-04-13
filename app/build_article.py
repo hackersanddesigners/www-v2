@@ -7,6 +7,18 @@ from aiofiles import os
 from write_to_disk import main as write_to_disk
 
 
+async def get_article(page_title: str, client):
+
+    article, redirect_target = await fetch_article(page_title, client)
+
+    if article is not None:
+        return article
+
+    else:
+        print(f"{page_title} return empty")
+        return None
+
+
 def get_article_field(field, article):
 
     if field in article:
