@@ -7,18 +7,49 @@ from aiofiles import os
 from write_to_disk import main as write_to_disk
 
 
-async def make_article(page_title: str, client):
+def get_article_field(field, article):
+
+    if field in article:
+        return article[field]
+    else:
+        return None
+
+
+async def make_article(page_title: str, client, metadata_only: bool):
 
     article, redirect_target = await fetch_article(page_title, client)
 
     if article is not None:
-        body_html = await parser(article, redirect_target)
 
-        return {
+        if metadata_only:
+            metadata, images = await parser(article, metadata_only, redirect_target)
+
+            article_metadata = {
+                "title": article['title'],
+                "images": images,
+                "metadata": metadata
+            }
+
+            return article_metadata
+
+
+        body_html, metadata = await parser(article, metadata_only, redirect_target)
+
+        article_html = {
             "title": page_title,
             "html": body_html,
             "slug": slugify(page_title)
         }
+
+        article_metadata = {
+            "title": article['title'],
+            "images": get_article_field('images', article),
+            "template": article['template'],
+            "metadata": metadata
+        }
+
+        # print('make-article =>', [page_title, article_metadata])
+        return article_html, article_metadata
 
     else:
         # TODO handle article remove from local wiki

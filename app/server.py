@@ -40,9 +40,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # -- we have the UPD message, let's read the operation
             #    type (new, edit, delete) and run appropriate function
 
+            metadata_only = False
+
             if msg['type'] in ['new', 'edit']:
                 try:
-                    article = await make_article(msg['title'], client)
+                    article = await make_article(msg['title'], client, metadata_only)
                     await save_article(article, template, sem)
 
                 except Exception as e:
@@ -73,7 +75,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             source_article = await redirect_article(msg['title'], redirect['target'])
                             await save_article(source_article, template, sem)
 
-                        target_article = await make_article(redirect['target'], client)
+                        target_article = await make_article(redirect['target'], client, metadata_only)
                         await save_article(target_article, template, sem)
                         
 

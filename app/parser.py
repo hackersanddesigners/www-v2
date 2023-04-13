@@ -105,7 +105,7 @@ class WikiPage(Page):
         return f"/{self.MEDIA_DIR}/{url}"
 
 
-async def pre_process(article, wiki_page, body: str) -> str:
+async def pre_process(article, wiki_page, article_wtp) -> str:
     """
     - update wikilinks [[<>]] to point to correct locations,
       so that WikiTextParser does its job just fine.
@@ -115,8 +115,6 @@ async def pre_process(article, wiki_page, body: str) -> str:
       the wiki article can be fixed instead
     - if redirect is not None, extend article.body w/ redirect link
     """
-
-    article_wtp = wtp.parse(body)
 
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
@@ -247,14 +245,61 @@ def post_process(article: str, redirect_target: str | None = None):
 
     else:
         return article
-        
 
-async def parser(article: str, redirect_target: str | None = None) -> str:
+
+def get_metadata_field(field):
+
+    if field is not None:
+        return field.value.strip()
+    else:
+        return None
+    
+
+def get_metadata(article):
+    """
+    extract wiki template tags from article, if any
+    """
+
+    templates = article.templates
+
+    if len(templates) > 0:
+
+        for t in article.templates:
+            label = t.name.strip()
+            
+            if label == 'Event':
+                metadata = {
+                    'location': get_metadata_field(t.get_arg('Location')),
+                    'date': get_metadata_field(t.get_arg('Date')),
+                    'time': get_metadata_field(t.get_arg('Time')),
+                }
+
+                return metadata
+
+    else:
+        return None
+
+
+def get_images(article):
+
+    images = []
+    for wikilink in article.wikilinks:
+        if wikilink.title.lower().startswith('file:'):
+            filename = wikilink.title[5:].strip()
+            filepath =  '/assets/media/' + filename
+
+            images.append(filepath)
+
+    return images
+ 
+
+async def parser(article: str, metadata_only: bool, redirect_target: str | None = None):
     """
     - instantiate WikiPage class
     - if redirect is not None, make custom HTML page
     - else, get page body (HTML)
     - return either version
+    - return dict with article metadata to build index pages
     """
 
     print(f"parsing article {article['title']}...")
@@ -266,10 +311,17 @@ async def parser(article: str, redirect_target: str | None = None) -> str:
             print('wiki-page err =>', error)
 
     wiki_article = wiki_page.page_load(article)
-    # print('wiki_article =>', wiki_article)
 
     if wiki_article is not None:
-        wiki_body = await pre_process(article, wiki_page, wiki_article)
+
+        article_wtp = wtp.parse(wiki_article)
+        metadata = get_metadata(article_wtp)
+        images = get_images(article_wtp)
+
+        if metadata_only:
+            return metadata, images
+
+        wiki_body = await pre_process(article, wiki_page, article_wtp)
 
         # update wiki_article instance
         article['revisions'][0]['slots']['main']['content'] = wiki_body
@@ -279,4 +331,5 @@ async def parser(article: str, redirect_target: str | None = None) -> str:
 
         print(f"parsed {article['title']}!")
 
-        return body_html
+
+        return body_html, metadata

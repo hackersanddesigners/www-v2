@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  {% if article.events.happening | length > 0 %}
+  <section>
+    <h2>Happening now</h2>
+    {% for event in article.events.happening %}
+    <div>
+      <a href="/{{ event.title | slug }}.html">{{ event.title }}</a>
+      <div>
+        {{ event.metadata.location }}
+        {{ event.metadata.date }}
+        {{ event.metadata.time }}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+  <section>
+    <h2>Upcoming Events</h2>
+    {% if article.events.upcoming | length > 0 %}
+    <div class="x xdr xw">
+    {% for event in article.events.upcoming %}
+    <figure class="w30">
+      <img src="{{ event.images[0] }}">
+      <figcaption>
+        <p><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+        <p>
+          {{ event.metadata.location }}
+          <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
+          {% if event.metadata.dates.end %}
+          – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
+          {% endif %}
+          {% if event.metadata.time %}
+          <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
+          {% if event.metadata.times.end %}
+          – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
+          {% endif %}
+        </p>
+        {% endif %}
+      </figcaption>
+    </figure>
+    {% endfor %}
+    </div>
+    {% else %}
+    <p>No upcoming event at the moment.</p>
+    {% endif %}
+  </section>
+  <section>
+    <h2>Past Events</h2>
+    {% if article.events.past | length > 0 %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Location</th>
+          <th scope="col">Date</th>
+          <th scope="col">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in article.events.past %}
+        <tr>
+          <td><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></td>
+          <td>{{ event.metadata.location }}</td>
+          <td>
+            <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
+            {% if event.metadata.dates.end %}
+            – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
+            {% endif %}
+          </td>
+          <td>
+            {% if event.metadata.time %}
+            <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
+            {% if event.metadata.times.end %}
+            – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
+            {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No past event at the moment. (??)</p>
+    {% endif %}
+  </section>
+  
+</main>
+{% endblock %}
