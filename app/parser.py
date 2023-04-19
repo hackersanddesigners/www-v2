@@ -266,15 +266,14 @@ def get_metadata(article):
 
         for t in article.templates:
             label = t.name.strip()
-            
-            if label == 'Event':
-                metadata = {
-                    'location': get_metadata_field(t.get_arg('Location')),
-                    'date': get_metadata_field(t.get_arg('Date')),
-                    'time': get_metadata_field(t.get_arg('Time')),
-                }
 
-                return metadata
+            # collect all metadata from article.template table
+            metadata = {}
+            templates_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
+            for key in templates_keys:
+                metadata[key.lower()] = get_metadata_field(t.get_arg(key))
+    
+            return metadata
 
     else:
         return None
