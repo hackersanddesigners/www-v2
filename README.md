@@ -13,7 +13,7 @@ if you're using `devenv`, do the following:
 
 ### virtual environment
 
-if you want to standard tools, then:
+if you want to stick to Python's standard tools, then:
 
 - make a new virtual environment: `python3 -m venv env`
 - activate virtual environment: `source env/bin/activate`
