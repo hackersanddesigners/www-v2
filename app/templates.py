@@ -46,14 +46,6 @@ def date_split(date: str):
         return date
 
 
-def dt_to_ISO8601(value: str):
-    return arrow.get(value, 'YYYY/MM/DD').format('YYYY-MM-DD')
-
-
-def ISO8601_to_dt(value):
-    return arrow.get(value).format('YYYY-MM-DD')
-
-
 def extract_datetime(value):
     # article.metadata's date and time could be
     # constructed with a <start>-<end> format
