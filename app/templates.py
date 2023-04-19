@@ -51,10 +51,6 @@ def extract_datetime(value):
     # constructed with a <start>-<end> format
     # eg date: <2023-04-12>-<2023-04-16>
     #    time: <18:00>-<21:00>
-    # let's parse this out and check if each
-    # field has multiple values, then
-    # convert the first (or only) value
-    # into a unix timestamp
 
     if value is not None:
         tokens = value.split('-')
@@ -166,8 +162,12 @@ async def make_event_index(articles, cat):
         article['metadata']['dates'] = {'start': None, 'end': None}
         article['metadata']['times'] = {'start': None, 'end': None}
 
-        article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
-        article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
+        if article_ts['start'] is not None:
+            article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
+            article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
+        else:
+            article['metadata']['dates']['start'] = None
+            article['metadata']['times']['start'] = None
 
         if article_ts['end'] is not None:
             article['metadata']['dates']['end'] = arrow.get(article_ts['end']).format('YYYY-MM-DD')
