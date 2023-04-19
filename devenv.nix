@@ -2,8 +2,6 @@
 
 {
   packages = [
-    pkgs.git
-    pkgs.pipenv
     pkgs.python310Packages.pip
   ];
 
