@@ -2,43 +2,38 @@
 
 ## setup
 
-we are using Python 3.8 at the time of writing and handle managing Python's packages and virtual environments with [pipenv](https://pipenv.pypa.io/en/latest/). `pipenv` is not necessary, as you can use Python's `virtualenv` to set up a working environment with a specified Python version, as well as using `pip` to install the necessary packages. 
+we're using python 3.10 at the time of writing (check `.python-version`). we're also using a nix-based program (devenv) to create a complete dev environment for the project. you don't have to use it. we provide a classic `requirements.txt` to install packages with `pip`.
 
-following are reported both options.
+### devenv
+
+if you're using `devenv`, do the following:
+
+- make sure to install it first, [see instructions](https://devenv.sh/getting-started/)
+- `devenv shell`
 
 ### virtual environment
 
-if you are willing to use `pipenv`, then do:
+if you want to standard tools, then:
 
-```
-pipenv shell
-```
-
-and the first time it should setup a new virtual environment for your user.
-
-else you can:
-
-- make virtual environment: `python3 -m venv env`
+- make a new virtual environment: `python3 -m venv env`
 - activate virtual environment: `source env/bin/activate`
-- do `pip freeze > requirements.txt` after installing a new package to update list of packages
 
 ### packages
 
-if using `pipenv`, do:
+to install all packages do: 
 
-```
-pipenv install
-```
+- try: `python3 -m pip install -r requirements.txt`
+- else, make sure to upgrade pip: `python3 -m pip install --upgrade pip` and try again with the above command
 
-else to install all packages do: 
-- make sure to upgrade pip: `python3 -m pip install --upgrade pip`
-- then try: `python3 -m pip install -r requirements.txt`
+whenever you install a new package with `pip`, update the requirements list with:
+
+- `pip freeze > requirements.txt`
 
 ## intro
 
-a program to export data from MediaWiki into a mostly static website (except `/search`).
+this is a program to export data from MediaWiki into a mostly static website.
 
-the underlying idea is to make it easier to archive and distribute the website in an easier format to work with: 
+the underlying idea is to make it easier to archive and distribute the website in a more accessible format to work with: 
 
 - we export each article into its Mediawiki plain text syntax
 - add it to a git repo
@@ -46,11 +41,11 @@ the underlying idea is to make it easier to archive and distribute the website i
 
 we also save to HTML the article content so to have less breaking states of the website, and distribute that into the git repo too. we include images and other files part of each article.
 
-backing up the Mediawiki's SQL db that we run our website off is part of the plan too, but the whole MW system feels too complex and fragile to be worth spending so much time on it.
-
 once we have all the wiki data articles out we can do, anything!
 
 ## details
+
+**this is still in progress!**
 
 - a static site generator that creates a new page whenever a change is done on the wiki (using [wgRCFeeds](wgRCFeedshttps://www.mediawiki.org/wiki/Manual:%24wgRCFeeds) UDP messaging)
 - a FastAPI app providing a search interface to display results from the wiki, and other sources
