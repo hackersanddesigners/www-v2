@@ -49,42 +49,47 @@
   <section>
     <h2>Past Events</h2>
     {% if article.events.past | length > 0 %}
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Location</th>
-          <th scope="col">Date</th>
-          <th scope="col">Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for event in article.events.past %}
-        <tr>
-          <td><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></td>
-          <td>{{ event.metadata.location }}</td>
-          <td>
-            <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
-            {% if event.metadata.dates.end %}
-            – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
-            {% endif %}
-          </td>
-          <td>
-            {% if event.metadata.time %}
-            <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
-            {% if event.metadata.times.end %}
-            – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
-            {% endif %}
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    <input type="text" class="table-input-filter" placeholder="Filter the list of events...">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col"><button id="title">Title</button></th>
+            <th scope="col"><button id="location">Location</button></th>
+            <th scope="col"><button id="datestart">Date</button></th>
+            <th scope="col"><button id="timestart">Time</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in article.events.past %}
+          <tr data-title="{{ event.title }}" data-location="{{ event.metadata.location }}" data-dateStart="{{ event.metadata.dates.start }}" data-timeStart="{{ event.metadata.times.start }}">
+            <td><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></td>
+            <td>{{ event.metadata.location }}</td>
+            <td>
+              <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
+              {% if event.metadata.dates.end %}
+              – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
+              {% endif %}
+            </td>
+            <td>
+              {% if event.metadata.time %}
+              <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
+              {% if event.metadata.times.end %}
+              – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
+              {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
     <p>No past event at the moment. (??)</p>
     {% endif %}
   </section>
   
 </main>
+
+<script src="/assets/scripts/tables.js"></script>
 {% endblock %}

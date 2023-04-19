@@ -186,6 +186,10 @@ async def make_event_index(articles, cat):
 
         # --
 
+    # -- sort events by date desc
+    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
             
     article = {
         'title': cat,
