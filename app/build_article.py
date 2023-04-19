@@ -9,7 +9,7 @@ from write_to_disk import main as write_to_disk
 
 async def get_article(page_title: str, client):
 
-    article, redirect_target = await fetch_article(page_title, client)
+    article, backlinks, redirect_target = await fetch_article(page_title, client)
 
     if article is not None:
         return article
@@ -29,7 +29,7 @@ def get_article_field(field, article):
 
 async def make_article(page_title: str, client, metadata_only: bool):
 
-    article, redirect_target = await fetch_article(page_title, client)
+    article, backlinks, redirect_target = await fetch_article(page_title, client)
 
     if article is not None:
 
@@ -39,7 +39,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             article_metadata = {
                 "title": article['title'],
                 "images": images,
-                "metadata": metadata
+                "metadata": metadata,
+                "backlinks": backlinks
             }
 
             return article_metadata

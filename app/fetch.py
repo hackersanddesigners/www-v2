@@ -79,6 +79,8 @@ async def fetch_article(title: str, client):
         'titles': title,
         'rvprop': 'content',
         'rvslots': '*',
+        'list': 'backlinks',
+        'bltitle': title,
         'formatversion': '2',
         'format': 'json',
         'redirects': '1'
@@ -91,6 +93,7 @@ async def fetch_article(title: str, client):
         response.raise_for_status()
 
         article = None
+        backlinks = None
         redirect_target = None
 
         if 'pages' in data['query']:
@@ -100,15 +103,18 @@ async def fetch_article(title: str, client):
             if article['ns'] == -1:
                 article = None
 
+        if 'backlinks' in data['query']:
+            backlinks = data['query']['backlinks']
+
         if 'redirects' in data['query']:
             redirect_target = data['query']['redirects'][0]['to']
 
-        return article, redirect_target
+        return article, backlinks, redirect_target
           
 
     except httpx.HTTPError as exc:
         print(f"get-article err => {exc}")
-        return None, None
+        return None, None, None
 
 
 def file_exists(title: str) -> bool:
