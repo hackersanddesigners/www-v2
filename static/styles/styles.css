@@ -82,3 +82,52 @@ img {
 .table tbody tr:hover {
     background-color: var(--c-yellow);
 }
+
+
+.pt0-5  {
+    padding-top: 0.5rem;
+}
+
+.pr0-5  {
+    padding-right: 0.5rem;
+}
+
+.pb0-5  {
+    padding-bottom: 0.5rem;
+}
+
+.pl0-5  {
+    padding-left: 0.5rem;
+}
+
+.pt1 {
+    padding-top: 1rem;
+}
+
+.pr1 {
+    padding-right: 1rem;
+}
+
+.pb1 {
+    padding-bottom: 1rem;
+}
+
+.pl1 {
+    padding-left: 1rem;
+}
+
+.pt2 {
+    padding-top: 2rem;
+}
+
+.pr2 {
+    padding-right: 2rem;
+}
+
+.pb2 {
+    padding-bottom: 2rem;
+}
+
+.pl2 {
+    padding-left: 2rem;
+}

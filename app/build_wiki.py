@@ -5,7 +5,7 @@ import httpx
 from fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from templates import get_template, make_event_index
+from templates import get_template, make_event_index, make_collaborators_index
 from build_article import make_article, save_article
 import json
 from slugify import slugify
@@ -119,7 +119,12 @@ async def main(ENV: str, URL: str):
                 articles_html = [item[0] for item in prepared_articles]
                 articles_metadata = [item[1] for item in prepared_articles]
 
-            event_index = await make_event_index(articles_metadata, cat)
+            # TODO simplify this
+            if cat == 'Event':
+                index = await make_event_index(articles_metadata, cat)
+
+            if cat == 'Collaborators':
+                index = await make_collaborators_index(articles_metadata, cat)
 
 
             copy_assets()

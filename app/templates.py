@@ -203,3 +203,28 @@ async def make_event_index(articles, cat):
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
+
+
+async def make_collaborators_index(articles, cat):
+
+    filters = {
+        'slug': make_url_slug,
+    }
+
+    template = get_template(f"{cat}-index", filters)
+
+    # collaborators
+    # list of names w/ connected projects / articles?
+    # similar to MediaWiki syntax
+    # {{Special:WhatLinksHere/<page title>}}
+
+    article = {
+        'title': cat,
+        'slug': slugify(cat),
+        'collaborators': articles
+    }
+
+    sem = None
+    document = template.render(article=article)
+    await write_to_disk(article['slug'], document, sem)
+
