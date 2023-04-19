@@ -220,3 +220,21 @@ async def make_collaborators_index(articles, cat):
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
 
+
+async def make_publishing_index(articles, cat):
+
+    filters = {
+        'slug': make_url_slug,
+    }
+
+    template = get_template(f"{cat}-index", filters)
+
+    article = {
+        'title': cat,
+        'slug': slugify(cat),
+        'articles': articles
+    }
+
+    sem = None
+    document = template.render(article=article)
+    await write_to_disk(article['slug'], document, sem)
