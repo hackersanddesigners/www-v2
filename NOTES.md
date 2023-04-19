@@ -53,6 +53,12 @@ generally speaking, we're using Semantic Media Wiki *only* for this feature, pri
 - `tools/<page>`: make wiki template with specific fields (repo URL, authors, license, etc)
 - `summer-academy`: ask juju if anything is missing or needed
 
+### update <2023-04-19>
+
+after 6 months in, we're at a good stage of fetching data and shape it how we like. atm currently working out the website structure, and thinking most items in the current primary and secondary navigation are there due *also* to not making index pages more "interactive". 
+
+for instance: while we can still have fast links (in the nav) to each summer academy, we can also display those pages by going to the Events page, sort + filter by Event's type (eg, by `HDSA2022`) and get similar results. clearly making ad-hoc pages for each summer academy edition is a "faster" way to browse through the website than asking the end-user to do that themselves, still it makes the website a bit too predefined?
+
 ## process
 
 at last a decent understanding of how to use the powerful `wikitexthtml` package to handle the process of converting a MediaWiki article into an HTML document:
