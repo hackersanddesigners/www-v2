@@ -3,11 +3,15 @@ import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from fetch import article_exists, fetch_file, file_exists
+from fetch import article_exists, fetch_file, file_exists, create_context
+import httpx
 from slugify import slugify
 from bs4 import BeautifulSoup
+import re
 from urllib.parse import urlparse
 import asyncio
+import tomli
+import mistletoe
 load_dotenv()
 
 
@@ -105,6 +109,71 @@ class WikiPage(Page):
         return f"/{self.MEDIA_DIR}/{url}"
 
 
+def parse_tool_tag(tool_key):
+
+    if tool_key is not None:
+        tokens = tool_key.split()
+
+        with open("settings.toml", mode="rb") as f:
+            config = tomli.load(f)
+
+        repo = {}
+        for t in tokens:
+            # let's split only `<word>=<word>` items
+            if '=' in t:
+                prop = t.split('=')
+                repo[prop[0].strip()] = prop[1][1:-1].strip()
+
+        if 'host' not in repo:
+            repo['host'] = config['tool-plugin']['host_default']
+
+        if 'branch' not in repo:
+            repo['branch'] = config['tool-plugin']['branch_default']
+
+        # construct a URL for github raw link
+        # so we fetch the actual README file content
+        # and do whatever we like with it
+        # https://raw.githubusercontent.com/<user>/<repo>/<branch>/<file>
+        # suggestion: add two more fields to the <tool> syntax:
+        # - host
+        # - branch
+
+        ENV = os.getenv('ENV')
+        context = create_context(ENV)
+        with httpx.Client(verify=context) as client:
+
+            base_URL = config['tool-plugin']['host'][repo['host']][0]
+            URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
+
+            response = client.get(URL)
+
+            # we're assuming that in case the URL return 404
+            # it's the branch name the problem, so we fallback
+            # to two options: main, master. we try both,
+            # in case we get still 404, return nothing
+            if response.status_code == 200:
+                text = response.text
+                return mistletoe.markdown(text), repo
+
+            elif response.status_code == 404:
+
+                # let's remove the previous branch value from the list
+                # since it brought us to a 404
+                repo['branch'].pop(0)
+
+                URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
+                response = client.get(URL)
+                
+                if response.status_code == 200:
+                    text = response.text
+                    return mistletoe.markdown(text), repo
+
+                elif response.status_code == 404:
+                    print(f"repo at {URL} cannot be found, double-check if all parameters are correct\n in the <tool .../> markup in the wiki article.")
+
+                    return tool_key, repo
+
+
 async def pre_process(article, wiki_page, article_wtp) -> str:
     """
     - update wikilinks [[<>]] to point to correct locations,
@@ -120,6 +189,13 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
     article_wtp.insert(0, '__NOTOC__')        
+
+    # # -- naive regex to grab the <tool ... /> string
+    # # as it is a custom DOM tag, it's not parsed and rendered
+    # # properly into HTML so i can't easily parse it as HTML
+    # # inside post_process
+    # article_updated = re.sub(r"<tool(.*)/>", parse_tool_tag, article_wtp.string)
+    # article_wtp.string = article_updated
 
     for template in article_wtp.templates:
         # save template value somewhere if needed
@@ -194,7 +270,9 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
             tag.contents = '\n'.join(gallery_contents)
 
             await asyncio.gather(*tasks)
+    
 
+    # -- return article as string
     return article_wtp.string
 
 
@@ -203,6 +281,7 @@ def post_process(article: str, redirect_target: str | None = None):
     update HTML before saving to disk:
     - add redirect text + link, if necessary
     - update wikilinks to set correct title attribute
+    - replace Tool's wiki syntax to actual HTML
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs?
     """
@@ -236,7 +315,40 @@ def post_process(article: str, redirect_target: str | None = None):
             # print('rel-url =>', rel_url)
             # link.attrs['href'] =
 
+    # -- tool parser
+    # naive regex to grab the <tool ... /> string
+    tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
 
+    for tk in tool_keywords:
+        tool_key = tk.strip()
+        tool_HTML, repo = parse_tool_tag(tool_key)
+        tool_soup = BeautifulSoup(tool_HTML, 'lxml')
+
+        # change all relative links to absolute
+        links = tool_soup.find_all('a')
+        if len(links) > 0:
+            with open("settings.toml", mode="rb") as f:
+                config = tomli.load(f)
+
+            for link in links:
+
+                url = link['href']
+
+                if not url.startswith('http'):
+                    f = url.split('/').pop()
+
+                    # <host>/<user>/<repo>/blob/<branch>/<file>
+                    base_URL = config['tool-plugin']['host'][repo['host']][1]
+                    link['href'] = f"{base_URL}/{repo['user']}/{repo['repo']}/blob/{ repo['branch'][0] }/{f}"
+
+        # append updated too_soup to the article's <body>
+        # tk.parent => <p>; tk.parent.parent => <body>
+        tk.parent.parent.extend(tool_soup.body.contents)
+        # remove <p> with inside the string `<tool .../>`
+        tk.parent.decompose()
+
+
+    # -- return article HTML
     # the wiki article can be empty
     # therefore soup.contents is an empty list
     if len(soup.contents) > 0:
