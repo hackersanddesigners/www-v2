@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from sys import argv
 import os
 import tomli
 import httpx
@@ -43,7 +44,7 @@ async def get_category(URL: str, cat: str):
         return data
 
 
-async def main(ENV: str, URL: str):
+async def main(ENV: str, URL: str, metadata_only: bool):
     """
     this function (re-)build the entire wiki by fetching a set of specific
     pages from the MediaWiki instance
@@ -92,20 +93,7 @@ async def main(ENV: str, URL: str):
             # process single article
             art_tasks = []
             for k, v in category.items():
-                # make_article first fetches the article and handles
-                # in case nothing valid is returned
-                # we want that info too
-
-                # pass list of articles to Event page
-                # to figure out what's needed
-                # print('ccc =>', [cat, indexes])
-                # if cat in indexes:
-                #     await make_index(v, cat, client)
-
-                # return
-
                 for article in v:
-                    metadata_only = True
                     task = make_article(article['title'], client, metadata_only)
                     art_tasks.append(asyncio.ensure_future(task))
 
@@ -116,8 +104,17 @@ async def main(ENV: str, URL: str):
                 articles_metadata = prepared_articles
 
             else:
-                articles_html = [item[0] for item in prepared_articles]
                 articles_metadata = [item[1] for item in prepared_articles]
+                articles_html = [item[0] for item in prepared_articles]
+
+                # save single article
+                save_tasks = []
+                for article in articles_html:
+                    task = save_article(article, template, sem)
+                    save_tasks.append(asyncio.ensure_future(task))
+
+                    await asyncio.gather(*save_tasks)
+
 
             # TODO simplify this
             if cat == 'Event':
@@ -129,29 +126,25 @@ async def main(ENV: str, URL: str):
             if cat == 'Publishing':
                 index = await make_publishing_index(articles_metadata, cat)
 
-
-            copy_assets()
-            return
-
-            # save single article
-            save_tasks = []
-            for article in articles_html:
-                task = save_article(article, template, sem)
-                save_tasks.append(asyncio.ensure_future(task))
-
-            await asyncio.gather(*save_tasks)
-            
+            copy_assets()            
 
 
     # await make_index(articles)
+
 
 if __name__ == '__main__':
 
     ENV = os.getenv('ENV')
     URL = os.getenv('BASE_URL')
 
+    if len(argv) < 2:
+        metadata_only = False
+    elif argv[1].lower() == 'true':
+        metadata_only = True
+
+
     start_time = time.time()
 
     # -- run everything
-    asyncio.run(main(ENV, URL))
+    asyncio.run(main(ENV, URL, metadata_only))
     print("--- %s seconds ---" % (time.time() - start_time))

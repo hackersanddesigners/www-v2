@@ -44,8 +44,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             if msg['type'] in ['new', 'edit']:
                 try:
-                    article = await make_article(msg['title'], client, metadata_only)
-                    await save_article(article, template, sem)
+                    article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
+                    await save_article(article_html, template, sem)
 
                 except Exception as e:
                     print(f"make-article err => {e}")
@@ -75,7 +75,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             source_article = await redirect_article(msg['title'], redirect['target'])
                             await save_article(source_article, template, sem)
 
-                        target_article = await make_article(redirect['target'], client, metadata_only)
+                        target_article, target_metadata = await make_article(redirect['target'], client, metadata_only)
                         await save_article(target_article, template, sem)
                         
 
