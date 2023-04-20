@@ -57,7 +57,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_metadata = {
             "title": article['title'],
             "images": get_article_field('images', article),
-            "template": article['template'],
+            "template": get_article_field('template', article),
             "metadata": metadata
         }
 
