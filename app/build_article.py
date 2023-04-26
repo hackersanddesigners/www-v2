@@ -55,14 +55,14 @@ async def make_article(page_title: str, client, metadata_only: bool):
     if article is not None:
 
         if metadata_only:
-            metadata, images = await parser(article, metadata_only, redirect_target)
+            metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
 
             article_metadata = {
                 "title": article['title'],
                 "images": images,
                 "metadata": metadata,
                 "backlinks": backlinks,
-                "nav": nav
+                "tool": tool_metadata,
             }
 
             return article_metadata

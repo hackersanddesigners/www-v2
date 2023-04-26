@@ -6,7 +6,7 @@ import httpx
 from fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from templates import get_template, make_event_index, make_collaborators_index, make_publishing_index
+from templates import get_template, make_event_index, make_collaborators_index, make_publishing_index, make_tool_index
 from build_article import make_article, save_article
 import json
 from slugify import slugify
@@ -126,10 +126,12 @@ async def main(ENV: str, URL: str, metadata_only: bool):
             if cat == 'Publishing':
                 index = await make_publishing_index(articles_metadata, cat)
 
-            copy_assets()            
+            if cat == 'Tools':
+                index = await make_tool_index(articles_metadata, cat)
 
 
-    # await make_index(articles)
+        copy_assets()            
+        # await make_front_index(articles)
 
 
 if __name__ == '__main__':

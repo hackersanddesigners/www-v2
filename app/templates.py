@@ -4,7 +4,7 @@ import asyncio
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
 from write_to_disk import main as write_to_disk
-from build_article import get_article
+from build_article import get_article, make_nav
 import arrow
 import json
 import wikitextparser as wtp
@@ -233,6 +233,27 @@ async def make_publishing_index(articles, cat):
         'title': cat,
         'slug': slugify(cat),
         'articles': articles
+    }
+
+    sem = None
+    document = template.render(article=article)
+    await write_to_disk(article['slug'], document, sem)
+
+
+async def make_tool_index(articles, cat):
+
+    filters = {
+        'slug': make_url_slug,
+    }
+
+    template = get_template(f"{cat}-index", filters)
+    nav = make_nav()
+
+    article = {
+        'title': cat,
+        'slug': slugify(cat),
+        'articles': articles,
+        'nav': nav
     }
 
     sem = None

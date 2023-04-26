@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<main class="pt1 pr1 pb2 pl1">
+  <h1>{{ article.title }}</h1>
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col"><button id="title">Title</button></th>
+          <th scope="col"><button id="repo">Repository</button></th>
+          <th scope="col"><button id="backlinks">See also</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for article in article.articles %}
+        <tr>
+          <td>
+            <h3><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h3>
+          </td>
+          <td>
+            {% if article.tool %}
+            <a href="{{ article.tool.uri }}">{{ article.tool.label }}</a> 
+            {% else %}
+            <p>No repository available</p>
+            {% endif %}
+          </td>
+          <td>
+            {% for backlink in article.backlinks %}
+            <a href="/{{ backlink.title | slug }}.html" class="pr0-5">{{ backlink.title }}</a>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+
+{% endblock %}
