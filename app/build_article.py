@@ -5,6 +5,26 @@ from slugify import slugify
 import aiofiles
 from aiofiles import os
 from write_to_disk import main as write_to_disk
+import tomli
+
+
+def make_nav():
+    """
+    make a list of dictionaries {label, uri} as links
+    to listed categories in settings.toml
+    """
+
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    # cats = config['wiki']['categories']
+    cats = config['wiki']['indexes']
+    nav = []
+    for cat in cats:
+        nav.append({ "label": cat,
+                      "uri": f"{slugify(cat)}.html" })
+
+    return nav
 
 
 async def get_article(page_title: str, client):
@@ -30,6 +50,7 @@ def get_article_field(field, article):
 async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
+    nav = make_nav()
 
     if article is not None:
 
@@ -40,7 +61,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "title": article['title'],
                 "images": images,
                 "metadata": metadata,
-                "backlinks": backlinks
+                "backlinks": backlinks,
+                "nav": nav
             }
 
             return article_metadata
@@ -51,14 +73,16 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_html = {
             "title": page_title,
             "html": body_html,
-            "slug": slugify(page_title)
+            "slug": slugify(page_title),
+            "nav": nav
         }
 
         article_metadata = {
             "title": article['title'],
             "images": get_article_field('images', article),
             "template": get_article_field('template', article),
-            "metadata": metadata
+            "metadata": metadata,
+            "nav": nav
         }
 
         # print('make-article =>', [page_title, article_metadata])
@@ -66,7 +90,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     else:
         # TODO handle article remove from local wiki
-        print('article not found! it could have been deleted meanwhile and we got notified about it')
+        print('article not found! it could have been deleted meanwhile\n and we got notified about it')
 
         # check if there's a copy of article in `wiki/` and
         # if yes, remove it?
