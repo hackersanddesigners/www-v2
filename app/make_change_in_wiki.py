@@ -7,7 +7,6 @@ from fetch import create_context
 load_dotenv()
 
 
-
 async def get_csrf_token(URL: str, client) -> str:
     """
     login to the wikimedia instance as a bot user

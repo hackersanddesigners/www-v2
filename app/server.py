@@ -5,7 +5,6 @@ import socket
 import httpx
 import json
 from pretty_json_log import main as pretty_json_log
-# from jinja2 import Environment, FileSystemLoader
 from templates import get_template
 from fetch import create_context
 from build_article import make_article, redirect_article, save_article, delete_article
