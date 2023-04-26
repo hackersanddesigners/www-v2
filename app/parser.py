@@ -36,8 +36,7 @@ class WikiPage(Page):
         (check if article exists in the fs)
         """
 
-        # return article_exists(page)
-        return
+        return article_exists(page)
 
     def template_load(self, template: str) -> str:
         """
@@ -253,10 +252,10 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
         #
         # make sure syntax is "strict"
         # eg image syntax starts with `File:<filepath>`
-        # note: if a filepath is malformed and we know it
-        # does not exists in the wiki, what to do?
-        #   => must be updated in the wiki; we don't try to fix
-        #   wiki content on-the-fly
+        # note: if a filepath is malformed and we know
+        # it does not exists in the wiki, what to do?
+        # => must be updated in the wiki; we don't try to fix
+        #    wiki content on-the-fly
 
         if tag.name == 'gallery':
             gallery_files = tag.contents.split('\n')
