@@ -118,7 +118,8 @@ async def fetch_article(title: str, client):
 
 
 def file_exists(title: str) -> bool:
-    pass
+    img_path = Path(MEDIA_DIR) / title
+    return Path(img_path).is_file()
 
 
 async def fetch_file(title: str) -> bool:

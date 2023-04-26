@@ -60,13 +60,15 @@ class WikiPage(Page):
     def file_exists(self, file: str) -> bool:
         """
         Return True if and only if the file (upload) exists:
-        - first we check if the file exists already on disk
-        - else we try to fetch it down and return if it succeeded or not
+        - we check if the file exists on disk
         """
 
         # we're doing our checks directly in file_fetch
-        # return file_exists(file)
-        return
+        # but we need to return True / False anyway
+        # else wikitexthtml won't create an <img> tag
+        # but only an <a>
+
+        return file_exists(file)
 
     async def file_fetch(self, file: str) -> bool:
         """
