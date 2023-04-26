@@ -173,10 +173,15 @@ def parse_tool_tag(tool_key):
                     text = response.text
                     return mistletoe.markdown(text), repo
 
-                elif response.status_code == 404:
-                    print(f"repo at {URL} cannot be found, double-check if all parameters are correct\n in the <tool .../> markup in the wiki article.")
+                else:
+                    print(f"repo's {URL} status code is {response.status_code}.\n",
+                          f"double-check that all parameters are correct in the <tool .../> markup\n"
+                          f"in the wiki article.")
 
-                    return tool_key, repo
+                    print(f"{response.status_code} error => {[tool_key, repo]}") 
+                    return False, False
+
+    return False, False    
 
 
 async def pre_process(article, wiki_page, article_wtp) -> str:
@@ -356,20 +361,22 @@ def post_process(article: str, redirect_target: str | None = None):
     for tk in tool_keywords:
         tool_key = tk.strip()
         tool_HTML, repo = parse_tool_tag(tool_key)
-        tool_soup = BeautifulSoup(tool_HTML, 'lxml')
 
-        # change all relative URIs to absolute
-        links = tool_soup.find_all('a')
-        convert_rel_uri_to_abs(links, 'href', repo)
+        if tool_HTML is not False and repo is not False:
+            tool_soup = BeautifulSoup(tool_HTML, 'lxml')
 
-        imgs = tool_soup.find_all('img')
-        convert_rel_uri_to_abs(imgs, 'src', repo)
+            # change all relative URIs to absolute
+            links = tool_soup.find_all('a')
+            convert_rel_uri_to_abs(links, 'href', repo)
 
-        # append updated too_soup to the article's <body>
-        # tk.parent => <p>; tk.parent.parent => <body>
-        tk.parent.parent.extend(tool_soup.body.contents)
-        # remove <p> with inside the string `<tool .../>`
-        tk.parent.decompose()
+            imgs = tool_soup.find_all('img')
+            convert_rel_uri_to_abs(imgs, 'src', repo)
+
+            # append updated tool_soup to the article's <body>
+            # tk.parent => <p>; tk.parent.parent => <body>
+            tk.parent.parent.extend(tool_soup.body.contents)
+            # remove <p> with inside the string `<tool .../>`
+            tk.parent.decompose()
 
 
     # -- return article HTML
