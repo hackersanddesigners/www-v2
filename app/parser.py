@@ -114,26 +114,57 @@ class WikiPage(Page):
         return f"/{self.HTML_MEDIA_DIR}/{url}"
 
 
-def parse_tool_tag(tool_key):
+def make_tool_repo(tool_key: str, config_tool):
+    tokens = tool_key.split()
 
-    if tool_key is not None:
-        tokens = tool_key.split()
+    repo = {"host": None, "branch": None}
+    for t in tokens:
+        # let's split only `<word>=<word>` items
+        if '=' in t:
+            prop = t.split('=')
+            repo[prop[0].strip()] = prop[1][1:-1].strip()
+
+    if repo['host'] == None:
+        repo['host'] = config_tool['host_default']
+
+    if repo['branch'] == None:
+        repo['branch'] = config_tool['branch_default']
+
+    return repo
+
+
+def get_tool_metadata(article_wtp: str):
+
+    tool_keywords = re.findall(r"<tool(.*?)/>", article_wtp)
+
+    tool_key = None
+    for tk in tool_keywords:
+        tool_key = tk.strip()
+
+    if tool_key is None:
+        return None
+
+    else:
 
         with open("settings.toml", mode="rb") as f:
             config = tomli.load(f)
 
-        repo = {}
-        for t in tokens:
-            # let's split only `<word>=<word>` items
-            if '=' in t:
-                prop = t.split('=')
-                repo[prop[0].strip()] = prop[1][1:-1].strip()
+        repo = make_tool_repo(tool_key, config['tool-plugin'])
 
-        if 'host' not in repo:
-            repo['host'] = config['tool-plugin']['host_default']
+        base_URL = config['tool-plugin']['host'][repo['host']][1]
+        URL = f"{base_URL}/{repo['user']}/{repo['repo']}"
 
-        if 'branch' not in repo:
-            repo['branch'] = config['tool-plugin']['branch_default']
+        return {"uri": URL, "label": repo['host']}
+
+
+def parse_tool_tag(tool_key):
+
+    if tool_key is not None:
+
+        with open("settings.toml", mode="rb") as f:
+            config = tomli.load(f)
+
+        repo = make_tool_repo(tool_key, config['tool-plugin'])
 
         # construct a URL for github raw link
         # so we fetch the actual README file content
@@ -435,6 +466,15 @@ def get_images(article):
     return images
  
 
+def get_category(wikilink):
+
+    for wikilink in wikilink:
+        if wikilink.title.lower().startswith('category:'):
+            cat = wikilink.title.split(':')[-1]
+            if cat is not None:
+                return cat
+
+
 async def parser(article: str, metadata_only: bool, redirect_target: str | None = None):
     """
     - instantiate WikiPage class
@@ -460,8 +500,14 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         metadata = get_metadata(article_wtp)
         images = get_images(article_wtp)
 
+        tool_metadata = None
         if metadata_only:
-            return metadata, images
+
+            category = get_category(article_wtp.wikilinks)
+            if category == 'Tools':
+                tool_metadata = get_tool_metadata(article_wtp.string)
+
+            return metadata, images, tool_metadata
 
         wiki_body = await pre_process(article, wiki_page, article_wtp)
 
