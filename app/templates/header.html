@@ -1,23 +1,8 @@
 <header>
-  <a
-    title="Skip to main content"
-    class="skip-to-main"
-    href="#main-content"
-  >
-    Skip to main content
-  </a>
+  <a title="Skip to main content" class="skip-to-main" href="#main-content">Skip to main content</a>
   <nav>
-    <ul>
-      {% for link in article.nav %}
-        <li>
-          <a
-            title="{{ link.label }}"
-            href="{{ link.uri }}"
-          >
-            {{ link.label }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    {% for link in article.nav %}
+    <a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a>
+    {% endfor %}
   </nav>
 </header>
