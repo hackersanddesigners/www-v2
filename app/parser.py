@@ -276,6 +276,35 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     return article_wtp.string
 
 
+def convert_rel_uri_to_abs(items, attr, repo):
+    """
+    replace each items relative URIs to an absolute one,
+    using the specified attribute 
+    """
+
+    if len(items) > 0:
+        with open("settings.toml", mode="rb") as f:
+            config = tomli.load(f)
+
+        for item in items:
+            uri = item[attr]
+
+            if not uri.startswith('http'):
+                f = uri.split('/').pop()
+
+                # -- handle URI to text files and binary files
+                #    eg a.href and img.src
+                #    <host>/<user>/<repo>/<blob?>/<branch>/<file>
+                blob = ''
+                base_URL = config['tool-plugin']['host'][repo['host']][0]
+
+                if attr != 'src':
+                    base_URL = config['tool-plugin']['host'][repo['host']][1]
+                    blob = 'blob/'
+
+                item[attr] = f"{base_URL}/{repo['user']}/{repo['repo']}/{blob}{repo['branch'][0]}/{f}"
+
+
 def post_process(article: str, redirect_target: str | None = None):
     """
     update HTML before saving to disk:
@@ -324,22 +353,12 @@ def post_process(article: str, redirect_target: str | None = None):
         tool_HTML, repo = parse_tool_tag(tool_key)
         tool_soup = BeautifulSoup(tool_HTML, 'lxml')
 
-        # change all relative links to absolute
+        # change all relative URIs to absolute
         links = tool_soup.find_all('a')
-        if len(links) > 0:
-            with open("settings.toml", mode="rb") as f:
-                config = tomli.load(f)
+        convert_rel_uri_to_abs(links, 'href', repo)
 
-            for link in links:
-
-                url = link['href']
-
-                if not url.startswith('http'):
-                    f = url.split('/').pop()
-
-                    # <host>/<user>/<repo>/blob/<branch>/<file>
-                    base_URL = config['tool-plugin']['host'][repo['host']][1]
-                    link['href'] = f"{base_URL}/{repo['user']}/{repo['repo']}/blob/{ repo['branch'][0] }/{f}"
+        imgs = tool_soup.find_all('img')
+        convert_rel_uri_to_abs(imgs, 'src', repo)
 
         # append updated too_soup to the article's <body>
         # tk.parent => <p>; tk.parent.parent => <body>
