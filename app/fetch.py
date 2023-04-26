@@ -139,6 +139,8 @@ async def fetch_file(title: str) -> bool:
     # to determine if the version we have on disk
     # has been updated meanwhile, by comparing timestamps
 
+    file_exists = {"upstream": False, "downloaded": False}
+
     data = []
     context = create_context(ENV)
     async with httpx.AsyncClient(verify=context) as client:
@@ -153,6 +155,7 @@ async def fetch_file(title: str) -> bool:
                 return False
 
             else:
+                file_exists["upstream"] = True
                 data.append(response)
 
     # -- read file from disk given file name
@@ -167,9 +170,11 @@ async def fetch_file(title: str) -> bool:
 
         if t:
             await write_blob_to_disk(img_path, file_url)
+            file_exists["downloaded"] = True
 
     else:
         await write_blob_to_disk(img_path, file_url)
+        file_exists["downloaded"] = True
             
 
     # if file:
@@ -177,9 +182,14 @@ async def fetch_file(title: str) -> bool:
     # - and has been downloaded (either by checking
     #   if up-to-date local copy exists, or by fetching
     #   a new copy of it)
-    # we return True (?)
+    # we return True
 
-    return True
+    for k,v in file_exists.items():
+        if v == True:
+            return True
+
+        else:
+            return False
 
 
 def make_img_path(file_last):
