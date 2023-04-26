@@ -459,6 +459,8 @@ def get_images(article):
     for wikilink in article.wikilinks:
         if wikilink.title.lower().startswith('file:'):
             filename = wikilink.title[5:].strip()
+            # TODO replace hardcoded path with env.MEDIA_DIR
+            # and remove `/wiki/` from path
             filepath =  '/assets/media/' + filename
 
             images.append(filepath)
