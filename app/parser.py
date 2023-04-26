@@ -19,6 +19,10 @@ class WikiPage(Page):
 
     MEDIA_DIR = os.getenv('MEDIA_DIR')
 
+    # remove `wiki` as first stem in tree-path from MEDIA_DIR
+    # so that HTML URI works correctly
+    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
+
     def page_load(self, page) -> str:
         """
         Load the page indicated by "page" and return its body.
@@ -98,7 +102,7 @@ class WikiPage(Page):
         Get the link to a file (for the "a href" of the File).
         """
 
-        return f"/{self.MEDIA_DIR}/{url}"
+        return f"/{self.HTML_MEDIA_DIR}/{url}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
@@ -106,7 +110,7 @@ class WikiPage(Page):
         If thumb is set, a thumb should be generated of that size.
         """
 
-        return f"/{self.MEDIA_DIR}/{url}"
+        return f"/{self.HTML_MEDIA_DIR}/{url}"
 
 
 def parse_tool_tag(tool_key):
