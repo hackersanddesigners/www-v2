@@ -29,6 +29,9 @@ img {
     max-width: 100%;
 }
 
+p:not(:last-child) {
+    padding-bottom: 1rem;
+}
 
 .x {
     display: flex;

@@ -6,7 +6,7 @@ import httpx
 from fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from templates import get_template, make_event_index, make_collaborators_index, make_publishing_index, make_tool_index
+from templates import get_template, make_front_index, make_event_index, make_collaborators_index, make_publishing_index, make_tool_index
 from build_article import make_article, save_article
 import json
 from slugify import slugify
@@ -70,11 +70,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
     articles = await asyncio.gather(*cat_tasks)
 
-    # print('articles =>', json.dumps(articles, indent=4))
-
-    # flat nested list
-    # articles = [article for subarticle in articles for article in subarticle]
-
     # template = get_template('article', None)
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0)
@@ -86,6 +81,8 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
 
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
+
+        frontpage = {"news": None, "upcoming_events": []} 
 
         for category in articles:
             cat = list(category.keys())[0]
@@ -119,20 +116,30 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
             # TODO simplify this
             if cat == 'Event':
-                index = await make_event_index(articles_metadata, cat)
+                frontpage['upcoming_events'] = await make_event_index(articles_metadata, cat)
 
             if cat == 'Collaborators':
-                index = await make_collaborators_index(articles_metadata, cat)
+                await make_collaborators_index(articles_metadata, cat)
 
             if cat == 'Publishing':
-                index = await make_publishing_index(articles_metadata, cat)
+                await make_publishing_index(articles_metadata, cat)
 
             if cat == 'Tools':
-                index = await make_tool_index(articles_metadata, cat)
+                await make_tool_index(articles_metadata, cat)
+
+            if cat == 'Article':
+                for article in articles_metadata:
+                    if article and article['title'] == 'Hackers & Designers':
+                        frontpage['news'] = article
 
 
+        await make_front_index(frontpage)
+
+        # any useful?
+        await make_sitemap(articles)
+
+        # -- ahah
         copy_assets()            
-        # await make_front_index(articles)
 
 
 if __name__ == '__main__':
@@ -151,3 +158,4 @@ if __name__ == '__main__':
     # -- run everything
     asyncio.run(main(ENV, URL, metadata_only))
     print("--- %s seconds ---" % (time.time() - start_time))
+        

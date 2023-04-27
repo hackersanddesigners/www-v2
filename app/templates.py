@@ -4,11 +4,13 @@ import asyncio
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
 from write_to_disk import main as write_to_disk
-from build_article import get_article, make_nav
+from build_article import get_article, make_nav, make_article
 import arrow
 import json
 import wikitextparser as wtp
-from parser import get_metadata
+from parser import get_metadata, parser
+from fetch import create_context
+import httpx
 load_dotenv()
 
 
@@ -71,6 +73,33 @@ def ts_pad_hour(tokens):
 
     else:
         return ":".join(tokens)
+
+
+async def make_front_index(frontpage):
+
+    filters = {
+        'slug': make_url_slug,
+    }
+
+    template = get_template("index", filters)
+
+    # -- structure
+    # - get Hackers_%26_Designers wiki page for latest news
+    # - show upcoming events
+    # - ??
+
+    ENV = os.getenv('ENV')
+    context = create_context(ENV)
+    sem = None
+
+    async with httpx.AsyncClient(verify=context) as client:
+        metadata_only = False
+        article, metadata = await make_article(frontpage['news']['title'], client, metadata_only)
+
+        article['slug'] = 'index'
+        article['events'] = frontpage['upcoming_events']
+        document = template.render(article=article)
+        await write_to_disk(article['slug'], document, sem)
 
 
 async def make_event_index(articles, cat):
@@ -195,6 +224,8 @@ async def make_event_index(articles, cat):
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
+
+    return events['upcoming']
 
 
 async def make_collaborators_index(articles, cat):

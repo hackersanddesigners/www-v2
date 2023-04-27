@@ -1,14 +1,38 @@
 {% extends "base.html" %}
-{% extends "nav.html" %}
 
 {% block content %}
-<main>
-  {% if article.articles | length > 0 %}
-  <ul>
-  {% for article in article.articles %}
-    <li><a href="/{{ article.title | slug }}.html">{{ article.title }}</a>, {{ article.timestamp }}</li>
-  {% endfor %}
-  </ul>
-  {% endif %}
+<main id="main-content">
+  <h1>{{ article['title'] }}</h1>
+  <section>
+    <h2>Upcoming Events</h2>
+    {% if article.events | length > 0 %}
+    <div class="x xdr xw">
+      {% for event in article.events %}
+      <figure class="w30">
+        <img src="{{ event.images[0] }}">
+        <figcaption>
+          <p><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+          <p>
+            {{ event.metadata.location }}
+            <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
+            {% if event.metadata.dates.end %}
+            – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
+            {% endif %}
+            {% if event.metadata.time %}
+            <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
+            {% if event.metadata.times.end %}
+            – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
+            {% endif %}
+          </p>
+          {% endif %}
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>No upcoming event at the moment.</p>
+    {% endif %}
+  </section>
+  {{ article['html'] | safe }}
 </main>
 {% endblock %}
