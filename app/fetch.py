@@ -6,6 +6,7 @@ from pathlib import Path
 from slugify import slugify
 import aiofiles
 from log_to_file import main as log
+import filetype
 load_dotenv()
 
 
@@ -119,8 +120,19 @@ async def fetch_article(title: str, client):
 
 def file_exists(title: str) -> bool:
     img_path = Path(MEDIA_DIR) / title
-    return Path(img_path).is_file()
 
+    if Path(img_path).is_file():
+        kind = filetype.guess(img_path)
+        if kind is None:
+            print(f"{img_path} => file type cannot be guessed, broken file?",)
+            return False
+
+        else:
+            return True
+
+    else:
+        print(f"file-exists => {img_path}: {Path(img_path).is_file()}")
+        return False
 
 async def fetch_file(title: str) -> bool:
     params = {
