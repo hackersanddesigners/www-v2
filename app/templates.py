@@ -212,10 +212,13 @@ async def make_event_index(articles, cat):
     events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
             
+    nav = make_nav()
+
     article = {
         'title': cat,
         'slug': slugify(cat),
-        'events': events
+        'events': events,
+        'nav': nav
     }
 
     print('events.happening =>', events['happening'])
@@ -241,10 +244,13 @@ async def make_collaborators_index(articles, cat):
     # similar to MediaWiki syntax
     # {{Special:WhatLinksHere/<page title>}}
 
+    nav = make_nav()
+
     article = {
         'title': cat,
         'slug': slugify(cat),
-        'collaborators': articles
+        'collaborators': articles,
+        'nav': nav
     }
 
     sem = None
@@ -260,10 +266,13 @@ async def make_publishing_index(articles, cat):
 
     template = get_template(f"{cat}-index", filters)
 
+    nav = make_nav()
+
     article = {
         'title': cat,
         'slug': slugify(cat),
-        'articles': articles
+        'articles': articles,
+        'nav': nav
     }
 
     sem = None
