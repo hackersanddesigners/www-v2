@@ -299,3 +299,24 @@ async def make_tool_index(articles, cat):
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
+
+
+async def make_sitemap(articles):
+
+    filters = {
+        'slug': make_url_slug,
+    }
+
+    template = get_template(f"sitemap", filters)
+    nav = make_nav()
+
+    article = {
+        'title': cat,
+        'slug': slugify(cat),
+        'articles': articles,
+        'nav': nav
+    }
+
+    sem = None
+    document = template.render(article=article)
+    await write_to_disk(article['slug'], document, sem)
