@@ -143,8 +143,11 @@ async def fetch_file(title: str) -> bool:
 
     data = []
     context = create_context(ENV)
-    async with httpx.AsyncClient(verify=context) as client:
+    timeout = httpx.Timeout(10.0, connect=60.0)
+
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
         async for response in query_continue(client, URL, params):
+
             if 'missing' in response['pages'][0]:
                 title = response['pages'][0]['title']
                 msg = f"the image could not be found => {title}\n"

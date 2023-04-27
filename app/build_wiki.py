@@ -28,7 +28,8 @@ async def get_category(URL: str, cat: str):
     }
 
     context = create_context(ENV)
-    async with httpx.AsyncClient(verify=context) as client:
+    timeout = httpx.Timeout(10.0, connect=60.0)
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
         data = {cat: []}
         async for response in query_continue(client, URL, params):
 
