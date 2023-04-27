@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 import asyncio
 import tomli
 import mistletoe
+from pathlib import Path
 load_dotenv()
 
 
@@ -67,7 +68,9 @@ class WikiPage(Page):
         # else wikitexthtml won't create an <img> tag
         # but only an <a>
 
-        return file_exists(file)
+        f = Path(file)
+        filepath = f"{slugify(f.stem)}{f.suffix}"
+        return file_exists(filepath)
 
     async def file_fetch(self, file: str) -> bool:
         """
@@ -94,7 +97,6 @@ class WikiPage(Page):
         Clean "title" (which is a full pagename) to become more human readable.
         """
 
-        # print('clean-title =>', [self, title])
         # do we use this? set it anyway for "future-proofness" / archeology
         return title
 
@@ -103,7 +105,9 @@ class WikiPage(Page):
         Get the link to a file (for the "a href" of the File).
         """
 
-        return f"/{self.HTML_MEDIA_DIR}/{url}"
+        f = Path(url)
+        filepath = f"{slugify(f.stem)}{f.suffix}"
+        return f"/{self.HTML_MEDIA_DIR}/{filepath}"
 
     def file_get_img(self, url: str, thumb: Optional[int] = None) -> str:
         """
@@ -111,7 +115,9 @@ class WikiPage(Page):
         If thumb is set, a thumb should be generated of that size.
         """
 
-        return f"/{self.HTML_MEDIA_DIR}/{url}"
+        f = Path(url)
+        filepath = f"{slugify(f.stem)}{f.suffix}"
+        return f"/{self.HTML_MEDIA_DIR}/{filepath}"
 
 
 def make_tool_repo(tool_key: str, config_tool):
@@ -520,6 +526,5 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         body_html = post_process(body_html, redirect_target)
 
         print(f"parsed {article['title']}!")
-
 
         return body_html, metadata

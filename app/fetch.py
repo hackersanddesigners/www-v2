@@ -7,6 +7,7 @@ from slugify import slugify
 import aiofiles
 from log_to_file import main as log
 import filetype
+from urllib.parse import unquote
 load_dotenv()
 
 
@@ -176,8 +177,11 @@ async def fetch_file(title: str) -> bool:
     # -- read file from disk given file name
     #    and diff between timestamps
     file_last = data[0]['pages'][0]
-    file_url = file_last['imageinfo'][0]['url']
-    img_path = make_img_path(file_last)
+
+    # MW returns URI as percent-encoded, undo that
+    # w/ the unquote function
+    file_url = unquote(file_last['imageinfo'][0]['url'])
+    img_path = make_img_path(file_url)
 
     if os.path.exists(img_path):
         file_rev_ts = file_last['revisions'][0]['timestamp']
@@ -207,11 +211,11 @@ async def fetch_file(title: str) -> bool:
             return False
 
 
-def make_img_path(file_last):
+def make_img_path(file_url):
 
-    file_url = file_last['imageinfo'][0]['url']
-    file_path = file_url.split('/').pop()
-    img_path = os.path.abspath(MEDIA_DIR + '/' + file_path)
+    f = Path(file_url)
+    filepath = f"{slugify(f.stem)}{f.suffix}"
+    img_path = os.path.abspath(MEDIA_DIR + '/' + filepath)
 
     return img_path
 
