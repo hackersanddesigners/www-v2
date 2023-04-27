@@ -85,7 +85,6 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "nav": nav
         }
 
-        # print('make-article =>', [page_title, article_metadata])
         return article_html, article_metadata
 
     else:
@@ -94,6 +93,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
         # check if there's a copy of article in `wiki/` and
         # if yes, remove it?
+
+        print(f":: article is none (?) => {page_title}")
 
         try:
             await delete_article(page_title)

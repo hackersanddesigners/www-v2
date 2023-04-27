@@ -105,8 +105,8 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                 articles_metadata = prepared_articles
 
             else:
-                articles_metadata = [item[1] for item in prepared_articles]
-                articles_html = [item[0] for item in prepared_articles]
+                articles_metadata = [item[1] for item in prepared_articles if item is not None]
+                articles_html = [item[0] for item in prepared_articles if item is not None]
 
                 # save single article
                 save_tasks = []
