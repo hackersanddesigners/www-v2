@@ -134,6 +134,11 @@ async def redirect_article(page_title: str, redirect_target: str):
 async def save_article(article: str | None, template, sem):
 
     if article is not None:
+        filters = {
+            'slug': make_url_slug,
+            'ts': make_timestamp,
+        }
+
         document = template.render(article=article)
         await write_to_disk(article['slug'], document, sem)
 

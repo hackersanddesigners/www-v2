@@ -5,7 +5,7 @@ import socket
 import httpx
 import json
 from pretty_json_log import main as pretty_json_log
-from templates import get_template
+from template import get_template, make_url_slug, make_timestamp
 from fetch import create_context
 from build_article import make_article, redirect_article, save_article, delete_article
 import asyncio
@@ -25,7 +25,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     print("UDP server has started and is ready to receive...",
           [SERVER_IP, SERVER_PORT])
 
-    template = get_template('article', None)
+    filters = {
+        'slug': make_url_slug,
+        'ts': make_timestamp,
+    }
+    template = get_template('article', filters)
     sem = None
     context = create_context(ENV)
 

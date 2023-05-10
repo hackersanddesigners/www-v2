@@ -8,6 +8,8 @@ import asyncio
 import time
 from templates import (
     get_template,
+    make_url_slug,
+    make_timestamp,
     make_front_index,
     make_event_index,
     make_collaborators_index,
@@ -77,7 +79,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
     articles = await asyncio.gather(*cat_tasks)
 
-    # template = get_template('article', None)
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0)
 
@@ -95,7 +96,12 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
         for category in articles:
             cat = list(category.keys())[0]
-            template = get_template(cat, None)
+
+            filters = {
+                'slug': make_url_slug,
+                'ts': make_timestamp,
+            }
+            template = get_template(cat, filters)
 
             # process single article
             art_tasks = []
