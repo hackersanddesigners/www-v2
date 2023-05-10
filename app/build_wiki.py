@@ -6,7 +6,15 @@ import httpx
 from fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from templates import get_template, make_front_index, make_event_index, make_collaborators_index, make_publishing_index, make_tool_index
+from templates import (
+    get_template,
+    make_front_index,
+    make_event_index,
+    make_collaborators_index,
+    make_publishing_index,
+    make_tool_index,
+    make_sitemap
+)
 from build_article import make_article, save_article
 import json
 from slugify import slugify
@@ -83,6 +91,8 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
         frontpage = {"news": None, "upcoming_events": []} 
 
+        articles_metadata_index = []
+
         for category in articles:
             cat = list(category.keys())[0]
             template = get_template(cat, None)
@@ -100,8 +110,14 @@ async def main(ENV: str, URL: str, metadata_only: bool):
             if metadata_only:
                 articles_metadata = prepared_articles
 
+                # we can also add it by {<cat>: <articles_metadata>}
+                # if necessary design-wise
+                articles_metadata_index.extend(articles_metadata)
+
             else:
                 articles_metadata = [item[1] for item in prepared_articles if item is not None]
+                articles_metadata_index.extend(articles_metadata)
+
                 articles_html = [item[0] for item in prepared_articles if item is not None]
 
                 # save single article
@@ -135,7 +151,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
         await make_front_index(frontpage)
 
         # any useful?
-        await make_sitemap(articles)
+        await make_sitemap(articles_metadata_index)
 
         # -- ahah
         copy_assets()            

@@ -3,6 +3,36 @@
 
 <main class="pt1 pr1 pb2 pl1">
   <h1>{{ article.title }}</h1>
+  <section>
+    <ul>
+    {% for article in article.articles %}
+      {% if article %}
+      <li class="pb1">
+        <div class="tag-wrapper">
+          <a href="/{{ article.title | slug }}.html" class="mr1">{{ article.title }}</a>
+          <div class="tag-wrapper">
+            <div class="tag-images mr0-25">
+              {{ article.images | length }}{% if article.images | length == 1 %} image{% else %} images{% endif %}</div>
+            {% if article.metadata.name %}
+            <div class="tag-event">event</div>
+            {% endif %}
+            {% if article.tool %}
+            <a href="{{ article.tool.uri }}" class="tag-tool mr0-25">tool</a>
+            {% endif %}
+          </div>
+        </div>
+        {% if article.backlinks | length > 0 %}
+        <ul style="display: block">See also:
+          {% for backlink in article.backlinks %}
+          <li style="display: inline list-item"><a href="/{{ backlink.title | slug }}.html" class="pr0-5">{{ backlink.title }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </section>
 </main>
 
 {% endblock %}

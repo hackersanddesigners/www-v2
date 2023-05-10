@@ -315,8 +315,8 @@ async def make_sitemap(articles):
     nav = make_nav()
 
     article = {
-        'title': cat,
-        'slug': slugify(cat),
+        'title': "Sitemap",
+        'slug': "sitemap",
         'articles': articles,
         'nav': nav
     }
