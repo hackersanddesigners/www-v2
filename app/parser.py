@@ -528,7 +528,8 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         article['revisions'][0]['slots']['main']['content'] = wiki_body
 
         wiki_render = wiki_page.render()
-        print(f":: wiki-page-render errors => {wiki_render.errors}")
+        if len(wiki_render.errors) > 0:
+            print(f":: wiki-page-render errors => {wiki_render.errors}")
 
         body_html = wiki_render.html
         body_html = post_process(body_html, redirect_target)
