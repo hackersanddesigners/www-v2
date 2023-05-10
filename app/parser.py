@@ -282,6 +282,11 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
             # then wikilink.target is slugified afterwards in the WikiPage
             # clean_url function.
 
+            # remove `:` from target otherwise wikitexthtml sees that as a MW namespace
+            # after wikitexthtml parsed the link, we run clean_url and slugify it
+            # so we can point it to the correct HTML file on disk
+            wikilink.target = wikilink.target.replace(':', '')
+
             wikilink.text = wikilink.text or wikilink.target
 
     await asyncio.gather(*tasks)
