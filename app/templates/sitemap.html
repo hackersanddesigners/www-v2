@@ -11,14 +11,18 @@
         <div class="tag-wrapper">
           <a href="/{{ article.title | slug }}.html" class="mr1">{{ article.title }}</a>
           <div class="tag-wrapper">
-            <div class="tag-images mr0-25">
-              {{ article.images | length }}{% if article.images | length == 1 %} image{% else %} images{% endif %}</div>
             {% if article.metadata.name %}
-            <div class="tag-event">event</div>
+            <div class="tag-event mr0-25">event</div>
             {% endif %}
             {% if article.tool %}
             <a href="{{ article.tool.uri }}" class="tag-tool mr0-25">tool</a>
             {% endif %}
+            <div class="mr0-25">
+              <span class="tag-images mr0-25">{{ article.images | length }}{% if article.images | length == 1 %} image{% else %} images{% endif %}</span> 
+              {% for image in article.images %}
+              <a href="{{ image }}" class="mr0-25">&#9863;</a>
+              {% endfor %}
+            </div>
           </div>
         </div>
         {% if article.backlinks | length > 0 %}
