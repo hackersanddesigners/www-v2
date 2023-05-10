@@ -77,29 +77,33 @@ def ts_pad_hour(tokens):
 
 async def make_front_index(frontpage):
 
-    filters = {
-        'slug': make_url_slug,
-    }
+    if frontpage['news'] is None:
+        print(f"make-front-index err => {frontpage}")
 
-    template = get_template("index", filters)
+    else:
+        filters = {
+            'slug': make_url_slug,
+           }
 
-    # -- structure
-    # - get Hackers_%26_Designers wiki page for latest news
-    # - show upcoming events
-    # - ??
+        template = get_template("index", filters)
 
-    ENV = os.getenv('ENV')
-    context = create_context(ENV)
-    sem = None
+        # -- structure
+        # - get Hackers_%26_Designers wiki page for latest news
+        # - show upcoming events
+        # - ??
 
-    async with httpx.AsyncClient(verify=context) as client:
-        metadata_only = False
-        article, metadata = await make_article(frontpage['news']['title'], client, metadata_only)
+        ENV = os.getenv('ENV')
+        context = create_context(ENV)
+        sem = None
 
-        article['slug'] = 'index'
-        article['events'] = frontpage['upcoming_events']
-        document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
+        async with httpx.AsyncClient(verify=context) as client:
+            metadata_only = False
+            article, metadata = await make_article(frontpage['news']['title'], client, metadata_only)
+
+            article['slug'] = 'index'
+            article['events'] = frontpage['upcoming_events']
+            document = template.render(article=article)
+            await write_to_disk(article['slug'], document, sem)
 
 
 async def make_event_index(articles, cat):
