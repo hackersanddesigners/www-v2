@@ -1,0 +1,7 @@
+{% if 'last_modified' in article %}
+<details>
+  <summary>Meta</summary>
+  <p>Last modified: {% if article.last_modified %}{{ article.last_modified | ts }}{% else %}-{% endif %}.</p>
+  <p>Connections: {% for backlink in article.backlinks %}<a href="/{{ backlink.title | slug }}.html">{{ backlink.title }}{% if not loop.last %}, {% endif %}</a>{% endfor %}.</p>
+</details>
+{% endif %}

@@ -39,6 +39,13 @@ def make_url_slug(url: str):
     return url
 
 
+def make_timestamp(t: str):
+
+    if t:
+        ts = arrow.get(t).to('local').format('YYYY-MM-DD')
+        return ts
+
+
 def date_split(date: str):
 
     dates = date.split('-')
@@ -83,7 +90,8 @@ async def make_front_index(frontpage):
     else:
         filters = {
             'slug': make_url_slug,
-           }
+            'ts': make_timestamp,
+        }
 
         template = get_template("index", filters)
 
@@ -102,6 +110,9 @@ async def make_front_index(frontpage):
 
             article['slug'] = 'index'
             article['events'] = frontpage['upcoming_events']
+            article['last_modified'] = frontpage['news']['last_modified']
+            article['backlinks'] = frontpage['news']['backlinks']
+
             document = template.render(article=article)
             await write_to_disk(article['slug'], document, sem)
 
@@ -110,6 +121,7 @@ async def make_event_index(articles, cat):
 
     filters = {
         'slug': make_url_slug,
+        'ts': make_timestamp,
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -239,6 +251,7 @@ async def make_collaborators_index(articles, cat):
 
     filters = {
         'slug': make_url_slug,
+        'ts': make_timestamp,
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -266,6 +279,7 @@ async def make_publishing_index(articles, cat):
 
     filters = {
         'slug': make_url_slug,
+        'ts': make_timestamp,
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -288,6 +302,7 @@ async def make_tool_index(articles, cat):
 
     filters = {
         'slug': make_url_slug,
+        'ts': make_timestamp,
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -309,6 +324,7 @@ async def make_sitemap(articles):
 
     filters = {
         'slug': make_url_slug,
+        'ts': make_timestamp,
     }
 
     template = get_template(f"sitemap", filters)

@@ -54,6 +54,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     if article is not None:
 
+        last_modified = article['revisions'][0]['timestamp']
+
         if metadata_only:
             metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
 
@@ -61,6 +63,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "title": article['title'],
                 "images": images,
                 "metadata": metadata,
+                "last_modified": last_modified,
                 "backlinks": backlinks,
                 "tool": tool_metadata,
             }
@@ -82,6 +85,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "images": get_article_field('images', article),
             "template": get_article_field('template', article),
             "metadata": metadata,
+            "last_modified": last_modified,
+            "backlinks": backlinks,
             "nav": nav
         }
 

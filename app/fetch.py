@@ -79,7 +79,7 @@ async def fetch_article(title: str, client):
         'action': 'query',
         'prop': 'revisions|images',
         'titles': title,
-        'rvprop': 'content',
+        'rvprop': 'content|timestamp',
         'rvslots': '*',
         'list': 'backlinks',
         'bltitle': title,
