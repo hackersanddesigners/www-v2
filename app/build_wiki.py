@@ -61,7 +61,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
         config = tomli.load(f)
 
     cats = config['wiki']['categories']
-    indexes = config['wiki']['indexes']
 
     cat_tasks = []
     for cat in cats:

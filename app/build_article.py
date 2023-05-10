@@ -22,7 +22,7 @@ def make_nav():
     nav = []
     for cat in cats:
         nav.append({ "label": cat,
-                      "uri": f"{slugify(cat)}.html" })
+                      "uri": f"/{slugify(cat)}.html" })
 
     return nav
 
