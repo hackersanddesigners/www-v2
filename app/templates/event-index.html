@@ -80,7 +80,11 @@
               {% endif %}
               {% endif %}
             </td>
-            <td>{{ event.metadata.type }}</td>
+            <td>
+              {% if event.metadata.type %}
+              {{ event.metadata.type }}
+              {% else %}-{% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
