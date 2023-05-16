@@ -1,10 +1,10 @@
-from fetch import fetch_article
-from parser import parser
+from .fetch import fetch_article
+from .parser import parser
 from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
 from aiofiles import os
-from write_to_disk import main as write_to_disk
+from .write_to_disk import main as write_to_disk
 import tomli
 
 

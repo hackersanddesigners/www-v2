@@ -3,13 +3,13 @@ import os
 import asyncio
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
-from write_to_disk import main as write_to_disk
-from build_article import get_article, make_nav, make_article
+from .write_to_disk import main as write_to_disk
+from .build_article import get_article, make_nav, make_article
 import arrow
 import json
 import wikitextparser as wtp
-from parser import get_metadata, parser
-from fetch import create_context
+from .parser import get_metadata, parser
+from .fetch import create_context
 import httpx
 load_dotenv()
 
@@ -109,7 +109,6 @@ async def make_front_index(frontpage):
             article, metadata = await make_article(frontpage['news']['title'], client, metadata_only)
 
             article['slug'] = 'index'
-            article['events'] = frontpage['upcoming_events']
             article['last_modified'] = frontpage['news']['last_modified']
             article['backlinks'] = frontpage['news']['backlinks']
 
@@ -236,6 +235,8 @@ async def make_event_index(articles, cat):
         'events': events,
         'nav': nav
     }
+
+    return article
 
     print('events.happening =>', events['happening'])
     print('events.upcoming =>', events['upcoming'])

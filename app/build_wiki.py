@@ -3,10 +3,10 @@ from sys import argv
 import os
 import tomli
 import httpx
-from fetch import query_continue, create_context, fetch_article
+from .fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from templates import (
+from .templates import (
     get_template,
     make_url_slug,
     make_timestamp,
@@ -17,10 +17,10 @@ from templates import (
     make_tool_index,
     make_sitemap
 )
-from build_article import make_article, save_article
+from .build_article import make_article, save_article
 import json
 from slugify import slugify
-from copy_assets import main as copy_assets
+from .copy_assets import main as copy_assets
 load_dotenv()
 
 

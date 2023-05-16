@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from fetch import article_exists, fetch_file, file_exists, create_context
+from .fetch import article_exists, fetch_file, file_exists, create_context
 import httpx
 from slugify import slugify
 from bs4 import BeautifulSoup
