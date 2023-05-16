@@ -24,7 +24,7 @@ from copy_assets import main as copy_assets
 load_dotenv()
 
 
-async def get_category(URL: str, cat: str):
+async def get_category(ENV: str, URL: str, cat: str):
 
     params = {
         'action': 'query',
@@ -74,7 +74,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
     cat_tasks = []
     for cat in cats:
-        task = get_category(URL, cat)
+        task = get_category(ENV, URL, cat)
         cat_tasks.append(asyncio.ensure_future(task))
 
     articles = await asyncio.gather(*cat_tasks)
