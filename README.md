@@ -105,16 +105,17 @@ if you have another name for your local certificate instead of `hd-v2`, use that
 
 after this you can use https also in the dev environment while using this codebase!
 
-
 ## commands
 
-currently available commands:
+there is a CLI program at `app/cli.py` to run common operations. currently available commands are:
 
-- `python app/server.py`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
-- `python app/build_wiki.py`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
-  - `python app/build_wiki.py --index=true`: rebuild only index pages, eg the one set in `settings.toml`; this is a faster way to build these pages as it does not parse each article
-- `python app/make_change_in_wiki.py`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does nnot exist yet. for example:
+- `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
-    - `python app/make_change_in_wiki.py "ToolExample" edit`
+- `build-wiki`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
+  - `build-wiki --index-only`: rebuild only index pages, eg the one set in `settings.toml`; this is a faster way to build these pages as it does not parse each article
 
-- `uvicorn app.local_server:app --reload`: run local server to browse HTML in `/wiki`
+- `make-article`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does not exist yet.
+
+to run a local web-server in order to browse the `wiki` folder, you can do:
+
+- `uvicorn app.local_server:app --reload`
