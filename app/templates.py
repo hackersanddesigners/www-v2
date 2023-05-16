@@ -271,6 +271,8 @@ async def make_collaborators_index(articles, cat):
         'nav': nav
     }
 
+    return article
+
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
@@ -294,6 +296,8 @@ async def make_publishing_index(articles, cat):
         'nav': nav
     }
 
+    return article
+
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
@@ -316,6 +320,8 @@ async def make_tool_index(articles, cat):
         'nav': nav
     }
 
+    return article
+
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
@@ -337,6 +343,8 @@ async def make_sitemap(articles):
         'articles': articles,
         'nav': nav
     }
+
+    return article
 
     sem = None
     document = template.render(article=article)

@@ -10,10 +10,15 @@ from pathlib import Path
 from .templates import (
     make_url_slug,
     make_timestamp,
+    make_event_index,
+    make_collaborators_index,
+    make_publishing_index,
+    make_tool_index,
 )
 import httpx
 from .fetch import create_context
 from .build_article import make_article 
+from .build_wiki import get_category
 import tomli
 from slugify import slugify
 load_dotenv()
@@ -70,3 +75,66 @@ async def root(request: Request):
                                            "article": article})
 
 
+@app.get("/{cat}", response_class=HTMLResponse)
+async def category(request: Request, cat: str):
+    """
+    build index page for given category
+    """
+    
+    print(f"cat => {cat}")
+
+    index = await get_category(ENV, URL, cat)
+    index = index[cat]
+
+    sem = None
+    context = create_context(ENV)
+    async with httpx.AsyncClient(verify=context) as client:
+
+        metadata_only = True
+        art_tasks = []
+        for article in index:
+            print(f"{article}")
+            task = make_article(article['title'], client, metadata_only)
+            art_tasks.append(asyncio.ensure_future(task))
+
+            prepared_articles = await asyncio.gather(*art_tasks)
+            print(f"articles: {len(prepared_articles)}")
+
+
+        article = None
+        if cat == 'event':
+            article = await make_event_index(prepared_articles, cat)
+
+        elif cat == 'collaborators':
+            article = await make_collaborators_index(prepared_articles, cat)
+
+        elif cat == 'publishing':
+            article = await make_publishing_index(prepared_articles, cat)
+
+        elif cat == 'tools':
+            article = await make_tool_index(prepared_articles, cat)
+
+        if article is not None:
+            return templates.TemplateResponse(f"{cat}-index.html",
+                                              {"request": request,
+                                               "article": article})
+
+
+@app.get("/{cat}/{article}", response_class=HTMLResponse)
+async def article(request: Request, cat: str, article: str):
+    """
+    return HTML article from disk
+    """
+
+    try:
+        WIKI_DIR = os.getenv('WIKI_DIR')
+        filename = Path(article).stem
+        file_path = f"{WIKI_DIR}/{slugify(filename)}.html"
+
+        with open(file_path) as f:
+            return f.read()
+
+    except FileNotFoundError:
+        print(f"return 404")
+
+        raise HTTPException(status_code=404)
