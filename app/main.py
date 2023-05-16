@@ -5,6 +5,7 @@ import asyncio
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from starlette.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from .templates import (
@@ -49,6 +50,13 @@ with open("settings.toml", mode="rb") as f:
     config = tomli.load(f)
 
 cats = config['wiki']['categories']
+
+
+async def not_found(request: Request, exc: HTTPException):
+    return HTMLResponse(content=HTML_404_PAGE, status_code=exc.status_code)
+
+async def server_error(request: Request, exc: HTTPException):
+    return HTMLResponse(content=HTML_500_PAGE, status_code=exc.status_code)
 
 
 @app.get("/", response_class=HTMLResponse)
