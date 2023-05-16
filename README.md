@@ -118,4 +118,4 @@ there is a CLI program at `app/cli.py` to run common operations. currently avail
 
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
-- `uvicorn app.local_server:app --reload`
+- `uvicorn app.main:app --reload`
