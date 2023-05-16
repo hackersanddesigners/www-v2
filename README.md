@@ -117,4 +117,4 @@ currently available commands:
 
     - `python app/make_change_in_wiki.py "ToolExample" edit`
 
-- `uvicorn app.main:app --reload`: run local server to browse HTML in `/wiki`
+- `uvicorn app.local_server:app --reload`: run local server to browse HTML in `/wiki`

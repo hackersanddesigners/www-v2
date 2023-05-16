@@ -5,7 +5,7 @@ from pathlib import Path
 
 app = FastAPI()
 
-base_dir = Path(__file__).parent.parent
+base_dir = Path.cwd()
 
 app.mount("/",
           StaticFiles(directory=base_dir / "wiki", html=True),
