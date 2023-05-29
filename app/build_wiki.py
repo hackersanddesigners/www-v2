@@ -7,14 +7,12 @@ from .fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
 from .templates import (
+from templates import (
     get_template,
     make_url_slug,
     make_timestamp,
+    make_index_sections,
     make_front_index,
-    make_event_index,
-    make_collaborators_index,
-    make_publishing_index,
-    make_tool_index,
     make_sitemap
 )
 from .build_article import make_article, save_article
@@ -73,9 +71,12 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     cats = config['wiki']['categories']
 
     cat_tasks = []
-    for cat in cats:
-        task = get_category(ENV, URL, cat)
+    cat_indexes = {}
+    for k, v in cats.items():
+        task = get_category(ENV, URL, k)
         cat_tasks.append(asyncio.ensure_future(task))
+
+        cat_indexes[v['label']] = None
 
     articles = await asyncio.gather(*cat_tasks)
 
@@ -96,6 +97,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
         for category in articles:
             cat = list(category.keys())[0]
+            cat_label = cats[cat]['label']
 
             filters = {
                 'slug': make_url_slug,
@@ -135,26 +137,10 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                     await asyncio.gather(*save_tasks)
 
 
-            # TODO simplify this
-            if cat == 'Event':
-                frontpage['upcoming_events'] = await make_event_index(articles_metadata, cat)
+            await make_index_sections(articles_metadata, cat, cat_label)
+            
 
-            if cat == 'Collaborators':
-                await make_collaborators_index(articles_metadata, cat)
-
-            if cat == 'Publishing':
-                await make_publishing_index(articles_metadata, cat)
-
-            if cat == 'Tools':
-                await make_tool_index(articles_metadata, cat)
-
-            if cat == 'Article':
-                for article in articles_metadata:
-                    if article and article['title'] == 'Hackers & Designers':
-                        frontpage['news'] = article
-
-
-        await make_front_index(frontpage)
+        await make_front_index(config['wiki']['frontpage'])
 
         # any useful?
         await make_sitemap(articles_metadata_index)

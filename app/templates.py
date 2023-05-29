@@ -82,41 +82,33 @@ def ts_pad_hour(tokens):
         return ":".join(tokens)
 
 
-async def make_front_index(frontpage):
+async def make_front_index(article_title: str):
 
-    if frontpage['news'] is None:
-        print(f"make-front-index err => {frontpage}")
+    filters = {
+        'slug': make_url_slug,
+        'ts': make_timestamp,
+    }
 
-    else:
-        filters = {
-            'slug': make_url_slug,
-            'ts': make_timestamp,
-        }
+    template = get_template("index", filters)
 
-        template = get_template("index", filters)
+    # - get Hackers_%26_Designers wiki page for latest news
+    ENV = os.getenv('ENV')
+    context = create_context(ENV)
+    sem = None
 
-        # -- structure
-        # - get Hackers_%26_Designers wiki page for latest news
-        # - show upcoming events
-        # - ??
+    async with httpx.AsyncClient(verify=context) as client:
+        metadata_only = False
+        article, metadata = await make_article(article_title, client, metadata_only)
 
-        ENV = os.getenv('ENV')
-        context = create_context(ENV)
-        sem = None
+        article['slug'] = 'index'
+        article['last_modified'] = metadata['last_modified']
+        article['backlinks'] = metadata['backlinks']
 
-        async with httpx.AsyncClient(verify=context) as client:
-            metadata_only = False
-            article, metadata = await make_article(frontpage['news']['title'], client, metadata_only)
-
-            article['slug'] = 'index'
-            article['last_modified'] = frontpage['news']['last_modified']
-            article['backlinks'] = frontpage['news']['backlinks']
-
-            document = template.render(article=article)
-            await write_to_disk(article['slug'], document, sem)
+        document = template.render(article=article)
+        await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(articles, cat):
+async def make_event_index(articles, cat, cat_label):
 
     filters = {
         'slug': make_url_slug,
@@ -231,12 +223,10 @@ async def make_event_index(articles, cat):
 
     article = {
         'title': cat,
-        'slug': slugify(cat),
+        'slug': slugify(cat_label),
         'events': events,
         'nav': nav
     }
-
-    return article
 
     print('events.happening =>', events['happening'])
     print('events.upcoming =>', events['upcoming'])
@@ -245,10 +235,8 @@ async def make_event_index(articles, cat):
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
 
-    return events['upcoming']
 
-
-async def make_collaborators_index(articles, cat):
+async def make_collaborators_index(articles, cat, cat_label):
 
     filters = {
         'slug': make_url_slug,
@@ -266,7 +254,7 @@ async def make_collaborators_index(articles, cat):
 
     article = {
         'title': cat,
-        'slug': slugify(cat),
+        'slug': slugify(cat_label),
         'collaborators': articles,
         'nav': nav
     }
@@ -278,7 +266,7 @@ async def make_collaborators_index(articles, cat):
     await write_to_disk(article['slug'], document, sem)
 
 
-async def make_publishing_index(articles, cat):
+async def make_publishing_index(articles, cat, cat_label):
 
     filters = {
         'slug': make_url_slug,
@@ -291,7 +279,7 @@ async def make_publishing_index(articles, cat):
 
     article = {
         'title': cat,
-        'slug': slugify(cat),
+        'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav
     }
@@ -303,7 +291,7 @@ async def make_publishing_index(articles, cat):
     await write_to_disk(article['slug'], document, sem)
 
 
-async def make_tool_index(articles, cat):
+async def make_tool_index(articles, cat, cat_label):
 
     filters = {
         'slug': make_url_slug,
@@ -314,8 +302,8 @@ async def make_tool_index(articles, cat):
     nav = make_nav()
 
     article = {
-        'title': cat,
-        'slug': slugify(cat),
+        'title': cat_label,
+        'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav
     }
@@ -349,3 +337,19 @@ async def make_sitemap(articles):
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
+
+
+
+async def make_index_sections(articles_metadata, cat: str, cat_label: str):
+
+    if cat == 'Event':
+        await make_event_index(articles_metadata, cat, cat_label)
+
+    if cat == 'Collaborators':
+        await make_collaborators_index(articles_metadata, cat, cat_label)
+
+    if cat == 'Publishing':
+        await make_publishing_index(articles_metadata, cat, cat_label)
+
+    if cat == 'Tools':
+        await make_tool_index(articles_metadata, cat, cat_label)
