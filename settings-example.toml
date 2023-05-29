@@ -1,2 +1,31 @@
 [wiki]
-categories = ['Event', 'Collaborators', 'Publishing', 'Tools']
+
+frontpage = "Hackers & Designers"
+
+# as a TOML illiterate this seemed the most reasonable setup: apologies if not!
+# please fill out all fields, including "label" even if nav is false
+[wiki.categories.Article]
+parse = true
+nav = false
+label = "Articles"
+[wiki.categories.Event]
+parse = true
+nav = false
+label = "Events"
+[wiki.categories.Collaborators]
+parse = true
+nav = true
+label = "Collaborators"
+[wiki.categories.Publishing]
+parse = true
+nav = true
+label = "Publishing"
+[wiki.categories.Tools]
+parse = true
+nav = true
+label = "Tools"
+
+[tool-plugin]
+host_default = 'github'
+host = { github = ['https://raw.githubusercontent.com', 'https://github.com'] }
+branch_default = ['main', 'master']
