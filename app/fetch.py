@@ -119,23 +119,70 @@ async def fetch_article(title: str, client):
         return None, None, None
 
 
-def file_exists(title: str) -> bool:
-    img_path = Path(MEDIA_DIR) / title
+def file_exists(title: str, download: bool) -> bool:
 
-    if Path(img_path).is_file():
-        kind = filetype.guess(img_path)
-        if kind is None:
-            print(f"{img_path} => file type cannot be guessed, broken file?",)
-            return False
+    print(f"file-exists => {title, download}")
 
-        else:
-            return True
+    if not download:
+
+        # return True
+
+        params = {
+            'action': 'query',
+            'prop': 'revisions|imageinfo',
+            'titles': title,
+            'rvprop': 'timestamp',
+            'rvslots': '*',
+            'formatversion': '2',
+            'format': 'json',
+            'redirects': '1'
+        }
+
+        context = create_context(ENV)
+        timeout = httpx.Timeout(10.0, connect=60.0)
+
+        with httpx.Client(verify=context, timeout=timeout) as client:
+
+            try:
+                response = client.get(URL, params=params)
+                data = response.json()
+                print(f"file-exists fetched... => {response, data}")
+
+                response.raise_for_status()
+
+                if 'missing' in data:
+                    if data['missing']:
+                        return False
+                else:
+                    return True
+
+            except httpx.HTTPError as exc:
+                print(f"file-exists err => {exc}")
+                return False
 
     else:
-        print(f"file-exists => {img_path}: {Path(img_path).is_file()}")
-        return False
 
-async def fetch_file(title: str) -> bool:
+        img_path = Path(MEDIA_DIR) / title
+
+        if Path(img_path).is_file():
+            kind = filetype.guess(img_path)
+            if kind is None:
+                print(f"{img_path} => file type cannot be guessed, broken file?",)
+                return False
+
+            else:
+                return True
+
+        else:
+            print(f"file-exists => {img_path}: {Path(img_path).is_file()}")
+            return False
+
+async def fetch_file(title: str, download: bool) -> (bool, str):
+    """
+    download means write file to disk, instead of pointing URL
+    to existing copy in MW images folder
+    """
+
     params = {
         'action': 'query',
         'prop': 'revisions|imageinfo',
@@ -174,41 +221,47 @@ async def fetch_file(title: str) -> bool:
                 file_exists["upstream"] = True
                 data.append(response)
 
-    # -- read file from disk given file name
-    #    and diff between timestamps
     file_last = data[0]['pages'][0]
 
-    # MW returns URI as percent-encoded, undo that
-    # w/ the unquote function
-    file_url = unquote(file_last['imageinfo'][0]['url'])
-    img_path = make_img_path(file_url)
-
-    if os.path.exists(img_path):
-        file_rev_ts = file_last['revisions'][0]['timestamp']
-        t = check_file_revision(img_path, file_rev_ts)
-
-        if t:
-            await write_blob_to_disk(img_path, file_url)
-            file_exists["downloaded"] = True
-
+    if not download:
+        return (True, file_last['imageinfo'][0]['url'])
+        pass
+        
     else:
-        await write_blob_to_disk(img_path, file_url)
-        file_exists["downloaded"] = True
-            
+        # -- read file from disk given file name
+        #    and diff between timestamps
 
-    # if file:
-    # - has been found on upstream wiki to exist
-    # - and has been downloaded (either by checking
-    #   if up-to-date local copy exists, or by fetching
-    #   a new copy of it)
-    # we return True
+        # MW returns URI as percent-encoded, undo that
+        # w/ the unquote function
+        file_url = unquote(file_last['imageinfo'][0]['url'])
+        img_path = make_img_path(file_url)
 
-    for k,v in file_exists.items():
-        if v == True:
-            return True
+        if os.path.exists(img_path):
+            file_rev_ts = file_last['revisions'][0]['timestamp']
+            t = check_file_revision(img_path, file_rev_ts)
+
+            if t:
+                await write_blob_to_disk(img_path, file_url)
+                file_exists["downloaded"] = True
 
         else:
-            return False
+            await write_blob_to_disk(img_path, file_url)
+            file_exists["downloaded"] = True
+                
+
+        # if file:
+        # - has been found on upstream wiki to exist
+        # - and has been downloaded (either by checking
+        #   if up-to-date local copy exists, or by fetching
+        #   a new copy of it)
+        # we return True
+
+        for k,v in file_exists.items():
+            if v == True:
+                return True
+
+            else:
+                return False
 
 
 def make_img_path(file_url):

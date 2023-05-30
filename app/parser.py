@@ -24,6 +24,13 @@ class WikiPage(Page):
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
+    file_URLs = []
+
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    download_image = config['wiki']['media']
+
     def page_load(self, page) -> str:
         """
         Load the page indicated by "page" and return its body.
@@ -60,7 +67,8 @@ class WikiPage(Page):
     def file_exists(self, file: str) -> bool:
         """
         Return True if and only if the file (upload) exists:
-        - we check if the file exists on disk
+        - if archive-mode is on, we check if the file exists on disk
+        - else we do an HTTP ping to the MW API
         """
 
         # we're doing our checks directly in file_fetch
@@ -68,18 +76,30 @@ class WikiPage(Page):
         # else wikitexthtml won't create an <img> tag
         # but only an <a>
 
-        f = Path(file)
-        filepath = f"{slugify(f.stem)}{f.suffix}"
-        return file_exists(filepath)
+        if self.download_image:
+            f = Path(file)
+            filepath = f"{slugify(f.stem)}{f.suffix}"
+            return file_exists(filepath, self.download_image)
+        else:
+            filename = f"File:{file}"
+            return file_exists(filename, self.download_image)
 
+    
     async def file_fetch(self, file: str) -> bool:
         """
-        Fetch the file indicated by "file" and save it to disk,
+        If archive-mode: fetch the file indicated by "file" and save it to disk,
         only if a newer version of the one already saved to disk exists
-        (we use timestamps between local and upstream file for this)
+        (we use timestamps between local and upstream file for this).
+        Else simply do an HTTP API call to return the file URL to MW and store
+        that URL to be used later in post-processing.
         """
 
-        return await fetch_file(file)
+        if self.download_image:
+            return await fetch_file(file, self.download_image)
+        else:
+            t = await fetch_file(file, self.download_image)
+            self.file_URLs.append(t[1])
+            return t[0]
 
     def clean_url(self, url: str) -> str:
         """
@@ -232,17 +252,15 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     - if redirect is not None, extend article.body w/ redirect link
     """
 
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    download_image = config['wiki']['media']
+
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
     article_wtp.insert(0, '__NOTOC__')        
-
-    # # -- naive regex to grab the <tool ... /> string
-    # # as it is a custom DOM tag, it's not parsed and rendered
-    # # properly into HTML so i can't easily parse it as HTML
-    # # inside post_process
-    # article_updated = re.sub(r"<tool(.*)/>", parse_tool_tag, article_wtp.string)
-    # article_wtp.string = article_updated
 
     for template in article_wtp.templates:
         # save template value somewhere if needed
@@ -289,7 +307,9 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
 
             wikilink.text = wikilink.text or wikilink.target
 
+
     await asyncio.gather(*tasks)
+
 
     for tag in article_wtp.get_tags():
 
@@ -328,9 +348,9 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     return article_wtp.string
 
 
-def convert_rel_uri_to_abs(items, attr, repo):
+def tool_convert_rel_uri_to_abs(items, attr, repo):
     """
-    replace each items relative URIs to an absolute one,
+    tool plugin: replace each items relative URLs to an absolute one,
     using the specified attribute 
     """
 
@@ -344,7 +364,7 @@ def convert_rel_uri_to_abs(items, attr, repo):
             if not uri.startswith('http'):
                 f = uri.split('/').pop()
 
-                # -- handle URI to text files and binary files
+                # -- handle URL to text files and binary files
                 #    eg a.href and img.src
                 #    <host>/<user>/<repo>/<blob?>/<branch>/<file>
                 blob = ''
@@ -357,12 +377,32 @@ def convert_rel_uri_to_abs(items, attr, repo):
                 item[attr] = f"{base_URL}/{repo['user']}/{repo['repo']}/{blob}{repo['branch'][0]}/{f}"
 
 
-def post_process(article: str, redirect_target: str | None = None):
+def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
+    """
+    if archive-mode is off, replace all img src attribute,
+    plus img alt and the parent a's href to point to the
+    MW URL file instance
+    """
+
+    f = Path(file)
+    url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
+    img_tag = soup.find(src=re.compile(url_match))
+    img_tag['src'] = url
+
+    if 'alt' in img_tag.attrs:
+        if img_tag['alt'] == url_match:
+            img_tag['alt'] = url
+
+            img_tag.parent['href'] = url
+
+
+def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_target: str | None = None):
     """
     update HTML before saving to disk:
     - add redirect text + link, if necessary
     - update wikilinks to set correct title attribute
     - replace Tool's wiki syntax to actual HTML
+    - if non archive-mode: update img's src to point to MW image server
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs?
     """
@@ -396,6 +436,15 @@ def post_process(article: str, redirect_target: str | None = None):
             # print('rel-url =>', rel_url)
             # link.attrs['href'] =
 
+    # -- img src replacement
+    #    replace local URL to instead pointing to
+    #    MW server instance
+    if len(file_URLs) > 0:
+        for url in file_URLs:
+            file = url.split('/').pop()
+            if file:
+                replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
+
     # -- tool parser
     # naive regex to grab the <tool ... /> string
     tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
@@ -409,13 +458,12 @@ def post_process(article: str, redirect_target: str | None = None):
 
             # change all relative URIs to absolute
             links = tool_soup.find_all('a')
-            convert_rel_uri_to_abs(links, 'href', repo)
+            tool_convert_rel_uri_to_abs(links, 'href', repo)
 
             imgs = tool_soup.find_all('img')
-            convert_rel_uri_to_abs(imgs, 'src', repo)
+            tool_convert_rel_uri_to_abs(imgs, 'src', repo)
 
             # append updated tool_soup to the article's <body>
-            # tk.parent => <p>; tk.parent.parent => <body>
             tk.parent.parent.extend(tool_soup.body.contents)
             # remove <p> with inside the string `<tool .../>`
             tk.parent.decompose()
@@ -532,7 +580,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
             print(f":: wiki-page-render errors => {wiki_render.errors}")
 
         body_html = wiki_render.html
-        body_html = post_process(body_html, redirect_target)
+        body_html = post_process(body_html, wiki_page.file_URLs, wiki_page.HTML_MEDIA_DIR, redirect_target)
 
         print(f"parsed {article['title']}!")
 

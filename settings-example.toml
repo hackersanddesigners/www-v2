@@ -1,9 +1,15 @@
 [wiki]
 
+# copy images and point src to MW instance
+# true | false
+media = false
+
+# set what's the article to use for the frontpage
 frontpage = "Hackers & Designers"
 
 # as a TOML illiterate this seemed the most reasonable setup: apologies if not!
-# please fill out all fields, including "label" even if nav is false
+# please fill out all fields, including "label" even if you set `nav: false`
+
 [wiki.categories.Article]
 parse = true
 nav = false
