@@ -6,16 +6,17 @@ import httpx
 from .fetch import query_continue, create_context, fetch_article
 import asyncio
 import time
-from .templates import (
 from templates import (
     get_template,
-    make_url_slug,
-    make_timestamp,
     make_index_sections,
     make_front_index,
     make_sitemap
 )
 from .build_article import make_article, save_article
+from template_utils import (
+    make_url_slug,
+    make_timestamp,
+)
 import json
 from slugify import slugify
 from .copy_assets import main as copy_assets

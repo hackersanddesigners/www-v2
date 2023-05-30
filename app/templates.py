@@ -31,21 +31,6 @@ def get_template(template: str, filters):
     return t
     
 
-def make_url_slug(url: str):
-
-    if url:
-        return slugify(url)
-
-    return url
-
-
-def make_timestamp(t: str):
-
-    if t:
-        ts = arrow.get(t).to('local').format('YYYY-MM-DD')
-        return ts
-
-
 def date_split(date: str):
 
     dates = date.split('-')

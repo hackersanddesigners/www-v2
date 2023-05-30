@@ -9,12 +9,14 @@ from starlette.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from .templates import (
-    make_url_slug,
-    make_timestamp,
     make_event_index,
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
+)
+from .template_utils import (
+    make_url_slug,
+    make_timestamp,
 )
 import httpx
 from .fetch import create_context
