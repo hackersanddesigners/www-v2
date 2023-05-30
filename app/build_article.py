@@ -21,12 +21,12 @@ def make_nav():
     with open("settings.toml", mode="rb") as f:
         config = tomli.load(f)
 
-    # cats = config['wiki']['categories']
-    cats = config['wiki']['indexes']
+    cats = config['wiki']['categories']
+
     nav = []
-    for cat in cats:
-        nav.append({ "label": cat,
-                      "uri": f"/{slugify(cat)}.html" })
+    for k, v in cats.items():
+        nav.append({ "label": v['label'],
+                      "uri": f"/{slugify(v['label'])}.html" })
 
     return nav
 
