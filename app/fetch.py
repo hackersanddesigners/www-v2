@@ -121,11 +121,7 @@ async def fetch_article(title: str, client):
 
 def file_exists(title: str, download: bool) -> bool:
 
-    print(f"file-exists => {title, download}")
-
     if not download:
-
-        # return True
 
         params = {
             'action': 'query',
@@ -146,7 +142,6 @@ def file_exists(title: str, download: bool) -> bool:
             try:
                 response = client.get(URL, params=params)
                 data = response.json()
-                print(f"file-exists fetched... => {response, data}")
 
                 response.raise_for_status()
 
@@ -177,7 +172,7 @@ def file_exists(title: str, download: bool) -> bool:
             print(f"file-exists => {img_path}: {Path(img_path).is_file()}")
             return False
 
-async def fetch_file(title: str, download: bool) -> (bool, str):
+async def fetch_file(title: str, download: bool):
     """
     download means write file to disk, instead of pointing URL
     to existing copy in MW images folder
@@ -215,17 +210,20 @@ async def fetch_file(title: str, download: bool) -> (bool, str):
 
                 await log('error', msg, sem)
 
-                return False
+                if not download:
+                    return (False, "")
+                else:
+                    return False
 
             else:
                 file_exists["upstream"] = True
                 data.append(response)
 
+
     file_last = data[0]['pages'][0]
 
     if not download:
         return (True, file_last['imageinfo'][0]['url'])
-        pass
         
     else:
         # -- read file from disk given file name

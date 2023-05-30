@@ -94,13 +94,13 @@ class WikiPage(Page):
         that URL to be used later in post-processing.
         """
 
-        if self.download_image:
-            return await fetch_file(file, self.download_image)
-        else:
+        if not self.download_image:
             t = await fetch_file(file, self.download_image)
             self.file_URLs.append(t[1])
             return t[0]
-
+        else:
+            return await fetch_file(file, self.download_image)
+            
     def clean_url(self, url: str) -> str:
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
@@ -271,11 +271,8 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     tasks = []
     for wikilink in article_wtp.wikilinks:
 
-        # save category value somewhere if needed
-        # before running below code
         if wikilink.title.lower().startswith('category:'):
             cat = wikilink.title.split(':')[-1]
-            article['category'] = cat
             del wikilink[:]
 
         elif wikilink.title.lower().startswith('file:'):
@@ -387,13 +384,15 @@ def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
     f = Path(file)
     url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
     img_tag = soup.find(src=re.compile(url_match))
-    img_tag['src'] = url
 
-    if 'alt' in img_tag.attrs:
-        if img_tag['alt'] == url_match:
-            img_tag['alt'] = url
+    if img_tag:
+        img_tag['src'] = url
 
-            img_tag.parent['href'] = url
+        if 'alt' in img_tag.attrs:
+            if img_tag['alt'] == url_match:
+                img_tag['alt'] = url
+
+                img_tag.parent['href'] = url
 
 
 def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_target: str | None = None):
@@ -491,49 +490,107 @@ def get_metadata_field(field):
 def get_metadata(article):
     """
     extract wiki template tags from article, if any
+    extract article category
     """
 
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    cats = config['wiki']['categories']
+    cat_keys = cats.keys()
+
+    metadata = {}
     templates = article.templates
 
     if len(templates) > 0:
 
+        templates_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
+
         for t in article.templates:
             label = t.name.strip()
+            if label in cat_keys:
+                cat_label = cats[label]['label']
+                metadata['category'] = slugify(cat_label)
 
             # collect all metadata from article.template table
-            metadata = {}
-            templates_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
     
-            return metadata
 
-    else:
-        return None
+    if not metadata['category']:
+        category = get_category(article.wikilinks, metadata)
+        metadata['category'] = slugify(category)
+
+    return metadata
 
 
 def get_images(article):
+
+    MEDIA_DIR = os.getenv('MEDIA_DIR')
+    # remove `wiki` as first stem in tree-path from MEDIA_DIR
+    # so that HTML URI works correctly
+    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     images = []
     for wikilink in article.wikilinks:
         if wikilink.title.lower().startswith('file:'):
             filename = wikilink.title[5:].strip()
-            # TODO replace hardcoded path with env.MEDIA_DIR
-            # and remove `/wiki/` from path
-            filepath =  '/assets/media/' + filename
+            filepath = HTML_MEDIA_DIR + filename
 
             images.append(filepath)
 
     return images
  
 
-def get_category(wikilink):
+def get_category(wikilinks, metadata, categories) -> str:
 
-    for wikilink in wikilink:
-        if wikilink.title.lower().startswith('category:'):
-            cat = wikilink.title.split(':')[-1]
-            if cat is not None:
-                return cat
+    cat_fallback = None
+    cat_fallback_key = ""
+    for k, v in cats.items():
+        if v['fallback']:
+            cat_fallback_key = k
+            cat_fallback = v
+            
+    cat_fallback_label = cat_fallback['label']
+
+    if len(wikilinks) > 0:
+        categories = []
+
+        for wikilink in wikilinks:
+            if wikilink.title.lower().startswith('category:'):
+                key = wikilink.title.split(':')[-1].strip()
+                if key:
+                    categories.append(key)
+
+        if len(categories) > 0:
+            desired_categories = cats.keys()
+
+            # we want to have one category per article
+            # in case there's more than one, we hope that the second
+            # one is "Article", and we do the following:
+            # - make a set intersection for desired_categories and one for
+            #   the article's categories
+            # - convert to a list, check if there's more than one category:
+            #   if yes, check if "Article" is present and remove
+            #   and we return the first item in the list: if there's
+            #   more than one item left still, we pick simply the first.
+            
+            dc_set = set(desired_categories)
+            c_set = set(categories)
+            intersect = list(dc_set.intersection(c_set))
+
+            if len(intersect) > 1:
+                if cat_fallback_key in intersect:
+                     intersect.remove(cat_fallback_key)
+                     return intersect[0]
+
+            else:
+                return intersect[0]
+
+        else:
+            return cat_fallback_label
+    else:
+        return cat_fallback_label
 
 
 async def parser(article: str, metadata_only: bool, redirect_target: str | None = None):
@@ -564,8 +621,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         tool_metadata = None
         if metadata_only:
 
-            category = get_category(article_wtp.wikilinks)
-            if category == 'Tools':
+            if metadata['category'] == 'Tools':
                 tool_metadata = get_tool_metadata(article_wtp.string)
 
             return metadata, images, tool_metadata

@@ -43,10 +43,11 @@ async def get_article(page_title: str, client):
         return None
 
 
-def get_article_field(field, article):
+def get_article_field(field: str, article):
 
     if field in article:
         return article[field]
+
     else:
         return None
 
@@ -135,7 +136,7 @@ async def redirect_article(page_title: str, redirect_target: str):
         print(f"redirect-article: {page_title} not found, nothing done")
 
 
-async def save_article(article: str | None, template, sem):
+async def save_article(article: str | None, filepath: str, template, sem):
 
     if article is not None:
         filters = {
@@ -144,7 +145,7 @@ async def save_article(article: str | None, template, sem):
         }
 
         document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
+        await write_to_disk(filepath, document, sem)
 
 
 async def delete_article(page_title: str):

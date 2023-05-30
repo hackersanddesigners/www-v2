@@ -59,7 +59,9 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             if msg['type'] in ['new', 'edit']:
                 try:
                     article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
-                    await save_article(article_html, template, sem)
+                    article_category = article_metadata['metadata']['category']
+                    filepath = f"{article_category}/{article_html['slug']}"
+                    await save_article(article_html, filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err => {e}")
@@ -85,12 +87,18 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         if redirect['noredir'] == '0':
                             make_redirect = True
 
+                        target_article, target_metadata = await make_article(redirect['target'], client, metadata_only)
+                        target_category = target_metadata['metadata']['category']
+
+                        target_filepath = f"{target_category}/{target_html['slug']}"
+
                         if make_redirect:
                             source_article = await redirect_article(msg['title'], redirect['target'])
+
+                            # filepath = f"{article_metadata['category']}/{article_html['slug']}"
                             await save_article(source_article, template, sem)
 
-                        target_article, target_metadata = await make_article(redirect['target'], client, metadata_only)
-                        await save_article(target_article, template, sem)
+                        await save_article(target_article, target_filepath, template, sem)
                         
 
                     except Exception as e:

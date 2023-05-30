@@ -118,9 +118,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
             if metadata_only:
                 articles_metadata = prepared_articles
-
-                # we can also add it by {<cat>: <articles_metadata>}
-                # if necessary design-wise
                 articles_metadata_index.extend(articles_metadata)
 
             else:
@@ -131,16 +128,22 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
                 # save single article
                 save_tasks = []
-                for article in articles_html:
-                    task = save_article(article, template, sem)
+                for idx, article in enumerate(articles_html):
+                    article_metadata = articles_metadata[idx]
+                    article_category = article_metadata['metadata']['category']
+                    filepath = f"{article_category}/{article['slug']}"
+
+                    task = save_article(article, filepath, template, sem)
                     save_tasks.append(asyncio.ensure_future(task))
 
                     await asyncio.gather(*save_tasks)
 
 
+            # -- create index sections
+            # TODO how does this fit with the web-server routing setup?
             await make_index_sections(articles_metadata, cat, cat_label)
             
-
+        # -- make front-page
         await make_front_index(config['wiki']['frontpage'])
 
         # any useful?
