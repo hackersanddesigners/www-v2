@@ -13,14 +13,15 @@ from .templates import (
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
+    make_search_index
 )
 from .template_utils import (
     make_url_slug,
     make_timestamp,
 )
 import httpx
-from .fetch import create_context
-from .build_article import make_article 
+from .fetch import create_context, query_wiki
+from .build_article import make_article
 from .build_wiki import get_category
 import tomli
 from slugify import slugify
@@ -71,7 +72,7 @@ async def root(request: Request):
     context = create_context(ENV)
     async with httpx.AsyncClient(verify=context) as client:
 
-        frontpage = {"news": None, "upcoming_events": []} 
+        frontpage = {"news": None, "upcoming_events": []}
 
         metadata_only = False
         article, metadata = await make_article("Hackers & Designers", client, metadata_only)
@@ -85,12 +86,34 @@ async def root(request: Request):
                                            "article": article})
 
 
+# register search route before {cat} intentionally
+
+@app.get("/search", response_class=HTMLResponse)
+async def search(request: Request, query: str):
+    """
+    initiate wiki search on website
+    """
+
+    # results = await do_search(ENV, URL, query)
+
+    results = await query_wiki(ENV, URL, query )
+
+    article = await make_search_index(results, query)
+
+    return templates.TemplateResponse("search-index.html",
+                                          {"request": request,
+                                           "article": article})
+
+
+
+
+
 @app.get("/{cat}", response_class=HTMLResponse)
 async def category(request: Request, cat: str):
     """
     build index page for given category
     """
-    
+
     print(f"cat => {cat}")
 
     index = await get_category(ENV, URL, cat)

@@ -29,7 +29,7 @@ def get_template(template: str, filters):
         t = env.get_template("article.html")
 
     return t
-    
+
 
 def date_split(date: str):
 
@@ -60,7 +60,7 @@ def ts_pad_hour(tokens):
     hour = tokens[0]
 
     if len(hour) == 1:
-        ts = f"0{hour}:{tokens[1]}" 
+        ts = f"0{hour}:{tokens[1]}"
         return ts
 
     else:
@@ -150,7 +150,7 @@ async def make_event_index(articles, cat, cat_label):
                 # -- construct datetime end
                 dts_end = f"{date_end} {ts_end}"
                 article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
-                
+
 
         elif date is not None:
             date_start = date[0]
@@ -203,7 +203,7 @@ async def make_event_index(articles, cat, cat_label):
     events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-            
+
     nav = make_nav()
 
     article = {
@@ -298,6 +298,32 @@ async def make_tool_index(articles, cat, cat_label):
     sem = None
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
+
+
+async def make_search_index(articles, query):
+
+    filters = {
+        # 'slug': make_url_slug,
+        # 'ts': make_timestamp,
+    }
+
+    template = get_template(f"search-index", filters)
+    nav = make_nav()
+
+    article = {
+        'title': "\"" + query + "\" search results",
+        'slug': "search",
+        'query': query,
+        'results': articles,
+        'nav': nav
+    }
+
+    return article
+
+    sem = None
+    document = template.render(article=article)
+    # do not write search results to disk
+
 
 
 async def make_sitemap(articles):

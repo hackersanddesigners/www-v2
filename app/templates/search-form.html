@@ -1,0 +1,43 @@
+<form
+  id="search"
+  action="/search"
+  method="get"
+>
+
+
+  <!-- todo: change placeholder on every refresh -->
+
+  <input
+    name="query"
+    type="search"
+    list="article_list"
+    placeholder="Search query..."
+    value="{{ article.query }}"
+    required
+  />
+
+
+  <!-- todo: populate with list of exisitng pages -->
+
+  <datalist id="article_list">
+    {% for link in article_list %}
+      <option
+        value="{{ article.name }}"
+        data-slug="{{ article.slug }}"
+      ></option>
+    {% endfor %}
+  </datalist>
+
+
+  <!-- todo: other search options -->
+
+
+
+  <!-- submit query -->
+
+  <input
+    type="submit"
+    value="search"
+  />
+
+</form>

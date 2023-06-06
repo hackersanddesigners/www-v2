@@ -171,3 +171,8 @@ p:not(:last-child) {
     padding: 0.15rem 0.3rem;
 
 }
+
+
+.searchmatch {
+    background-color: var(--yellow);
+  }
