@@ -134,7 +134,7 @@ if you have another name for your local certificate instead of `hd-v2`, use that
 
 after this you can use https also in the dev environment while using this codebase!
 
-### settings.toml
+#### settings.toml
 
 this file mainly set website preferences, eg general wiki options:
 
