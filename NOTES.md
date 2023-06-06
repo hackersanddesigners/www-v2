@@ -76,7 +76,7 @@ this helps to compact the existing WIP functions to work with the wiki article i
     
 in terms of document "lifecycle", we want to:
 
-- fetch a newer version of a given wiki article, or delete it from out local HTML database; checking if the article exists does not help much in our case, as we receive a message update from the wiki server about a change happened to an existing, or just deleted, wiki article — so propably keeping the method `page_exists` seems unnecessary
+- fetch a newer version of a given wiki article, or delete it from out local HTML database; checking if the article exists does not help much in our case, as we receive a message update from the wiki server about a change happened to an existing, or just deleted, wiki article — so propably keeping the method `page_exists` seems unnecessary => actuallt used internall by wikitexthtml so it's necessary for its functioning
 - check if any file attached to a given wiki article has been changed, as well as checking if compared to our local db version, any file has been deleted in the update
   - this could have at least two approaches:
     - trust blindly the wiki article and re-fetch every file from it
