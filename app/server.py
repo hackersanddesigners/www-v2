@@ -57,7 +57,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             metadata_only = False
 
-            if msg['type'] in ['new', 'edit']:
+            if msg['type'] in ['new', 'edit'] or msg['type'] == 'log' and msg['log_action'] == 'restore':
                 try:
                     article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
                     article_category = article_metadata['metadata']['category']

@@ -148,7 +148,7 @@ async def save_article(article: str | None, filepath: str, template, sem):
         await write_to_disk(filepath, document, sem)
 
 
-async def delete_article(article_title: str, cat: str | None):
+async def delete_article(article_title: str, cat: str | None = None):
     """
     pass article title and remove it from local wiki dir, if it exists.
 
@@ -174,6 +174,11 @@ async def delete_article(article_title: str, cat: str | None):
                  in WIKI_DIR.glob(pattern)]   
 
         print(f"delete-article => scan for full filepath => {paths}")
+        if len(paths) > 0:
+            fn = paths[0]
+        else:
+            print(f"delete-article => scan-dir found no article match for {filename}")
+            return
 
     if await aos.path.exists(fn):
         await aos.remove(fn)
