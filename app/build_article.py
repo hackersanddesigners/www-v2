@@ -148,19 +148,40 @@ async def save_article(article: str | None, filepath: str, template, sem):
         await write_to_disk(filepath, document, sem)
 
 
-async def delete_article(page_title: str):
+async def delete_article(article_title: str, cat: str | None):
     """
-    remove local wiki article, if it exists
+    pass article title and remove it from local wiki dir, if it exists.
+
+    let's construct the correct filepath in here
+    instead of demanding the requiring function to
+    do it; in this way we uniformize what we need it
+    and just assume we receive the title of the article
+    and potentially its cat; if cat is None we scan the
+    WIKI_DIR for a matching filename.
     """
 
-    fn = f"wiki/{slugify(page_title)}.html"
+    print(f"delete-article => {article_title, cat}")
 
-    if await os.path.exists(fn):
-        await os.remove(fn)
-        print(f"delete-article: {page_title} removed")
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    p = Path(article_title)
+    filename = slugify(str(p.stem))
+
+    if cat:
+        fn = f"{WIKI_DIR}/{cat}/{filename}.html"
+    else:
+        pattern = f"**/{filename}.html"
+        paths = [p for p
+                 in WIKI_DIR.glob(pattern)]   
+
+        print(f"delete-article => scan for full filepath => {paths}")
+
+    if await aos.path.exists(fn):
+        await aos.remove(fn)
+        print(f"delete-article: {article_title} removed")
 
     else:
-        print(f"delete-article: {page_title} not found, nothing done")
+        print(f"delete-article: {article_title} not found, nothing done")
+
 
 async def has_duplicates(article_filename: str, matching_cat: str):
     """
