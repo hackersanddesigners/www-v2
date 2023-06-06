@@ -65,8 +65,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     await save_article(article_html, filepath, template, sem)
 
                     # check if current article exists in any other category folder
+                    # if true, delete it from there
                     await has_duplicates(article_html['slug'], article_category)
-                    
 
                 except Exception as e:
                     print(f"make-article err => {e}")
