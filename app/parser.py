@@ -24,6 +24,8 @@ class WikiPage(Page):
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+
     file_URLs = []
 
     with open("settings.toml", mode="rb") as f:
@@ -106,11 +108,23 @@ class WikiPage(Page):
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
 
-        # convert it to slugified version and then append `.html`
-        # so it correctly points to a filepath
+        # -- convert it to slugified version and then append `.html`
+        #    so it correctly points to a filepath
+        # -- insert category to URL: scan dir with given wiki URL
+        #    and match any existing filepath in WIKI_DIR, then extract
+        #    category (eg sub-dir) from it
 
-        new_url = slugify(url)
-        return f"{new_url}.html"
+        p = Path(url)
+        filename = slugify(str(p.stem))
+
+        pattern = f"**/{filename}.html"
+        paths = [p for p
+                 in self.WIKI_DIR.glob(pattern)]
+
+        if len(paths) > 0:
+            wp = paths[0]
+            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}.html"
+            return f"{new_url}.html"
 
     def clean_title(self, title: str) -> str:
         """
@@ -283,9 +297,6 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
 
             # -- convert normal wikilink to standard URL
 
-            # TODO should decide if articles are organized in a tree
-            # or not, and so construct the URL accordingly
-
             # most times only a wikilink like this is added:
             # [Title of Other Page]
             # wikilink.title => Title of Other Page
@@ -301,6 +312,7 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
             # after wikitexthtml parsed the link, we run clean_url and slugify it
             # so we can point it to the correct HTML file on disk
             wikilink.target = wikilink.target.replace(':', '')
+
 
             wikilink.text = wikilink.text or wikilink.target
 
@@ -421,7 +433,6 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
             link.attrs['title'] = link.text
 
         # if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
-            # intercept abs-url pointing to root-level website
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
             # eg point to a page in *this* wiki
