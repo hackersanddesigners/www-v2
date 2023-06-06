@@ -24,7 +24,7 @@
     <figure class="w30">
       <img src="{{ event.images[0] }}">
       <figcaption>
-        <p><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+        <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
         <p>
           {{ event.metadata.location }}
           <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
@@ -64,7 +64,7 @@
         <tbody>
           {% for event in article.events.past %}
           <tr data-title="{{ event.title }}" data-location="{{ event.metadata.location }}" data-dateStart="{{ event.metadata.dates.start }}" data-timeStart="{{ event.metadata.times.start }}">
-            <td><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></td>
+            <td><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></td>
             <td>{{ event.metadata.location }}</td>
             <td>
               <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>

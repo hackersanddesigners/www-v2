@@ -8,20 +8,20 @@ from fastapi.responses import HTMLResponse
 from starlette.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
-from .templates import (
+from .views.views import (
     make_event_index,
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
 )
-from .template_utils import (
+from .views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
 import httpx
-from .fetch import create_context
-from .build_article import make_article 
-from .build_wiki import get_category
+from app.fetch import create_context
+from app.build_article import make_article 
+from app.build_wiki import get_category
 import tomli
 from slugify import slugify
 load_dotenv()
@@ -31,7 +31,7 @@ app = FastAPI()
 
 base_dir = Path.cwd()
 
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
 templates.env.filters['slug'] = make_url_slug
 templates.env.filters['ts'] = make_timestamp
 

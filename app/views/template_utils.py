@@ -51,5 +51,3 @@ def ts_pad_hour(tokens):
 
     else:
         return ":".join(tokens)
-
-

@@ -1,15 +1,17 @@
-from .fetch import fetch_article
-from .parser import parser
+import os
+from app.fetch import fetch_article
+from app.parser import parser
 from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
-from aiofiles import os
-from .write_to_disk import main as write_to_disk
+from aiofiles import os as aos
+from app.write_to_disk import main as write_to_disk
 import tomli
-from .template_utils import (
+from app.views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
+from pathlib import Path
 
 
 def make_nav():

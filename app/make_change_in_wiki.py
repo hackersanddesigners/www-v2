@@ -3,7 +3,7 @@ import sys
 import os
 import asyncio
 import httpx
-from fetch import create_context
+from app.fetch import create_context
 load_dotenv()
 
 

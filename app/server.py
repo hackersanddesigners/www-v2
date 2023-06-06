@@ -4,16 +4,16 @@ import traceback
 import socket
 import httpx
 import json
-from pretty_json_log import main as pretty_json_log
-from templates import (
+from app.pretty_json_log import main as pretty_json_log
+from app.views.views import (
     get_template,
 )
-from template_utils import (
+from app.views.template_utils import (
     make_url_slug,
     make_timestamp
 )
-from fetch import create_context
-from build_article import (
+from app.fetch import create_context
+from app.build_article import (
     make_article,
     redirect_article,
     save_article,
