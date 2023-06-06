@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from .fetch import article_exists, fetch_file, file_exists, create_context
+from fetch import article_exists, fetch_file, file_exists, create_context
 import httpx
 from slugify import slugify
 from bs4 import BeautifulSoup
@@ -332,14 +332,14 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
                 if not gallery_f.startswith('File:'):
                     f = 'File:' + gallery_f
                     gallery_contents.append(f)
+                    tag.contents = '\n'.join(gallery_contents)
 
                     task = wiki_page.file_fetch(f)
                     tasks.append(asyncio.ensure_future(task))
 
-            tag.contents = '\n'.join(gallery_contents)
 
             await asyncio.gather(*tasks)
-    
+
 
     # -- return article as string
     return article_wtp.string
@@ -509,8 +509,11 @@ def get_metadata(article):
         for t in article.templates:
             label = t.name.strip()
             if label in cat_keys:
-                cat_label = cats[label]['label']
-                metadata['category'] = slugify(cat_label)
+                if not cats[label]['fallback']:
+                    cat_label = cats[label]['label']
+                    metadata['category'] = slugify(cat_label)
+                else:
+                    metadata['category'] = ""
 
             # collect all metadata from article.template table
             for key in templates_keys:
@@ -518,7 +521,7 @@ def get_metadata(article):
     
 
     if not metadata['category']:
-        category = get_category(article.wikilinks, metadata)
+        category = get_category(article.wikilinks, metadata, cats)
         metadata['category'] = slugify(category)
 
     return metadata
@@ -542,7 +545,7 @@ def get_images(article):
     return images
  
 
-def get_category(wikilinks, metadata, categories) -> str:
+def get_category(wikilinks, metadatam, cats) -> str:
 
     cat_fallback = None
     cat_fallback_key = ""
