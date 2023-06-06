@@ -1,6 +1,7 @@
 import arrow
 import aiofiles
 
+
 async def write(filename: str, msg: str):
     async with aiofiles.open(f"./logs/{filename}.log", mode='a') as f:
         try:

@@ -4,9 +4,9 @@ import typer
 from typing_extensions import Annotated
 import asyncio
 import time
-from server import main as srv
-from build_wiki import main as bw
-from make_change_in_wiki import main as mc
+from app.server import main as srv
+from app.build_wiki import main as bw
+from app.make_change_in_wiki import main as mc
 load_dotenv()
 
 

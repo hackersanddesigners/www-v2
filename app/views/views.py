@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import asyncio
-from app.template_utils import (
+from .template_utils import (
     make_url_slug,
     make_timestamp
 )
@@ -12,7 +12,7 @@ from app.build_article import get_article, make_nav, make_article
 import arrow
 import json
 import wikitextparser as wtp
-from app.parser import (
+from ..parser import (
     get_metadata,
     parser,
 )
@@ -23,7 +23,7 @@ load_dotenv()
 
 def get_template(template: str, filters):
     template = slugify(template)
-    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
+    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
 
     if filters is not None:
         for k,v in filters.items():
