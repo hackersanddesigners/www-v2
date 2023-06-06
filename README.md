@@ -78,6 +78,35 @@ check this repo to set up a MW instance: <https://github.com/hackersanddesigners
 
 ## Local dev setup and TLS certificates
 
+### .env, settings.toml
+
+this project needs two settings files to function:
+
+- `.env`
+- `sttings.toml`
+
+#### .env
+
+rename `env.sample` to `.env` and fill out the file using this reference:
+
+- `ENV`: set either `dev` or `prod`; this is mostly used to decide if using a local certificate when doing HTTP operation or not
+- `SERVER_IP`: set a host for the `server.py` function => eg. `localhost`
+- `SERVER_PORT`: set a port number for the `server.py` function (ergo, opening a port to listen to UDP messages from the MediaWiki instance) => eg. `1331`
+- `WIKI_DIR`: path to static HTML output folder. choose a name for it (eg. `wiki`), create it, and set its name here
+- `ASSETS_DIR`: path to static folder: eg. CSS, JS, images
+- `MEDIA_DIR`: path for the media directory of WIKI_DIR => eg => `<WIKI_DIR>/assets/media`
+- `BASE_URL`: base API URL path => eg. for local setup: `http://localhost/api.php?`; for an online wiki `https://wikixyz.tld/api.php?`
+
+we create bot user to help programmatically creating, editing or deleting a wiki article. get credentials by visting the `Special:BotPasswords` page of your wiki. then:
+
+- `BOT_USR`: use lgname
+- `BOT_PWD`: use lgpassword
+
+- `LOCAL_CA`: see below under *local certificate*
+- `SEMAPHORE`: number of max operations happening at the same time when (mostly) doing async HTTP call. above this number the Python interpreter will throw an error. a good number is between 150-175, try and see what works.
+
+#### local certificate
+
 install [mkcert](https://github.com/FiloSottile/mkcert) or similar to create a local certificate.
 
 for mkcert:
@@ -107,7 +136,7 @@ after this you can use https also in the dev environment while using this codeba
 
 ## commands
 
-there is a CLI program at `app/cli.py` to run common operations. currently available commands are:
+there is a CLI program at `cli.py` to run common operations. currently available commands are:
 
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
