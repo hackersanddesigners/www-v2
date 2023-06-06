@@ -83,7 +83,7 @@ check this repo to set up a MW instance: <https://github.com/hackersanddesigners
 this project needs two settings files to function:
 
 - `.env`
-- `sttings.toml`
+- `settings.toml`
 
 #### .env
 
