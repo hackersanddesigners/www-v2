@@ -98,7 +98,6 @@ async def make_article(page_title: str, client, metadata_only: bool):
         return article_html, article_metadata
 
     else:
-        # TODO handle article remove from local wiki
         print('article not found! it could have been deleted meanwhile\n and we got notified about it')
 
         # check if there's a copy of article in `wiki/` and
@@ -113,27 +112,40 @@ async def make_article(page_title: str, client, metadata_only: bool):
             print(f"delete article err => {e}")
 
 
-async def redirect_article(page_title: str, redirect_target: str):
+async def redirect_article(article_title: str, redirect_target: str):
+    """
+    """
 
-    fn = f"./wiki/{slugify(page_title)}.html"
-    print(f"redirect-article => {fn}")
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    p = Path(article_title)
+    filename = slugify(str(p.stem))
 
-    if await os.path.exists(fn):
-        async with aiofiles.open(fn, mode='r') as f:
-            tree = await f.read()
-            soup = BeautifulSoup(tree, 'lxml')
-            
-            main_h1 = soup.body.main.h1
-            redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+    pattern = f"**/{filename}.html"
+    paths = [p for p
+             in WIKI_DIR.glob(pattern)]
 
-            main_h1.insert_after(redirect)
-            output = soup.prettify(formatter=None)
+    if len(paths) > 0:
+        fn = paths[0]
 
-        async with aiofiles.open(fn, mode='w') as f:
-            await f.write(output)
+        if await aos.path.exists(fn):
+            async with aiofiles.open(fn, mode='r') as f:
+                tree = await f.read()
+                soup = BeautifulSoup(tree, 'lxml')
+                
+                main_h1 = soup.body.main.h1
+                redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
-    else:
-        print(f"redirect-article: {page_title} not found, nothing done")
+                main_h1.insert_after(redirect)
+                output = soup.prettify(formatter=None)
+
+            async with aiofiles.open(fn, mode='w') as f:
+                await f.write(output)
+
+
+            return f"{fn.parent.stem}/{fn.stem}"
+
+        else:
+            print(f"redirect-article: {article_title} not found, nothing done")
 
 
 async def save_article(article: str | None, filepath: str, template, sem):
@@ -171,7 +183,7 @@ async def delete_article(article_title: str, cat: str | None = None):
     else:
         pattern = f"**/{filename}.html"
         paths = [p for p
-                 in WIKI_DIR.glob(pattern)]   
+                 in WIKI_DIR.glob(pattern)]
 
         print(f"delete-article => scan for full filepath => {paths}")
         if len(paths) > 0:

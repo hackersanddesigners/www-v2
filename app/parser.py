@@ -545,7 +545,7 @@ def get_images(article):
     return images
  
 
-def get_category(wikilinks, metadatam, cats) -> str:
+def get_category(wikilinks, metadata, cats) -> str:
 
     cat_fallback = None
     cat_fallback_key = ""
@@ -577,7 +577,7 @@ def get_category(wikilinks, metadatam, cats) -> str:
             #   if yes, check if "Article" is present and remove
             #   and we return the first item in the list: if there's
             #   more than one item left still, we pick simply the first.
-            
+
             dc_set = set(desired_categories)
             c_set = set(categories)
             intersect = list(dc_set.intersection(c_set))
@@ -585,10 +585,10 @@ def get_category(wikilinks, metadatam, cats) -> str:
             if len(intersect) > 1:
                 if cat_fallback_key in intersect:
                      intersect.remove(cat_fallback_key)
-                     return intersect[0]
+                     return cats[intersect[0]]['label']
 
             else:
-                return intersect[0]
+                return cats[intersect[0]]['label']
 
         else:
             return cat_fallback_label
