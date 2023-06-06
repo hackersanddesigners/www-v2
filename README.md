@@ -134,6 +134,24 @@ if you have another name for your local certificate instead of `hd-v2`, use that
 
 after this you can use https also in the dev environment while using this codebase!
 
+### settings.toml
+
+this file mainly set website preferences, eg general wiki options:
+
+- `wiki.media`: if make a local copy of MediaWiki images, or point images to the MW instance
+- `wiki.frontpage`: which wiki article to we want to use for the website frontpage?
+- `wiki.categories.<cat>`: sets a list of categories to define which wiki articles we want to display on the website. the `<cat>` is the actual MediaWiki category we want to use. then, each category has some more options:
+  - `parse`: should we parse it (eg download every article of that category) or not; useful when working on the codebase to speed up parsing process if using `python cli.py build-wiki`, for instance
+  - `nav`: should the category be displayed in the navigation
+  - `fallback`: using this category as fallback, in case the wiki article has no matching category with the given list of categories
+  - `label`: some categories in the wiki might be called something, and we might want to display them in a different way in the navigation, in the URL path, etc
+
+and specific plugin options:
+
+- `tool-plugin.host_default`: which git hosting service fallback is the H&D MW Tool plugin using?
+- `tool-plugin.host_default`: a dictionary of git hosting services the H&D MW Tool wants to use
+- `tool-plugin.branch_default`: a list of branches to use when parsing information from the git repo set in the plugin; this works as a progressive list of fallback branch names
+
 ## commands
 
 there is a CLI program at `cli.py` to run common operations. currently available commands are:
