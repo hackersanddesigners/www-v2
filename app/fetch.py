@@ -144,6 +144,7 @@ async def query_wiki(ENV: str, URL: str, query: str):
             else:
                 results.extend(response)
     for result in results:
+        print(json.dumps(result, indent=2))
         result['slug'] = f"{slugify(result['title'])}.html"
     return results
 

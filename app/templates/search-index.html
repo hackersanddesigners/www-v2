@@ -15,9 +15,8 @@
             {{ item.title }}
           </a>
         </h3>
-        <p>
-          <time datetime="{{ item.timestamp }}">{{ item.timestamp }}</time>
-        </p>
+        <p> Last edited on <time datetime="{{ item.timestamp }}">{{ item.timestamp }}</time> </p>
+        <p> Word count: {{ item.wordcount }}</p>
         <div class="snippet">
           {{ item.snippet | safe }}
         </div>
