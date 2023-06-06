@@ -6,7 +6,7 @@ import aiofiles
 from aiofiles import os
 from .write_to_disk import main as write_to_disk
 import tomli
-from template_utils import (
+from .template_utils import (
     make_url_slug,
     make_timestamp,
 )
