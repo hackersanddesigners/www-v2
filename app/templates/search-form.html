@@ -22,8 +22,8 @@
   <datalist id="article_list">
     {% for link in article_list %}
       <option
-        value="{{ article.name }}"
-        data-slug="{{ article.slug }}"
+        value="{{ link.name }}"
+        data-slug="{{ link.slug }}"
       ></option>
     {% endfor %}
   </datalist>
