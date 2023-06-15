@@ -20,11 +20,15 @@
   <!-- todo: populate with list of exisitng pages -->
 
   <datalist id="article_list">
-    {% for link in article_list %}
-      <option
-        value="{{ link.name }}"
-        data-slug="{{ link.slug }}"
-      ></option>
+    {% for cat in site_index %}
+      <optgroup label="{{ cat.label }}">
+        {% for item in cat.articles %}
+          <option
+            value="{{ item.name }}"
+            data-slug="{{ item.slug }}"
+          ></option>
+        {% endfor %}
+      </optgroup>
     {% endfor %}
   </datalist>
 

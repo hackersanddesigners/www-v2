@@ -94,7 +94,7 @@ async def search(request: Request, query: str):
     initiate wiki search on website
     """
 
-    # results = await do_search(ENV, URL, query)
+    # check if exact slug is matches rendered HTML page and redirect to it
 
     results = await query_wiki(ENV, URL, query )
 
