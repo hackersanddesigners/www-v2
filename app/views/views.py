@@ -1,22 +1,29 @@
 from dotenv import load_dotenv
 import os
 import asyncio
+from .template_utils import (
+    make_url_slug,
+    make_timestamp
+)
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
-from .write_to_disk import main as write_to_disk
-from .build_article import get_article, make_nav, make_article
+from app.write_to_disk import main as write_to_disk
+from app.build_article import get_article, make_nav, make_article
 import arrow
 import json
 import wikitextparser as wtp
-from .parser import get_metadata, parser
-from .fetch import create_context
+from ..parser import (
+    get_metadata,
+    parser,
+)
+from app.fetch import create_context
 import httpx
 load_dotenv()
 
 
 def get_template(template: str, filters):
     template = slugify(template)
-    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
+    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
 
     if filters is not None:
         for k,v in filters.items():

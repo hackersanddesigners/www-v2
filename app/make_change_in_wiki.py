@@ -3,7 +3,7 @@ import sys
 import os
 import asyncio
 import httpx
-from fetch import create_context
+from app.fetch import create_context
 load_dotenv()
 
 
@@ -59,7 +59,7 @@ async def get_csrf_token(URL: str, client) -> str:
 
 async def create_edit_page(URL: str, input_page: str, client):
     """
-    this func create a new or edit an existing article.
+    this func create a new article or edit an existing one.
 
     <https://www.mediawiki.org/wiki/API:Edit>
     login to the wikimedia instance as a bot user

@@ -13,22 +13,27 @@ frontpage = "Hackers & Designers"
 [wiki.categories.Article]
 parse = true
 nav = false
+fallback = true
 label = "Articles"
 [wiki.categories.Event]
 parse = true
 nav = false
+fallback = false
 label = "Events"
 [wiki.categories.Collaborators]
 parse = true
 nav = true
+fallback = false
 label = "Collaborators"
 [wiki.categories.Publishing]
 parse = true
 nav = true
+fallback = false
 label = "Publishing"
 [wiki.categories.Tools]
 parse = true
 nav = true
+fallback = false
 label = "Tools"
 
 [tool-plugin]

@@ -4,20 +4,21 @@ import traceback
 import socket
 import httpx
 import json
-from pretty_json_log import main as pretty_json_log
-from templates import (
+from app.pretty_json_log import main as pretty_json_log
+from app.views.views import (
     get_template,
 )
-from template_utils import (
+from app.views.template_utils import (
     make_url_slug,
     make_timestamp
 )
-from fetch import create_context
-from build_article import (
+from app.fetch import create_context
+from app.build_article import (
     make_article,
     redirect_article,
     save_article,
-    delete_article
+    delete_article,
+    has_duplicates
 )
 import asyncio
 load_dotenv()
@@ -33,8 +34,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_sock.bind((SERVER_IP, SERVER_PORT))
 
-    print("UDP server has started and is ready to receive...",
-          [SERVER_IP, SERVER_PORT])
+    print(f"UDP server has started and is ready to receive...",
+          f"{SERVER_IP, SERVER_PORT}")
 
     filters = {
         'slug': make_url_slug,
@@ -56,54 +57,73 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             metadata_only = False
 
-            if msg['type'] in ['new', 'edit']:
+            if (
+                    msg['type'] in ['new', 'edit']
+                    or msg['type'] == 'log'
+                    and msg['log_action'] in ['restore', 'delete_redir']
+            ):
+
                 try:
                     article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
                     article_category = article_metadata['metadata']['category']
                     filepath = f"{article_category}/{article_html['slug']}"
                     await save_article(article_html, filepath, template, sem)
 
+                    # check if current article exists in any other category folder
+                    # if true, delete it from there
+                    await has_duplicates(article_html['slug'], article_category)
+
                 except Exception as e:
                     print(f"make-article err => {e}")
                     traceback.print_exc()
 
             elif msg['type'] == 'log':
-                if msg['log_action'] == 'delete':
-                    try:
-                        await delete_article(msg['title'])
 
-                    except Exception as e:
-                        print(f"delete article err => {e}")
-                        traceback.print_exc()
+                if msg['log_type'] == 'delete':
 
-                elif msg['log_action'] == 'move':
-                    try:
-                        redirect = msg['log_params']
+                    if msg['log_action'] == 'delete':
+                        try:
+                            await delete_article(msg['title'])
 
-                        # no-redirect:
-                        # - 0 => make redirect
-                        # - 1 => no redirect
-                        make_redirect = False
-                        if redirect['noredir'] == '0':
-                            make_redirect = True
+                        except Exception as e:
+                            print(f"delete article err => {e}")
+                            traceback.print_exc()
 
-                        target_article, target_metadata = await make_article(redirect['target'], client, metadata_only)
-                        target_category = target_metadata['metadata']['category']
+                elif msg['log_type'] == 'move':
+                    
+                    if msg['log_action'] in ['move', 'delete_redir']:
+                        try:
+                            redirect = msg['log_params']
 
-                        target_filepath = f"{target_category}/{target_html['slug']}"
+                            # no-redirect:
+                            # - 0 => make redirect
+                            # - 1 => no redirect
+                            make_redirect = False
+                            if 'noredir' in redirect and redirect['noredir'] == '0':
+                                make_redirect = True
 
-                        if make_redirect:
-                            source_article = await redirect_article(msg['title'], redirect['target'])
+                            target_html, target_metadata = await make_article(redirect['target'], client, metadata_only)
+                            target_category = target_metadata['metadata']['category']
+                            target_filepath = f"{target_category}/{target_html['slug']}"
 
-                            # filepath = f"{article_metadata['category']}/{article_html['slug']}"
-                            await save_article(source_article, template, sem)
+                            if make_redirect:
+                                source_article, source_metadata = await make_article(msg['title'], client, metadata_only)
+                                source_filepath = await redirect_article(msg['title'], redirect['target'])
+                                await save_article(source_article, source_filepath, template, sem)
 
-                        await save_article(target_article, target_filepath, template, sem)
+                            await save_article(target_html, target_filepath, template, sem)
+
+                            # check if current article exists in any other category folder
+                            # if true, delete it from there
+                            await has_duplicates(target_html['slug'], target_category)
                         
 
-                    except Exception as e:
-                        print(f"move article err => {e}")
-                        traceback.print_exc()
+                        except Exception as e:
+                            print(f"move article err => {e}")
+                            traceback.print_exc()
+
+            else:
+                print(f"we dont' know how to parse this MW operation.")
 
 
 if __name__ == '__main__':

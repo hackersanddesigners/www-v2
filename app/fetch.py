@@ -5,7 +5,7 @@ import httpx
 from pathlib import Path
 from slugify import slugify
 import aiofiles
-from .log_to_file import main as log
+from app.log_to_file import main as log
 import filetype
 from urllib.parse import unquote
 load_dotenv()

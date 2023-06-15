@@ -3,23 +3,30 @@ from sys import argv
 import os
 import tomli
 import httpx
-from .fetch import query_continue, create_context, fetch_article
+from app.fetch import (
+    query_continue,
+    create_context,
+    fetch_article,
+)
 import asyncio
 import time
-from .templates import (
+from app.views.views import (
     get_template,
     make_index_sections,
     make_front_index,
     make_sitemap
 )
-from .build_article import make_article, save_article
-from .template_utils import (
+from app.views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
+from app.build_article import (
+    make_article,
+    save_article,
+)
 import json
 from slugify import slugify
-from .copy_assets import main as copy_assets
+from app.copy_assets import main as copy_assets
 load_dotenv()
 
 
@@ -74,10 +81,9 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     cat_tasks = []
     cat_indexes = {}
     for k, v in cats.items():
-        task = get_category(ENV, URL, k)
-        cat_tasks.append(asyncio.ensure_future(task))
-
-        cat_indexes[v['label']] = None
+        if v['parse']:
+            task = get_category(ENV, URL, k)
+            cat_tasks.append(asyncio.ensure_future(task))
 
     articles = await asyncio.gather(*cat_tasks)
 
