@@ -39,9 +39,7 @@ templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templat
 templates.env.filters['slug'] = make_url_slug
 templates.env.filters['ts'] = make_timestamp
 
-# app.mount("/",
-#           StaticFiles(directory=base_dir / "wiki", html=True),
-#           name="wiki")
+
 app.mount("/static",
           StaticFiles(directory=Path(__file__).parent.parent / "static"),
           name="static")
@@ -49,8 +47,10 @@ app.mount("/assets/media",
           StaticFiles(directory=base_dir / "wiki/assets/media"),
           name="media")
 
+
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
+
 
 with open("settings.toml", mode="rb") as f:
     config = tomli.load(f)
