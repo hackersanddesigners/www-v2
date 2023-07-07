@@ -89,14 +89,13 @@
           {% endfor %}
         </tbody>
       </table>
-    </div>
-    {% for page in pagination.pages %}
-    <a href="?page={{ page.label }}">{{ page.label }}</a>
-    {% endfor %}
+    </div> 
+
     {% else %}
     <p>No past event at the moment. (??)</p>
     {% endif %}
   </section>
+  {% include "pagination.html" %}
   
 </main>
 

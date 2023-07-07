@@ -105,10 +105,6 @@ async def category(request: Request, cat: str, page: int | None = 0):
 
     if cat_key:
 
-        # - fetch N round of results and return the `continue` value
-        #   if any, to build the fetch request for the next round of
-        #   results correctly, until no continue key is returned anymore.
-
         params = {
             'action': 'query',
             'list': 'categorymembers',
@@ -125,19 +121,19 @@ async def category(request: Request, cat: str, page: int | None = 0):
         async with httpx.AsyncClient(verify=context) as client:
 
             # -- get full list of entries from category
-            data_gen = []
-            async for c_response in query_continue(client, URL, params):
+            data = []
+            async for response in query_continue(client, URL, params):
 
-                c_response = c_response['categorymembers']
-                if len(c_response) > 0 and 'missing' in c_response[0]:
-                    title = c_response[0]['title']
+                response = response['categorymembers']
+                if len(response) > 0 and 'missing' in response[0]:
+                    title = response[0]['title']
                     print(f"the page could not be found => {title}")
             
                 else:
-                    data_gen.extend(c_response)
+                    data.extend(response)
 
             # -- make pagination
-            pagination = paginator(data_gen, 50, page)
+            pagination = paginator(data, 50, page)
             print(f"pagination => {len(pagination['data']), pagination['data']}")
                     
             metadata_only = True

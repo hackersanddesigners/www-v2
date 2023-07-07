@@ -70,10 +70,22 @@ def paginator(items, list_size: int, cursor: int):
         item = {"label": idx, "query": page}
         pagination.append(item)
         
-
     data = items[cursors[cursor] : (cursors[cursor] + list_size)]
+
+    cur_prev = None
+    if cursor > 0:
+        cur_prev = cursor - 1
+    
+    cur_next = None
+    if cursor < len(cursors) - 1:
+        cur_next = cursor + 1
 
     return {
         "pages": pagination,
         "data": data,
+        "nav": {
+            "current": cursor,
+            "prev": cur_prev,
+            "next": cur_next,
+        }
     }
