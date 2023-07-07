@@ -51,3 +51,29 @@ def ts_pad_hour(tokens):
 
     else:
         return ":".join(tokens)
+
+
+def paginator(items, list_size: int, cursor: int):
+    
+    cursors = []
+    for i in range(len(items)):
+        pagenum, offset = divmod(i, list_size)
+        if offset == 0:
+            cursors.append(i)
+
+    # cursor eg => [0, 50, 100, 150, 200]
+    # we use this value to set the left-hand side of the slice command
+    # eg where we want to start slicing from
+
+    pagination = []
+    for idx, page in enumerate(cursors):
+        item = {"label": idx, "query": page}
+        pagination.append(item)
+        
+
+    data = items[cursors[cursor] : (cursors[cursor] + list_size)]
+
+    return {
+        "pages": pagination,
+        "data": data,
+    }

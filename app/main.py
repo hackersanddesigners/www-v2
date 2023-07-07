@@ -17,9 +17,13 @@ from .views.views import (
 from .views.template_utils import (
     make_url_slug,
     make_timestamp,
+    paginator,
 )
 import httpx
-from app.fetch import create_context
+from app.fetch import (
+    create_context,
+    query_continue,
+)
 from app.build_article import make_article 
 from app.build_wiki import get_category
 import tomli
@@ -86,48 +90,83 @@ async def root(request: Request):
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
-async def category(request: Request, cat: str):
+async def category(request: Request, cat: str, page: int | None = 0):
     """
-    build index page for given category
+    build index page for given category: we build a paginated
+    template instead of fetching through all the results of a category
+    in one go.
     """
     
-    print(f"cat => {cat}")
+    cat_label = None
+    for k, v in cats.items():
+        if cats[k]['label'].lower() == cat:
+            cat_key = k
+            cat_label = cats[k]['label']
 
-    index = await get_category(ENV, URL, cat)
-    index = index[cat]
+    if cat_key:
 
-    sem = None
-    context = create_context(ENV)
-    async with httpx.AsyncClient(verify=context) as client:
+        # - fetch N round of results and return the `continue` value
+        #   if any, to build the fetch request for the next round of
+        #   results correctly, until no continue key is returned anymore.
 
-        metadata_only = True
-        art_tasks = []
-        for article in index:
-            print(f"{article}")
-            task = make_article(article['title'], client, metadata_only)
-            art_tasks.append(asyncio.ensure_future(task))
+        params = {
+            'action': 'query',
+            'list': 'categorymembers',
+            'cmtitle': f"Category:{cat_key}",
+            'cmlimit': '50',
+            'cmprop': 'ids|title|timestamp',
+            'formatversion': '2',
+            'format': 'json',
+            'redirects': '1',
+        }
+
+        context = create_context(ENV)
+        timeout = httpx.Timeout(10.0, connect=60.0)
+        async with httpx.AsyncClient(verify=context) as client:
+
+            # -- get full list of entries from category
+            data_gen = []
+            async for c_response in query_continue(client, URL, params):
+
+                c_response = c_response['categorymembers']
+                if len(c_response) > 0 and 'missing' in c_response[0]:
+                    title = c_response[0]['title']
+                    print(f"the page could not be found => {title}")
+            
+                else:
+                    data_gen.extend(c_response)
+
+            # -- make pagination
+            pagination = paginator(data_gen, 50, page)
+            print(f"pagination => {len(pagination['data']), pagination['data']}")
+                    
+            metadata_only = True
+            art_tasks = []
+            for article in pagination['data']:
+                task = make_article(article['title'], client, metadata_only)
+                art_tasks.append(asyncio.ensure_future(task))
 
             prepared_articles = await asyncio.gather(*art_tasks)
-            print(f"articles: {len(prepared_articles)}")
 
+            article = None
+            if cat_key == 'Event':
+                article = await make_event_index(prepared_articles, cat_key, cat_label, False)
+                
+            elif cat_label == 'Collaborators':
+                article = await make_collaborators_index(prepared_articles, cat, cat_label)
 
-        article = None
-        if cat == 'event':
-            article = await make_event_index(prepared_articles, cat)
+            elif cat_label == 'Publishing':
+                article = await make_publishing_index(prepared_articles, cat, cat_label)
 
-        elif cat == 'collaborators':
-            article = await make_collaborators_index(prepared_articles, cat)
+            elif cat_label == 'Tools':
+                article = await make_tool_index(prepared_articles, cat, cat_label)
 
-        elif cat == 'publishing':
-            article = await make_publishing_index(prepared_articles, cat)
-
-        elif cat == 'tools':
-            article = await make_tool_index(prepared_articles, cat)
-
-        if article is not None:
-            return templates.TemplateResponse(f"{cat}-index.html",
-                                              {"request": request,
-                                               "article": article})
+            if article is not None:
+                print(f"{cat_key, cat_label}")
+                return templates.TemplateResponse(f"{slugify(cat_key)}-index.html",
+                                                  {"request": request,
+                                                   "pagination": pagination,
+                                                   "article": article})
 
 
 @app.get("/{cat}/{article}", response_class=HTMLResponse)
