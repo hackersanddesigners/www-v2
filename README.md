@@ -167,4 +167,4 @@ start off by running `python cli.py --help` to see the available options.
 
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
-- `uvicorn app.main:app --reload`
+- `uvicorn app.main:app --reload` or use `run-local-server.sh`.
