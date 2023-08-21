@@ -48,8 +48,8 @@ def build_wiki(index_only: Annotated[bool, typer.Option(help="build only Index p
 
 @app.command()
 def make_article(article: Annotated[str, typer.Argument(help="article to work with")],
-                        operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
-
+                 operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
+    
     """
     Update or delete an article in the MediaWiki
     and create a new HTML version of it.
