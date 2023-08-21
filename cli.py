@@ -7,6 +7,8 @@ import time
 from app.server import main as srv
 from app.build_wiki import main as bw
 from app.make_change_in_wiki import main as mc
+from app.main import main as mws
+import asyncio
 load_dotenv()
 
 
@@ -57,6 +59,15 @@ def make_article(article: Annotated[str, typer.Argument(help="article to work wi
     URL = os.getenv('BASE_URL')
 
     asyncio.run(mc(ENV, URL, article, operation))
+
+
+@app.command()
+def local_server():
+    """
+    Run local web-server to browse wiki HTML folder.
+    """
+    
+    asyncio.run(mws())
 
 
 if __name__ == "__main__":
