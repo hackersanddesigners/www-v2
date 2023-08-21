@@ -100,7 +100,7 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(articles, cat, cat_label):
+async def make_event_index(articles, cat: str, cat_label: str, save_to_disk: bool):
 
     filters = {
         'slug': make_url_slug,
@@ -204,7 +204,6 @@ async def make_event_index(articles, cat, cat_label):
             article['metadata']['dates']['end'] = None
             article['metadata']['times']['end'] = None
 
-        # --
 
     # -- sort events by date desc
     events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
@@ -223,9 +222,13 @@ async def make_event_index(articles, cat, cat_label):
     print('events.happening =>', events['happening'])
     print('events.upcoming =>', events['upcoming'])
 
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    if save_to_disk:
+        sem = None
+        document = template.render(article=article)
+        await write_to_disk(article['slug'], document, sem)
+
+    else:
+        return article
 
 
 async def make_collaborators_index(articles, cat, cat_label):
