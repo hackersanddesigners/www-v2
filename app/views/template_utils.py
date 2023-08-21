@@ -6,8 +6,10 @@ def query_check(url: str, query_key: str | None = None, query_value: str | None 
     """
     Check if given URL has any query parameter:
     if yes, append query value with `&` (=> ?some=query&query`)
-    else update existing query key with new queery value.
+    else update existing query key with new query value.
     """
+
+    print(f"query check => {url.query, query_key, query_value}")
 
     if url.query != '':
 
@@ -22,7 +24,7 @@ def query_check(url: str, query_key: str | None = None, query_value: str | None 
             return f"{url.path}?{url.query}&{query_key}={query_value}"
     
     else:
-        return f"{url.path}?"
+        return f"{url.path}?{query_key}={query_value}"
 
 
 def make_url_slug(url: str):
