@@ -90,8 +90,7 @@ def paginator(items, list_size: int, cursor: int):
 
     pagination = []
     for idx, page in enumerate(cursors):
-        item = {"label": idx, "query": page}
-        pagination.append(item)
+        pagination.append(idx)
         
     data = items[cursors[cursor] : (cursors[cursor] + list_size)]
 
