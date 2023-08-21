@@ -1,5 +1,6 @@
 import arrow
 from slugify import slugify
+from urllib.parse import parse_qs, urlencode
 
 
 def query_check(url: str, query_key: str | None = None, query_value: str | None = None) -> str:
@@ -9,17 +10,17 @@ def query_check(url: str, query_key: str | None = None, query_value: str | None 
     else update existing query key with new query value.
     """
 
-    print(f"query check => {url.query, query_key, query_value}")
-
     if url.query != '':
 
         # if new query matches existing query key
         # update only query value;
         # else append new query to existing query param
 
-        if url.query.split('=')[0] == query_key:
-            return f"{url.path}?{query_key}={query_value}"
-        
+        query_params = parse_qs(url.query)
+        if query_key in query_params:
+            query_params[query_key] = query_value
+            return f"{url.path}?{urlencode(query_params, doseq=True)}"
+
         else:
             return f"{url.path}?{url.query}&{query_key}={query_value}"
     
