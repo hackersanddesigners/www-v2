@@ -57,8 +57,6 @@ URL = os.getenv('BASE_URL')
 with open("settings.toml", mode="rb") as f:
     config = tomli.load(f)
 
-cats = config['wiki']['categories']
-
 
 async def not_found(request: Request, exc: HTTPException):
     return HTMLResponse(content=HTML_404_PAGE, status_code=exc.status_code)
@@ -99,13 +97,19 @@ async def category(request: Request, cat: str, page: int | None = 0):
     in one go.
     """
     
+    cats = config['wiki']['categories']
+
+    cat_key = None
     cat_label = None
     for k, v in cats.items():
         if cats[k]['label'].lower() == cat:
             cat_key = k
             cat_label = cats[k]['label']
 
-    if cat_key:
+    if not cat_key:
+        raise HTTPException(status_code=404)
+    
+    else:
 
         params = {
             'action': 'query',
@@ -136,7 +140,6 @@ async def category(request: Request, cat: str, page: int | None = 0):
 
             # -- make pagination
             pagination = paginator(data, 50, page)
-            print(f"pagination => {len(pagination['data']), pagination['data']}")
                     
             metadata_only = True
             art_tasks = []
@@ -159,8 +162,7 @@ async def category(request: Request, cat: str, page: int | None = 0):
             elif cat_label == 'Tools':
                 article = await make_tool_index(prepared_articles, cat, cat_label)
 
-            if article is not None:
-                print(f"{cat_key, cat_label}")
+            if article:
                 return templates.TemplateResponse(f"{slugify(cat_key)}-index.html",
                                                   {"request": request,
                                                    "pagination": pagination,
