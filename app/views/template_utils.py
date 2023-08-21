@@ -2,6 +2,29 @@ import arrow
 from slugify import slugify
 
 
+def query_check(url: str, query_key: str | None = None, query_value: str | None = None) -> str:
+    """
+    Check if given URL has any query parameter:
+    if yes, append query value with `&` (=> ?some=query&query`)
+    else update existing query key with new queery value.
+    """
+
+    if url.query != '':
+
+        # if new query matches existing query key
+        # update only query value;
+        # else append new query to existing query param
+
+        if url.query.split('=')[0] == query_key:
+            return f"{url.path}?{query_key}={query_value}"
+        
+        else:
+            return f"{url.path}?{url.query}&{query_key}={query_value}"
+    
+    else:
+        return f"{url.path}?"
+
+
 def make_url_slug(url: str):
 
     if url:
