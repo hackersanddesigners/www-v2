@@ -55,10 +55,10 @@
         <thead>
           <tr>
             <th scope="col"><a href="{{ request.url | query_check('sort_by', 'title') }}" id="title">Title</a></th>
-            <th scope="col"><button id="location">Location</button></th>
-            <th scope="col"><button id="datestart">Date</button></th>
-            <th scope="col"><button id="timestart">Time</button></th>
-            <th scope="col"><button id="type">Type</button></th>
+            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'location') }}" id="location">Location</a></th>
+            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'date') }}" id="datestart">Date</a></th>
+            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'time') }}" id="timestart">Time</a></th>
+            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'type') }}" id="type">Type</a></th>
           </tr>
         </thead>
         <tbody>
