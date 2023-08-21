@@ -163,6 +163,8 @@ there is a CLI program at `cli.py` to run common operations. currently available
 
 - `make-article`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does not exist yet.
 
+start off by running `python cli.py --help` to see the available options.
+
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
 - `uvicorn app.main:app --reload`
