@@ -26,7 +26,9 @@
       <figcaption>
         <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
         <p>
+          {% if event.metadata.location %}
           {{ event.metadata.location }}
+          {% endif %}
           <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
           {% if event.metadata.dates.end %}
           – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
@@ -65,7 +67,11 @@
           {% for event in article.events.past %}
           <tr data-title="{{ event.title }}" data-location="{{ event.metadata.location }}" data-dateStart="{{ event.metadata.dates.start }}" data-timeStart="{{ event.metadata.times.start }}">
             <td><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></td>
-            <td>{{ event.metadata.location }}</td>
+            <td>
+              {% if event.metadata.location %}
+              {{ event.metadata.location }}
+              {% else %}-{% endif %}
+            </td>
             <td>
               <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
               {% if event.metadata.dates.end %}
