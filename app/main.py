@@ -193,8 +193,9 @@ async def category(request: Request, cat: str, page: int | None = 0, sort_by: st
             prepared_articles = await asyncio.gather(*art_tasks)
 
             article = None
+            save_to_disk = False
             if cat_label == 'Events':
-                article = await make_event_index(prepared_articles, cat_key, cat_label, False, sort_by)
+                article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sort_by)
                 
             elif cat_label == 'Collaborators':
                 article = await make_collaborators_index(prepared_articles, cat, cat_label)
