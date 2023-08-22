@@ -113,8 +113,7 @@ class WikiPage(Page):
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
 
-        # -- convert it to slugified version and then append `.html`
-        #    so it correctly points to a filepath
+        # -- convert it to slugified so it correctly points to a filepath
         # -- insert category to URL: scan dir with given wiki URL
         #    and match any existing filepath in WIKI_DIR, then extract
         #    category (eg sub-dir) from it
@@ -128,8 +127,8 @@ class WikiPage(Page):
 
         if len(paths) > 0:
             wp = paths[0]
-            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}.html"
-            return f"{new_url}.html"
+            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}"
+            return new_url
 
     def clean_title(self, title: str) -> str:
         """
