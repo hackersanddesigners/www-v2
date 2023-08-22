@@ -90,7 +90,7 @@ async def root(request: Request):
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
-async def category(request: Request, cat: str, page: int | None = 0):
+async def category(request: Request, cat: str, page: int | None = 0, sort_by: str | None = None):
     """
     build index page for given category: we build a paginated
     template instead of fetching through all the results of a category
@@ -151,7 +151,7 @@ async def category(request: Request, cat: str, page: int | None = 0):
 
             article = None
             if cat_key == 'Event':
-                article = await make_event_index(prepared_articles, cat_key, cat_label, False)
+                article = await make_event_index(prepared_articles, cat_key, cat_label, False, sort_by)
                 
             elif cat_label == 'Collaborators':
                 article = await make_collaborators_index(prepared_articles, cat, cat_label)

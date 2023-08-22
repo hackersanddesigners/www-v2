@@ -100,7 +100,13 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(articles, cat: str, cat_label: str, save_to_disk: bool):
+async def make_event_index(
+        articles,
+        cat: str,
+        cat_label: str,
+        save_to_disk: bool,
+        sort_by: str | None = None,
+):
 
     filters = {
         'slug': make_url_slug,
@@ -205,9 +211,47 @@ async def make_event_index(articles, cat: str, cat_label: str, save_to_disk: boo
             article['metadata']['times']['end'] = None
 
 
-    # -- sort events by date desc
+    # -- sorting events
+    
+    # sort events by date desc
     events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+
+    if sort_by == 'title':
+        events['past'] = sorted(events['past'],
+                                key=lambda d: d['title'],
+                                reverse=True)
+            
+    elif sort_by == 'location':
+            
+        def normalize_data(item):
+            if item:
+                return item.upper()
+            else:
+                return ''
+                
+        events['past'] = sorted(events['past'],
+                                key=lambda d: normalize_data(d['metadata']['location']),
+                                reverse=True)
+
+    elif sort_by == 'date':
+        events['past'] = sorted(events['past'],
+                                key=lambda d: d['metadata']['dates']['start'],
+                                reverse=True)
+
+    elif sort_by == 'time':
+        events['past'] = sorted(events['past'],
+                                key=lambda d: d['metadata']['times']['start'],
+                                reverse=True)
+
+    elif sort_by == 'time':
+        events['past'] = sorted(events['past'],
+                                key=lambda d: d['metadata']['type'],
+                                reverse=True)
+        
+    else:
+        events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+        
+    
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
             
     nav = make_nav()
