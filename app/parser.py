@@ -601,10 +601,8 @@ def get_category(wikilinks, metadata, cats) -> str:
             if len(intersect) > 1:
                 if cat_fallback_key in intersect:
                      intersect.remove(cat_fallback_key)
-                     return cats[intersect[0]]['label']
-
-            else:
-                return cats[intersect[0]]['label']
+             
+            return cats[intersect[0]]['label']
 
         else:
             return cat_fallback_label
