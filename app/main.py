@@ -220,7 +220,7 @@ async def article(request: Request, cat: str, article: str):
     try:
         WIKI_DIR = os.getenv('WIKI_DIR')
         filename = Path(article).stem
-        file_path = f"{WIKI_DIR}/{slugify(filename)}.html"
+        file_path = f"{WIKI_DIR}/{cat}/{slugify(filename)}.html"
 
         with open(file_path) as f:
             return f.read()
