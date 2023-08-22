@@ -4,7 +4,10 @@ import json
 import asyncio
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+)
 from starlette.exceptions import HTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
@@ -25,6 +28,7 @@ from app.fetch import (
     create_context,
     query_continue,
 )
+from app.file_ops import file_lookup
 from app.build_article import make_article 
 from app.build_wiki import get_category
 import tomli
@@ -87,6 +91,44 @@ async def root(request: Request):
         return templates.TemplateResponse("index.html",
                                           {"request": request,
                                            "article": article})
+
+
+@app.middleware("http")
+async def redirect_uri(request: Request, call_next):
+    """
+    Middleware to check incoming URL and do an article look-up
+    to see if anything matches from the local filesystem wiki.
+    If anything matches, redirects the incoming request to the
+    correct URL.
+    """
+
+    # this is done to figure out which category each article belongs to.
+    # as of <2023-08-22> this is useful for when we add a backlink URL,
+    # for which we don't have a category by default. we could parse this
+    # when retrieve the set of backlinks, but is pretty wasteful.
+    # ideally this can be solved by rather having a sqlite cache layer.
+
+    uri = request.url.path[1:]
+    uri_first = uri.split('/')[0]
+
+    # build a list of categories, plus other items that might appear
+    # as first item in the URI (eg. `/static`)
+    cats = config['wiki']['categories']
+    uri_list = [cat['label'].lower() for cat in cats.values()]
+    uri_list.append('static')
+    
+    if uri_first not in uri_list:
+        matches = file_lookup(uri)
+
+        if len(matches) > 0:
+            filename = str(matches[0]).split('.')[0]
+            new_url = "/".join(filename.split('/')[1:])
+            redirect_url = f"/{new_url}"
+            return RedirectResponse(url=redirect_url)
+        
+
+    response = await call_next(request)
+    return response
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
