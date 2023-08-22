@@ -5,7 +5,7 @@
   <h1>{{ article.title }}</h1>
   {% for item in article.collaborators %}
   <div class="pb1">
-    <h3><a href="/collaborators/{{ item.title | slug }}">{{ item.title }}</a></h3>
+    <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
     {% if item.backlinks | length > 0 %}
     <div>See also:
       {% for backlink in item.backlinks %}

@@ -213,6 +213,7 @@ async def category(request: Request, cat: str, page: int | None = 0, sort_by: st
                 return templates.TemplateResponse(f"{slugify(cat_key)}-index.html",
                                                   {"request": request,
                                                    "pagination": pagination,
+                                                   "category": slugify(cat_label),
                                                    "article": article})
 
 
