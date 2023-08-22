@@ -50,8 +50,8 @@ templates.env.filters['query_check'] = query_check
 app.mount("/static",
           StaticFiles(directory=Path(__file__).parent.parent / "static"),
           name="static")
-app.mount("/assets/media",
-          StaticFiles(directory=base_dir / "wiki/assets/media"),
+app.mount("/static/media",
+          StaticFiles(directory=base_dir / "wiki/static/media"),
           name="media")
 
 
