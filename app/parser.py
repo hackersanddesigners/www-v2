@@ -536,7 +536,7 @@ def get_metadata(article):
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
     
 
-    if not metadata['category']:
+    if metadata and 'category' in metadata and not metadata['category']:
         category = get_category(article.wikilinks, metadata, cats)
         metadata['category'] = slugify(category)
 
@@ -638,7 +638,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         tool_metadata = None
         if metadata_only:
 
-            if metadata['category'] == 'Tools':
+            if metadata and 'category' in metadata and metadata['category'] == 'Tools':
                 tool_metadata = get_tool_metadata(article_wtp.string)
 
             return metadata, images, tool_metadata
