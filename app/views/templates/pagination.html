@@ -1,5 +1,5 @@
 <nav>
-  {% if pagination.nav.prev %}
+  {% if pagination.nav.prev is not none %}
     <a href="{{ request.url | query_check('page', pagination.nav.prev) }}">prev</a>
   {% else %}
     <span>prev</span>
@@ -13,7 +13,7 @@
     {% endif %}
   {% endfor %}
 
-  {% if pagination.nav.next %}
+  {% if pagination.nav.next is not none %}
     <a href="{{  request.url | query_check('page', pagination.nav.next) }}">next</a>
   {% else %}
     <span>next</span>
