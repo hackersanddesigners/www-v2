@@ -514,7 +514,9 @@ def get_metadata(article):
     cats = config['wiki']['categories']
     cat_keys = cats.keys()
 
-    metadata = {}
+    metadata = {
+        "category": "",
+    }
     templates = article.templates
 
     if len(templates) > 0:
@@ -527,15 +529,13 @@ def get_metadata(article):
                 if not cats[label]['fallback']:
                     cat_label = cats[label]['label']
                     metadata['category'] = slugify(cat_label)
-                else:
-                    metadata['category'] = ""
 
             # collect all metadata from article.template table
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
     
 
-    if metadata and 'category' in metadata and not metadata['category']:
+    if metadata and not metadata['category']:
         category = get_category(article.wikilinks, metadata, cats)
         metadata['category'] = slugify(category)
 
@@ -601,7 +601,10 @@ def get_category(wikilinks, metadata, cats) -> str:
                 if cat_fallback_key in intersect:
                      intersect.remove(cat_fallback_key)
              
-            return cats[intersect[0]]['label']
+                return cats[intersect[0]]['label']
+            
+            else:
+                return cat_fallback_label
 
         else:
             return cat_fallback_label
@@ -637,7 +640,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         tool_metadata = None
         if metadata_only:
 
-            if metadata and 'category' in metadata and metadata['category'] == 'Tools':
+            if metadata and metadata['category'] == 'Tools':
                 tool_metadata = get_tool_metadata(article_wtp.string)
 
             return metadata, images, tool_metadata
