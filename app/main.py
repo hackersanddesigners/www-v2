@@ -16,6 +16,7 @@ from .views.views import (
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
+    make_article_index,
 )
 from .views.template_utils import (
     make_url_slug,
@@ -203,6 +204,10 @@ async def category(request: Request, cat: str, page: int | None = 0, sort_by: st
 
             elif cat_label == 'Tools':
                 article = await make_tool_index(prepared_articles, cat, cat_label)
+
+            elif cat_label == 'Articles':
+                article = await make_article_index(prepared_articles, cat, cat_label)
+            
 
             if article:
                 return templates.TemplateResponse(f"{slugify(cat_key)}-index.html",
