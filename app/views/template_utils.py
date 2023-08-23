@@ -12,18 +12,36 @@ def query_check(url: str, query_key: str | None = None, query_value: str | None 
 
     if url.query != '':
 
+        query_params = parse_qs(url.query)
+        try:
+            sort_dir = query_params['sort_dir'][0]
+        except KeyError:
+            query_params['sort_dir'] = ['asc']
+            sort_dir = 'asc'
+
         # if new query matches existing query key
         # update only query value;
         # else append new query to existing query param
 
-        query_params = parse_qs(url.query)
         if query_key in query_params:
-            query_params[query_key] = query_value
+
+            # if clicked URL is same as current one
+            # flip around sort_dir value
+            if query_params[query_key][0] == query_value:
+                
+                if sort_dir == 'asc':
+                    query_params['sort_dir'][0] = 'desc'
+                else:
+                    query_params['sort_dir'][0] ='asc'
+
+                       
+            query_params[query_key][0] = query_value
+            
             return f"{url.path}?{urlencode(query_params, doseq=True)}"
 
-        else:
-            return f"{url.path}?{url.query}&{query_key}={query_value}"
-    
+        else:            
+            url = f"{url.path}?{url.query}&{query_key}={query_value}&sort_dir={sort_dir}"
+     
     else:
         return f"{url.path}?{query_key}={query_value}"
 

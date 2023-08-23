@@ -216,37 +216,30 @@ async def make_event_index(
     # sort events by date desc
     events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
-    if sort_by == 'title':
+    if sorting[0] == 'title':
         events['past'] = sorted(events['past'],
                                 key=lambda d: d['title'],
-                                reverse=True)
+                                reverse=sorting[1])
             
-    elif sort_by == 'location':
-            
-        def normalize_data(item):
-            if item:
-                return item.upper()
-            else:
-                return ''
-                
+    elif sorting[0] == 'location':                
         events['past'] = sorted(events['past'],
                                 key=lambda d: normalize_data(d['metadata']['location']),
-                                reverse=True)
+                                reverse=sorting[1])
 
-    elif sort_by == 'date':
+    elif sorting[0] == 'date':
         events['past'] = sorted(events['past'],
                                 key=lambda d: d['metadata']['dates']['start'],
-                                reverse=True)
+                                reverse=sorting[1])
 
-    elif sort_by == 'time':
+    elif sorting[0] == 'time':
         events['past'] = sorted(events['past'],
                                 key=lambda d: d['metadata']['times']['start'],
-                                reverse=True)
+                                reverse=sorting[1])
 
-    elif sort_by == 'time':
+    elif sorting[0] == 'time':
         events['past'] = sorted(events['past'],
                                 key=lambda d: d['metadata']['type'],
-                                reverse=True)
+                                reverse=sorting[1])
         
     else:
         events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
