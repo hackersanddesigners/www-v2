@@ -57,19 +57,19 @@
         <thead>
           <tr>
             <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'title') }}">Title</a>
+              <a href="{{ request.url | query_check('sort_by', 'title') }}">Title {{ request.url | query_check('sort_dir', 'title') }}</a>
             </th>
             <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'location') }}">Location</a>
+              <a href="{{ request.url | query_check('sort_by', 'location') }}">Location {{ request.url | query_check('sort_dir', 'location') }}</a>
             </th>
             <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'date') }}">Date </a>
+              <a href="{{ request.url | query_check('sort_by', 'date') }}">Date {{ request.url | query_check('sort_dir', 'date') }}</a>
             </th>
             <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'time') }}">Time</a>
+              <a href="{{ request.url | query_check('sort_by', 'time') }}">Time {{ request.url | query_check('sort_dir', 'time') }}</a>
             </th>
             <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'type') }}">Type</a>
+              <a href="{{ request.url | query_check('sort_by', 'type') }}">Type {{ request.url | query_check('sort_dir', 'type') }}</a>
             </th>
           </tr>
         </thead>
