@@ -1,152 +1,57 @@
-// --
-
-function resetButtons(e) {
-  Array.from(tableButtons).map(button => {
-    if (button !== e.target) {
-      button.removeAttribute("data-dir")
-    }
-  })
-}
+"use strict";
 
 function getTableContent() {
   // get all table rows
-  return Array.from(document.querySelectorAll("tbody > tr"))
-}
-
-function sortByKey(list, key) {
-  return () => {
-
-    console.log('sort-by=key =><')
-
-    list.sort((a, b) => {
-
-      let itemA = null
-      let itemB = null
-
-      console.log('a, b =>', [a, b])
-
-      if (['title', 'location'].includes(key)) {
-        itemA = a.dataset[key].toUpperCase()
-        itemB = b.dataset[key].toUpperCase()
-
-      } else if (['dataStart', 'timeStart'].includes(key)) {
-        itemA = new Date(a.dataset[key])
-        itemB = new Date(b.dataset[key])
-      }
-
-      if (itemA < itemB) {
-        return -1
-      }
-
-      if (itemA > itemB) {
-        return 1
-      }
-
-      return 0
-
-    }) 
-
-    // e.target.setAttribute("data-dir", "asc")
-
-  }
+  return Array.from(document.querySelectorAll("tbody > tr"));
 }
 
 function filterBySearch(list) {
+  // multi word table filter:
+  // - take input query and split it by whitespace
+  // - loop over each row of the table and over each column of the row
+  // - loop over each token of the input query and check if it is contained
+  //   in any of the column.innerText
+  // - if yes, display row (as we hide them all at first)
+  // 
+  // - <https://stackoverflow.com/a/51187579>
+  //   <https://dev.to/michelc/search-and-filter-a-table-with-javascript-28mi#comment-14ha2>
 
-  const input = document.querySelector('.table-input-filter')
+  const input = document.querySelector('.table-input-filter');
 
   input.addEventListener('keyup', (e) => {
-    let query = input.value.toLowerCase()
-    
-    for (let i = 0; i < list.length; i++) {
-      let items = Array.from(list[i].querySelectorAll('td'))
+    let query = input.value.toLowerCase();
+    let queryTokens = query.split(' ');
 
-      if (items) {
-        for (let j = 0; j < items.length; j++) {
-          let match = items[j]
-          if (items[j].innerText.toLowerCase().includes(query)) {
-            console.log('match =>', [items[j].innerText.toLowerCase(), query, items[j].parentNode])
-            items[j].parentNode.classList.add('dn')
-          } else {
-            console.log('no match =>', [items[j].innerText.toLowerCase(), query, items[j].parentNode])
-            items[j].parentNode.classList.remove('dn')
+    for (let i = 0; i < list.length; i++) {
+      let row =list[i];
+      row.style.display = "none";
+      
+      let columns = Array.from(row.querySelectorAll('td'));
+      if (columns) {
+        for (let j = 0; j < columns.length; j++) {
+          let column = columns[j];
+          
+          if (column) {
+            let text = column.innerText.toLowerCase();
+            
+            for (let k = 0; k < queryTokens.length; k++) {
+              if (text.indexOf(queryTokens[k]) > -1) {
+                row.style.display = "";
+                break;
+              }
+
+            }
           }
         }
       }
-
-    //   if (item) {
-    //     let value = item.textContent || item.innerText
-
-    //     if (value.toUpperCase().indexOf(query) > -1) {
-    //       list[i].style.display = '';
-    //     } else {
-    //       list[i].style.display = 'none';
-    //     }
-    //   }
-
     };
 
-  })
+  });
 
 }
 
 
 window.addEventListener('load', () => {
-  let list = getTableContent()
-  console.log('list =>', list)
-
-  // const tableButtons = Array.from(document.querySelectorAll('th button'));
-
-  // tableButtons.map((button) => {
-
-  //   button.addEventListener('click', (e) => {
-
-  //     // // reset buttons
-  //     // tableButtons.map(button => {
-  //     //   if (button !== e.target) {
-  //     //     button.removeAttribute("data-dir")
-  //     //   }
-  //     // })
-
-  //     const key = e.target.id
-  //     // const dir = e.target.getAttribute("data-dir")
-
-  //     console.log('button =>', [button, e, key, list])
-  //     list.sort((a, b) => {
-
-  //       let itemA = null
-  //       let itemB = null
-
-  //       if (['title', 'location'].includes(key)) {
-  //         itemA = a.dataset[key].toUpperCase()
-  //         itemB = b.dataset[key].toUpperCase()
-
-  //       } else if (['dataStart', 'timeStart'].includes(key)) {
-  //         itemA = new Date(a.dataset[key])
-  //         itemB = new Date(b.dataset[key])
-  //       }
-
-  //       console.log('itemA, itemB =>', [itemA, itemB])
-  //       console.log('item < itemB =>', itemA < itemB)
-  //       console.log('item > itemB =>', itemA > itemB)
-
-  //       if (itemA < itemB) {
-  //         return -1
-  //       }
-
-  //       if (itemA > itemB) {
-  //         return 1
-  //       }
-
-  //       return 0
-
-  //     })
-
-  //     // e.target.setAttribute("data-dir", "asc")
-
-  //   })
-  // }) 
-
-  filterBySearch(list)
-
+  let list = getTableContent();
+  filterBySearch(list);
 })
