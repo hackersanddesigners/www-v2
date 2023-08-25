@@ -133,11 +133,16 @@ async def redirect_uri(request: Request, call_next):
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
-async def category(request: Request, cat: str, page: int | None = 0, sort_by: str | None = None):
+async def category(request: Request,
+                   cat: str,
+                   page: int | None = 0,
+                   sort_by: str | None = None,
+                   sort_dir: str | None = None):
     """
     build index page for given category: we build a paginated
     template instead of fetching through all the results of a category
     in one go.
+
     """
     
     cats = config['wiki']['categories']
@@ -194,17 +199,21 @@ async def category(request: Request, cat: str, page: int | None = 0, sort_by: st
 
             article = None
             save_to_disk = False
+
+            sort_dir = True if sort_dir == 'desc' else False
+            sorting = (sort_by, sort_dir)
+            
             if cat_label == 'Events':
-                article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sort_by)
+                article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sorting)
                 
             elif cat_label == 'Collaborators':
                 article = await make_collaborators_index(prepared_articles, cat, cat_label)
 
             elif cat_label == 'Publishing':
-                article = await make_publishing_index(prepared_articles, cat, cat_label)
+                article = await make_publishing_index(prepared_articles, cat, cat_label, save_to_disk)
 
             elif cat_label == 'Tools':
-                article = await make_tool_index(prepared_articles, cat, cat_label)
+                article = await make_tool_index(prepared_articles, cat, cat_label, save_to_disk, sorting)
 
             elif cat_label == 'Articles':
                 article = await make_article_index(prepared_articles, cat, cat_label)

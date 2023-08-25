@@ -7,10 +7,10 @@
     <table class="table">
       <thead>
         <tr>
-          <th scope="col"><button id="title">Title</button></th>
-          <th scope="col"><button id="repo">Category</button></th>
-          <th scope="col"><button id="repo">Repository</button></th>
-          <th scope="col"><button id="backlinks">See also</button></th>
+          <th scope="col"><a href="{{ request.url | query_check('sort_by', 'title', True) }}">Title {{ request.url | query_check('sort_dir', 'title') }}</></th>
+            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'category', True) }}">Category {{ request.url | query_check('sort_dir', 'category') }}</a></th>
+            <th scope="col">Repository</th>
+            <th scope="col">See also</th>
         </tr>
       </thead>
       <tbody>
