@@ -4,73 +4,90 @@ from urllib.parse import parse_qs, urlencode
 from html import unescape
 
 
-def query_check(url: str, query_key: str | None = None, query_value: str | None = None) -> str:
+def query_check(url: str,
+                query_key: str | None = None,
+                query_value: str | None = None,
+                append: bool = False) -> str:
     """
     Check if given URL has any query parameter:
     if yes, append query value with `&` (=> ?some=query&query`)
     else update existing query key with new query value.
     """
 
-    if query_key == 'sort_by':
-        if url.query != '':
+    if url.query != '':
 
-            query_params = parse_qs(url.query)
-            try:
-                sort_dir = query_params['sort_dir'][0]
-            except KeyError:
-                query_params['sort_dir'] = ['asc']
-                sort_dir = 'asc'
+        new_url = ""
+        sort_icon = ""
+        query_params = parse_qs(url.query)
+        
+        if query_key in query_params:
 
             # if new query matches existing query key
             # update only query value;
             # else append new query to existing query param
 
-            if query_key in query_params:
+            query_params[query_key][0] = query_value
 
-                # if clicked URL is same as current one
-                # flip around sort_dir value
-                if query_params['sort_by'][0] == query_value:
+            if append:
+                new_url = f"{url.path}?{urlencode(query_params, doseq=True)}"
+
+                # if query_key == "sort_by":
+                #     sort_dir, sort_icon = sorting(query_params,
+                #                                   [query_key, 'sort_dir'],
+                #                                   query_value)
                 
-                    if sort_dir == 'asc':
-                        query_params['sort_dir'][0] = 'desc'
-                    else:
-                        query_params['sort_dir'][0] ='asc'
+                #     new_url = f"{new_url}&sort_dir={sort_dir}"
 
-                       
-                query_params[query_key][0] = query_value
-            
-                return f"{url.path}?{urlencode(query_params, doseq=True)}"
+            else:
+                new_url = f"{url.path}?{query_key}={query_value}"
+                        
+        else:            
+            if append:
+                new_url = f"{url.path}?{url.query}&{query_key}={query_value}"
+            else:
+                new_url = f"{url.path}?{query_key}={query_value}"
 
-            else:            
-                url = f"{url.path}?{url.query}&{query_key}={query_value}&sort_dir={sort_dir}"
+
+        # return new_url
+
+        if query_key == 'sort_by':
+            return new_url
+
+        if query_key == 'sort_dir':
+            return sort_icon
      
+    else:
+        return f"{url.path}?{query_key}={query_value}"
+    
+
+def sorting(query_params,
+            query_key: list[str],
+            query_value: str) -> tuple[str, str]:
+
+    sort_dir = ""
+    sort_icon = ""
+
+    try:
+        sort_dir = query_params[query_key[1]][0]
+    except KeyError:
+        query_params[query_key[1]] = ['asc']
+
+    # if clicked URL is same as current one
+    # flip around sort_dir value
+    if query_params[query_key[0]][0] == query_value:
+        if sort_dir == 'asc':
+            sort_dir = 'desc'
+            sort_icon = unescape("&#x25B2;")
         else:
-            return f"{url.path}?{query_key}={query_value}"
+            sort_dir ='asc'
+            sort_icon = unescape("&#x25BC;")
 
-    if query_key == 'sort_dir':
+    # # query_params[query_key][0] = query_value
+    # # new_url =  f"{url.path}?{urlencode(query_params, doseq=True)}"
+
+    return (sort_dir, sort_icon)
+
         
-        if url.query != '':
-
-            query_params = parse_qs(url.query)
-            try:
-                sort_dir = query_params['sort_dir'][0]
-            except KeyError:
-                query_params['sort_dir'] = ['asc']
-                sort_dir = 'asc'
-
-            if query_key in query_params:
-                
-                if query_params['sort_by'][0] == query_value:
-
-                    if sort_dir == 'asc':
-                        return unescape("&#x25B2;")
-                    else:
-                        return unescape("&#x25BC;")
-
-                else:
-                    return f""
-                
-
 def make_url_slug(url: str):
 
     if url:
