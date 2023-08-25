@@ -19,10 +19,12 @@ def query_check(url: str,
         new_url = ""
         query_params = parse_qs(url.query)
 
+        
         sort_icon = sorting(query_params,
+                            query_key,
                             ['sort_by', 'sort_dir'],
                             query_value)
-            
+        
         if query_key == 'sort_dir':
             return sort_icon
         
@@ -46,34 +48,36 @@ def query_check(url: str,
                 new_url = f"{url.path}?{query_key}={query_value}"
 
 
-        if query_key == 'sort_by':
-            return new_url
+        return new_url
      
     else:
         return f"{url.path}?{query_key}={query_value}"
     
 
-def sorting(query_params, query_key: list[str], query_value: str) -> str:
+def sorting(query_params, query_key: str, sort_params: list[str], query_value: str) -> str:
     """
     Handle sorting direction and visual icon.
     """
 
     sort_icon = ""
 
-    if not query_key[1] in query_params:
-        query_params[query_key[1]] = ['asc']
-
     # if clicked URL is same as current one
     # flip around sort_dir value
-    if query_params[query_key[0]][0] == query_value:
+    if sort_params[0] in query_params:
 
-        if query_params[query_key[1]][0] == 'asc':
-            query_params[query_key[1]][0] = 'desc'
-            sort_icon = unescape("&#x25B2;")
+        if query_params[sort_params[0]][0] == query_value:
+
+            if query_params[sort_params[1]][0] == 'asc':
+                query_params[sort_params[1]][0] = 'desc'
+                sort_icon = unescape("&#x25B2;")
             
-        elif query_params[query_key[1]][0] == 'desc':
-            query_params[query_key[1]][0] = 'asc'
-            sort_icon = unescape("&#x25BC;")
+            elif query_params[sort_params[1]][0] == 'desc':
+                query_params[sort_params[1]][0] = 'asc'
+                sort_icon = unescape("&#x25BC;")
+
+    elif query_key in sort_params:
+        query_params[sort_params[0]] = [query_value]
+        query_params[sort_params[1]] = ['asc']
 
 
     return sort_icon
