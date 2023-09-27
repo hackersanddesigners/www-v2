@@ -25,19 +25,9 @@ from .views.template_utils import (
     paginator,
 )
 import httpx
-
-from app.fetch import create_context, query_wiki
+from app.fetch import create_context
 from app.build_article import make_article
 from app.build_wiki import get_category
-
-from app.fetch import (
-    create_context,
-    query_continue,
-)
-from app.file_ops import file_lookup
-from app.build_article import make_article 
-from app.build_wiki import get_category
-
 import tomli
 from slugify import slugify
 load_dotenv()
@@ -144,7 +134,7 @@ async def search(request: Request, query: str):
     initiate wiki search on website
     """
 
-    # results = await do_search(ENV, URL, query)
+    # check if exact slug is matches rendered HTML page and redirect to it
 
     results = await query_wiki(ENV, URL, query )
 

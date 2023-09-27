@@ -133,7 +133,7 @@ async def redirect_article(article_title: str, redirect_target: str):
             async with aiofiles.open(fn, mode='r') as f:
                 tree = await f.read()
                 soup = BeautifulSoup(tree, 'lxml')
-                
+
                 main_h1 = soup.body.main.h1
                 redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
@@ -226,5 +226,3 @@ async def has_duplicates(article_filename: str, matching_cat: str):
         cat = str(p.parent.stem)
         fn = str(p.stem)
         await delete_article(fn, cat)
-    
-        

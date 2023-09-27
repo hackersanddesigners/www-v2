@@ -20,7 +20,7 @@ if you want to stick to Python's standard tools, then:
 
 ### packages
 
-to install all packages do: 
+to install all packages do:
 
 - try: `python3 -m pip install -r requirements.txt`
 - else, make sure to upgrade pip: `python3 -m pip install --upgrade pip` and try again with the above command
@@ -33,7 +33,7 @@ whenever you install a new package with `pip`, update the requirements list with
 
 this is a program to export data from MediaWiki into a mostly static website.
 
-the underlying idea is to make it easier to archive and distribute the website in a more accessible format to work with: 
+the underlying idea is to make it easier to archive and distribute the website in a more accessible format to work with:
 
 - we export each article into its Mediawiki plain text syntax
 - add it to a git repo
@@ -55,7 +55,7 @@ structure:
   - `<h&d.nl>` (frontpage as `static-page.html`?)
   - `<h&d.nl/p/static-page.html>`
   - `<h&d.nl/s/<search-query>`
-  
+
 to run this on a MediaWiki instance, add the following to `LocalSettings.php` (`RCFeeds` example):
 
 ```

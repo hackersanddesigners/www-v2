@@ -398,6 +398,10 @@ async def make_search_index(articles, query):
     template = get_template(f"search-index", filters)
     nav = make_nav()
 
+    for result in articles:
+        print(json.dumps(result, indent=2))
+        result['slug'] = f"{slugify(result['title'])}.html"
+
     article = {
         'title': "\"" + query + "\" search results",
         'slug': "search",
