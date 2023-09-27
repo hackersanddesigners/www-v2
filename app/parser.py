@@ -418,8 +418,13 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     - replace Tool's wiki syntax to actual HTML
     - if non archive-mode: update img's src to point to MW image server
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
-      and change them to be relative URLs?
+      and change them to be relative URLs
     """
+
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    canonical_url = config['domain']['canonical_url']
 
     soup = BeautifulSoup(article, 'lxml')
 
@@ -435,19 +440,22 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
-        # if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
+        if link.attrs['href'].startswith(canonical_url):
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
             # eg point to a page in *this* wiki
 
-            # TODO: URL should be following new URL format,
-            # design first new URL format
-
-            # print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
-            # url_parse = urlparse(link.attrs['href'])
-            # rel_url = url_parse.path
-            # print('rel-url =>', rel_url)
-            # link.attrs['href'] =
+            url_parse = urlparse(link.attrs['href'])
+            uri = slugify(url_parse.path.split('/')[-1].lower())
+            matches = file_lookup(uri)
+            
+            if len(matches) > 0:
+                filename = str(matches[0]).split('.')[0]
+                new_url = "/".join(filename.split('/')[1:])
+                link.attrs['href'] = f"/{new_url}"
+            else:
+                link.attrs['href'] = uri
+            
 
     # -- img src replacement
     #    replace local URL to instead pointing to
