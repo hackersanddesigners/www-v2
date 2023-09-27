@@ -18,15 +18,14 @@ def query_check(url: str,
 
         new_url = ""
         query_params = parse_qs(url.query)
-
         
-        sort_icon = sorting(query_params,
-                            query_key,
-                            ['sort_by', 'sort_dir'],
-                            query_value)
+        # sort_icon = sorting(query_params,
+        #                     query_key,
+        #                     ['sort_by', 'sort_dir'],
+        #                     query_value)
         
-        if query_key == 'sort_dir':
-            return sort_icon
+        # if query_key == 'sort_dir':
+        #     return sort_icon
         
         if query_key in query_params:
 
