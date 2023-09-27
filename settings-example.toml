@@ -7,6 +7,9 @@ media = false
 # set what's the article to use for the frontpage
 frontpage = "Hackers & Designers"
 
+# name of stylesheet page
+stylespage = "styles.css"
+
 # as a TOML illiterate this seemed the most reasonable setup: apologies if not!
 # please fill out all fields, including "label" even if you set `nav: false`
 
