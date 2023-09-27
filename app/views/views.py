@@ -1,22 +1,29 @@
 from dotenv import load_dotenv
 import os
 import asyncio
+from .template_utils import (
+    make_url_slug,
+    make_timestamp,
+)
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
-from .write_to_disk import main as write_to_disk
-from .build_article import get_article, make_nav, make_article
+from app.write_to_disk import main as write_to_disk
+from app.build_article import get_article, make_nav, make_article
 import arrow
 import json
 import wikitextparser as wtp
-from .parser import get_metadata, parser
-from .fetch import create_context
+from ..parser import (
+    get_metadata,
+    parser,
+)
+from app.fetch import create_context
 import httpx
 load_dotenv()
 
 
 def get_template(template: str, filters):
     template = slugify(template)
-    env = Environment(loader=FileSystemLoader('app/templates'), autoescape=True)
+    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
 
     if filters is not None:
         for k,v in filters.items():
@@ -67,6 +74,18 @@ def ts_pad_hour(tokens):
         return ":".join(tokens)
 
 
+def normalize_data(item):
+    """
+    Convert None to "" (empty string) if value
+    is missing, else make value uppercase.
+    """
+    
+    if item:
+        return item.upper()
+    else:
+        return ''
+    
+
 async def make_front_index(article_title: str):
 
     filters = {
@@ -93,11 +112,17 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(articles, cat, cat_label):
+async def make_event_index(
+        articles,
+        cat: str,
+        cat_label: str,
+        save_to_disk: bool,
+        sorting: tuple[str, bool] | None = None,
+):
 
     filters = {
         'slug': make_url_slug,
-        'ts': make_timestamp,
+        'ts': make_timestamp
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -197,11 +222,42 @@ async def make_event_index(articles, cat, cat_label):
             article['metadata']['dates']['end'] = None
             article['metadata']['times']['end'] = None
 
-        # --
 
-    # -- sort events by date desc
-    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    # -- sorting events
+    if sorting:
+    
+        # sort events by date desc
+        events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+
+        if sorting[0] == 'title':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['title'],
+                                    reverse=sorting[1])
+            
+        elif sorting[0] == 'location':                
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: normalize_data(d['metadata']['location']),
+                                    reverse=sorting[1])
+
+        elif sorting[0] == 'date':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['dates']['start'],
+                                    reverse=sorting[1])
+
+        elif sorting[0] == 'time':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['times']['start'],
+                                    reverse=sorting[1])
+
+        elif sorting[0] == 'type':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['type'],
+                                    reverse=sorting[1])
+        
+    else:
+        events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+        
+    
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
     nav = make_nav()
@@ -213,12 +269,13 @@ async def make_event_index(articles, cat, cat_label):
         'nav': nav
     }
 
-    print('events.happening =>', events['happening'])
-    print('events.upcoming =>', events['upcoming'])
+    if save_to_disk:
+        sem = None
+        document = template.render(article=article)
+        await write_to_disk(article['slug'], document, sem)
 
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    else:
+        return article
 
 
 async def make_collaborators_index(articles, cat, cat_label):
@@ -251,7 +308,10 @@ async def make_collaborators_index(articles, cat, cat_label):
     await write_to_disk(article['slug'], document, sem)
 
 
-async def make_publishing_index(articles, cat, cat_label):
+async def make_publishing_index(articles,
+                                cat: str,
+                                cat_label: str,
+                                save_to_disk: bool):
 
     filters = {
         'slug': make_url_slug,
@@ -276,7 +336,12 @@ async def make_publishing_index(articles, cat, cat_label):
     await write_to_disk(article['slug'], document, sem)
 
 
-async def make_tool_index(articles, cat, cat_label):
+async def make_tool_index(articles,
+                          cat: str,
+                          cat_label: str,
+                          save_to_disk: bool,
+                          sorting: tuple[str, bool] | None = None
+                          ):
 
     filters = {
         'slug': make_url_slug,
@@ -286,6 +351,28 @@ async def make_tool_index(articles, cat, cat_label):
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
 
+    if sorting:
+        if sorting[0] == 'title':
+            articles = sorted(articles,
+                              key=lambda d: d['title'],
+                              reverse=sorting[1])
+        
+        elif sorting[0] == 'category':
+            articles = sorted(articles,
+                              key=lambda d: d['metadata']['category'],
+                              reverse=sorting[1])
+
+            # elif sort_by == 'repository':
+            #     articles = sorted(articles,
+            #                       key=lambda d: d['tool']['label'],
+            #                       reverse=True)
+        
+    else:
+        articles = sorted(articles,
+                          key=lambda d: d['title'],
+                          reverse=True)
+        
+
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
@@ -293,11 +380,12 @@ async def make_tool_index(articles, cat, cat_label):
         'nav': nav
     }
 
-    return article
-
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    if save_to_disk:
+        sem = None
+        document = template.render(article=article)
+        await write_to_disk(article['slug'], document, sem)
+    else:
+        return article
 
 
 async def make_search_index(articles, query):
@@ -350,11 +438,35 @@ async def make_sitemap(articles):
     await write_to_disk(article['slug'], document, sem)
 
 
+async def make_article_index(articles, cat, cat_label):
+
+    filters = {
+        'slug': make_url_slug,
+        'ts': make_timestamp,
+    }
+
+    template = get_template(f"{cat}-index", filters)
+
+    nav = make_nav()
+
+    article = {
+        'title': cat,
+        'slug': slugify(cat_label),
+        'articles': articles,
+        'nav': nav
+    }
+
+    return article
+
+    sem = None
+    document = template.render(article=article)
+    await write_to_disk(article['slug'], document, sem)
+
 
 async def make_index_sections(articles_metadata, cat: str, cat_label: str):
 
     if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label)
+        await make_event_index(articles_metadata, cat, cat_label, False)
 
     if cat == 'Collaborators':
         await make_collaborators_index(articles_metadata, cat, cat_label)
@@ -364,3 +476,6 @@ async def make_index_sections(articles_metadata, cat: str, cat_label: str):
 
     if cat == 'Tools':
         await make_tool_index(articles_metadata, cat, cat_label)
+
+    if cat == 'Articles':
+        await make_article_index(articles_metadata, cat, cat_label)

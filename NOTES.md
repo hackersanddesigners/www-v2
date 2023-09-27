@@ -76,7 +76,7 @@ this helps to compact the existing WIP functions to work with the wiki article i
     
 in terms of document "lifecycle", we want to:
 
-- fetch a newer version of a given wiki article, or delete it from out local HTML database; checking if the article exists does not help much in our case, as we receive a message update from the wiki server about a change happened to an existing, or just deleted, wiki article — so propably keeping the method `page_exists` seems unnecessary
+- fetch a newer version of a given wiki article, or delete it from out local HTML database; checking if the article exists does not help much in our case, as we receive a message update from the wiki server about a change happened to an existing, or just deleted, wiki article — so propably keeping the method `page_exists` seems unnecessary => actuallt used internall by wikitexthtml so it's necessary for its functioning
 - check if any file attached to a given wiki article has been changed, as well as checking if compared to our local db version, any file has been deleted in the update
   - this could have at least two approaches:
     - trust blindly the wiki article and re-fetch every file from it
@@ -89,3 +89,28 @@ in terms of document "lifecycle", we want to:
     - we could either pass a flag / option and write more code to handle two use-cases (symlink-like / points resources to local MediaWiki instance, and full-archival approach), or stick with the full archival approach and duplicate all that data
     - thing is: to keep the setup simple, we need to have a local server that listens to the UDP message being sent by the wiki server in any case /:
     
+## limitations
+
+### index page article sorting
+
+currently, as of <2023-08-22>, index pages sort their content in a limited way: they can only sort the list of item visibile on the current page, instead of sorting the whole list of items across pages. this is becausue we use pagination to fetch data from the APIs. how so?
+
+MediaWiki's API have lots of strange limitations or weird way to work. in our use case, to retrieve a list of all the event articles, we need to perform a two-step operation:
+
+1. we fetch a list of "category member" articles, which contains a `page id`, `ns` (namespace) and `title`. while we can ask to get back more fields than these, we cannot get back the fields we would like to use to sort out our list of event articles.
+2. afterwards, we loop over the above list and fetch each article in its entirety, squeezing everything we can out of it to get all the data possible. in this step we get the fields we are interested in (in the case of the Events page, beside `title` these are: `location`, `date`, `time`, `type`), but to do so we have to *extract* them from the article's content / body field. these fields are inside a table data structure, part of the wikitext syntax, and therefore cannot be parsed from the category member APIs — since at that step we only work with articles ids mostly.
+
+given this situation, parsing a list of 300 articles in its entirety, takes arond 5 seconds or more (since we must perform the two steps above). to be able to still make use of the MediaWiki APIs, we implement a pagination function before parsing each article. that is: we fetch the list of all articles of a certain category, then we split the list in smaller lists of articles which we fetch and parse. this helps to keep the loading time of the webpage to a decent amount. the downside though, is that since we're paginating our results in order to keep the required time low, we are "forced" to do the same also when sorting our list of article. which means: we sort the paginated sub-list of articles at a time.
+
+#### possible remedies
+
+as part of the archive feature of the website (the main reason to build this piece of software in the first place), we are going to store each wiki article in its wikitext "plain syntax" on disk. eg, we are writing each article on disk as a text file. if we do this, we could leverage the fact of having a cache of all the wiki articles, and do our sorting computation in one go — since we don't need to first get back a list of all the IDs of a certain category, and then fetch each article, but rather can parse, filter, and sort in one go.
+
+alternatively, or as an addendum, we could really setup a hot-cache (?) layer using `sqlite`. infrastracturally, it's just a binary file, so there's low maintenance unlike other SQL databases, but in terms of performance and utility it would really shine, as: 
+
+- only the website would the writing to it (eg acting as the only user accessing sqlite)
+- we would be using it for read-only operations, and if we setup some tables we would be able to retrieve, filter, sort, etc across all wiki articles much easier and faster than using MediaWiki's APIs.
+
+clearly setting up the sqlite takes some time, but probably less headaches and  maintenance than figuring out how to do something with MediaWiki. having a two-layers cache (text files and sqlite) would also help in case something changes in the article or webiste structure, and we need to rebuild the sqlite tables from scratches, as we can use the text file archive as data source.
+
+

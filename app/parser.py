@@ -3,7 +3,12 @@ import os
 from typing import Optional
 from wikitexthtml import Page
 import wikitextparser as wtp
-from .fetch import article_exists, fetch_file, file_exists, create_context
+from app.fetch import (
+    article_exists,
+    fetch_file,
+    file_exists,
+    create_context,
+)
 import httpx
 from slugify import slugify
 from bs4 import BeautifulSoup
@@ -23,6 +28,8 @@ class WikiPage(Page):
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
+
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 
     file_URLs = []
 
@@ -106,11 +113,22 @@ class WikiPage(Page):
         Clean "url" (which is a wikilink) to become a valid URL to call.
         """
 
-        # convert it to slugified version and then append `.html`
-        # so it correctly points to a filepath
+        # -- convert it to slugified so it correctly points to a filepath
+        # -- insert category to URL: scan dir with given wiki URL
+        #    and match any existing filepath in WIKI_DIR, then extract
+        #    category (eg sub-dir) from it
 
-        new_url = slugify(url)
-        return f"{new_url}.html"
+        p = Path(url)
+        filename = slugify(str(p.stem))
+
+        pattern = f"**/{filename}.html"
+        paths = [p for p
+                 in self.WIKI_DIR.glob(pattern)]
+
+        if len(paths) > 0:
+            wp = paths[0]
+            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}"
+            return new_url
 
     def clean_title(self, title: str) -> str:
         """
@@ -283,9 +301,6 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
 
             # -- convert normal wikilink to standard URL
 
-            # TODO should decide if articles are organized in a tree
-            # or not, and so construct the URL accordingly
-
             # most times only a wikilink like this is added:
             # [Title of Other Page]
             # wikilink.title => Title of Other Page
@@ -301,6 +316,7 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
             # after wikitexthtml parsed the link, we run clean_url and slugify it
             # so we can point it to the correct HTML file on disk
             wikilink.target = wikilink.target.replace(':', '')
+
 
             wikilink.text = wikilink.text or wikilink.target
 
@@ -332,14 +348,14 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
                 if not gallery_f.startswith('File:'):
                     f = 'File:' + gallery_f
                     gallery_contents.append(f)
+                    tag.contents = '\n'.join(gallery_contents)
 
                     task = wiki_page.file_fetch(f)
                     tasks.append(asyncio.ensure_future(task))
 
-            tag.contents = '\n'.join(gallery_contents)
 
             await asyncio.gather(*tasks)
-    
+
 
     # -- return article as string
     return article_wtp.string
@@ -421,7 +437,6 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
             link.attrs['title'] = link.text
 
         # if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
-            # intercept abs-url pointing to root-level website
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
             # eg point to a page in *this* wiki
@@ -499,7 +514,9 @@ def get_metadata(article):
     cats = config['wiki']['categories']
     cat_keys = cats.keys()
 
-    metadata = {}
+    metadata = {
+        "category": "",
+    }
     templates = article.templates
 
     if len(templates) > 0:
@@ -509,16 +526,17 @@ def get_metadata(article):
         for t in article.templates:
             label = t.name.strip()
             if label in cat_keys:
-                cat_label = cats[label]['label']
-                metadata['category'] = slugify(cat_label)
+                if not cats[label]['fallback']:
+                    cat_label = cats[label]['label']
+                    metadata['category'] = slugify(cat_label)
 
             # collect all metadata from article.template table
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
     
 
-    if not metadata['category']:
-        category = get_category(article.wikilinks, metadata)
+    if metadata and not metadata['category']:
+        category = get_category(article.wikilinks, metadata, cats)
         metadata['category'] = slugify(category)
 
     return metadata
@@ -542,7 +560,7 @@ def get_images(article):
     return images
  
 
-def get_category(wikilinks, metadata, categories) -> str:
+def get_category(wikilinks, metadata, cats) -> str:
 
     cat_fallback = None
     cat_fallback_key = ""
@@ -574,7 +592,7 @@ def get_category(wikilinks, metadata, categories) -> str:
             #   if yes, check if "Article" is present and remove
             #   and we return the first item in the list: if there's
             #   more than one item left still, we pick simply the first.
-            
+
             dc_set = set(desired_categories)
             c_set = set(categories)
             intersect = list(dc_set.intersection(c_set))
@@ -582,10 +600,11 @@ def get_category(wikilinks, metadata, categories) -> str:
             if len(intersect) > 1:
                 if cat_fallback_key in intersect:
                      intersect.remove(cat_fallback_key)
-                     return intersect[0]
-
+             
+                return cats[intersect[0]]['label']
+            
             else:
-                return intersect[0]
+                return cat_fallback_label
 
         else:
             return cat_fallback_label
@@ -621,7 +640,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
         tool_metadata = None
         if metadata_only:
 
-            if metadata['category'] == 'Tools':
+            if metadata and metadata['category'] == 'Tools':
                 tool_metadata = get_tool_metadata(article_wtp.string)
 
             return metadata, images, tool_metadata

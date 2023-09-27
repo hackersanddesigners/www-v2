@@ -24,9 +24,11 @@
     <figure class="w30">
       <img src="{{ event.images[0] }}">
       <figcaption>
-        <p><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+        <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
         <p>
+          {% if event.metadata.location %}
           {{ event.metadata.location }}
+          {% endif %}
           <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
           {% if event.metadata.dates.end %}
           – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
@@ -54,18 +56,22 @@
       <table class="table">
         <thead>
           <tr>
-            <th scope="col"><button id="title">Title</button></th>
-            <th scope="col"><button id="location">Location</button></th>
-            <th scope="col"><button id="datestart">Date</button></th>
-            <th scope="col"><button id="timestart">Time</button></th>
-            <th scope="col"><button id="type">Type</button></th>
+            <th scope="col">Title</th>
+            <th scope="col">Location</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time</th>
+            <th scope="col">Type</th>
           </tr>
         </thead>
         <tbody>
           {% for event in article.events.past %}
           <tr data-title="{{ event.title }}" data-location="{{ event.metadata.location }}" data-dateStart="{{ event.metadata.dates.start }}" data-timeStart="{{ event.metadata.times.start }}">
-            <td><a href="/{{ event.title | slug }}.html">{{ event.title }}</a></td>
-            <td>{{ event.metadata.location }}</td>
+            <td><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></td>
+            <td>
+              {% if event.metadata.location %}
+              {{ event.metadata.location }}
+              {% else %}-{% endif %}
+            </td>
             <td>
               <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
               {% if event.metadata.dates.end %}
@@ -89,13 +95,16 @@
           {% endfor %}
         </tbody>
       </table>
-    </div>
+    </div> 
+
     {% else %}
     <p>No past event at the moment. (??)</p>
     {% endif %}
   </section>
   
+  {% include "pagination.html" %}
+  
 </main>
 
-<script src="/assets/scripts/tables.js"></script>
+<script src="/static/scripts/tables.js"></script>
 {% endblock %}

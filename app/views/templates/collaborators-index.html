@@ -5,18 +5,19 @@
   <h1>{{ article.title }}</h1>
   {% for item in article.collaborators %}
   <div class="pb1">
-    <h3><a href="/{{ item.title | slug }}.html">{{ item.title }}</a></h3>
+    <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
     {% if item.backlinks | length > 0 %}
     <div>See also:
       {% for backlink in item.backlinks %}
-      <a href="/{{ backlink.title | slug }}.html" class="pr0-5">{{ backlink.title }}</a>
+      <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
       {% endfor %}
     </div>
     {% else %}
     {% endif %}
   </div>
-
   {% endfor %}
+
+  {% include "pagination.html" %}
 </main>
 
 {% endblock %}

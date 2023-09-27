@@ -78,6 +78,35 @@ check this repo to set up a MW instance: <https://github.com/hackersanddesigners
 
 ## Local dev setup and TLS certificates
 
+### .env, settings.toml
+
+this project needs two settings files to function:
+
+- `.env`
+- `settings.toml`
+
+#### .env
+
+rename `env.sample` to `.env` and fill out the file using this reference:
+
+- `ENV`: set either `dev` or `prod`; this is mostly used to decide if using a local certificate when doing HTTP operation or not
+- `SERVER_IP`: set a host for the `server.py` function => eg. `localhost`
+- `SERVER_PORT`: set a port number for the `server.py` function (ergo, opening a port to listen to UDP messages from the MediaWiki instance) => eg. `1331`
+- `WIKI_DIR`: path to static HTML output folder. choose a name for it (eg. `wiki`), create it, and set its name here
+- `ASSETS_DIR`: path to static folder: eg. CSS, JS, images
+- `MEDIA_DIR`: path for the media directory of WIKI_DIR => eg => `<WIKI_DIR>/assets/media`
+- `BASE_URL`: base API URL path => eg. for local setup: `http://localhost/api.php?`; for an online wiki `https://wikixyz.tld/api.php?`
+
+we create bot user to help programmatically creating, editing or deleting a wiki article. get credentials by visting the `Special:BotPasswords` page of your wiki. then:
+
+- `BOT_USR`: use lgname
+- `BOT_PWD`: use lgpassword
+
+- `LOCAL_CA`: see below under *local certificate*
+- `SEMAPHORE`: number of max operations happening at the same time when (mostly) doing async HTTP call. above this number the Python interpreter will throw an error. a good number is between 150-175, try and see what works.
+
+#### local certificate
+
 install [mkcert](https://github.com/FiloSottile/mkcert) or similar to create a local certificate.
 
 for mkcert:
@@ -105,9 +134,27 @@ if you have another name for your local certificate instead of `hd-v2`, use that
 
 after this you can use https also in the dev environment while using this codebase!
 
+#### settings.toml
+
+this file mainly set website preferences, eg general wiki options:
+
+- `wiki.media`: if make a local copy of MediaWiki images, or point images to the MW instance
+- `wiki.frontpage`: which wiki article to we want to use for the website frontpage?
+- `wiki.categories.<cat>`: sets a list of categories to define which wiki articles we want to display on the website. the `<cat>` is the actual MediaWiki category we want to use. then, each category has some more options:
+  - `parse`: should we parse it (eg download every article of that category) or not; useful when working on the codebase to speed up parsing process if using `python cli.py build-wiki`, for instance
+  - `nav`: should the category be displayed in the navigation
+  - `fallback`: using this category as fallback, in case the wiki article has no matching category with the given list of categories
+  - `label`: some categories in the wiki might be called something, and we might want to display them in a different way in the navigation, in the URL path, etc
+
+and specific plugin options:
+
+- `tool-plugin.host_default`: which git hosting service fallback is the H&D MW Tool plugin using?
+- `tool-plugin.host_default`: a dictionary of git hosting services the H&D MW Tool wants to use
+- `tool-plugin.branch_default`: a list of branches to use when parsing information from the git repo set in the plugin; this works as a progressive list of fallback branch names
+
 ## commands
 
-there is a CLI program at `app/cli.py` to run common operations. currently available commands are:
+there is a CLI program at `cli.py` to run common operations. currently available commands are:
 
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
@@ -116,6 +163,23 @@ there is a CLI program at `app/cli.py` to run common operations. currently avail
 
 - `make-article`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does not exist yet.
 
+start off by running `python cli.py --help` to see the available options.
+
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
-- `uvicorn app.main:app --reload`
+- `uvicorn app.main:app --reload` or use `local-server.sh`.
+
+
+## sort index page
+
+<2023-09-27> we removed the sorting option as for performance reasons we do the sorting only on the
+paginated subset of articles (because we need to parse each article to retrieve the date field, etc).
+
+given it's not particularly useful in retrospect we keep the code but disable it. to put it back:
+
+- re-enable function in `app/main.py`
+- add back to each desired template link / button, the following Jinja2 filter:
+  ```
+  <a href="{{ request.url | query_check('sort_dir', 'type') }}">{{ page }}</a>
+  ```
+- lookup `/app/views/template_utils.py/query_check` for more info

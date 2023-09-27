@@ -1,15 +1,17 @@
-from .fetch import fetch_article
-from .parser import parser
+import os
+from app.fetch import fetch_article
+from app.parser import parser
 from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
-from aiofiles import os
-from .write_to_disk import main as write_to_disk
+from aiofiles import os as aos
+from app.write_to_disk import main as write_to_disk
 import tomli
-from .template_utils import (
+from app.views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
+from pathlib import Path
 
 
 def make_nav():
@@ -26,7 +28,7 @@ def make_nav():
     nav = []
     for k, v in cats.items():
         nav.append({ "label": v['label'],
-                      "uri": f"/{slugify(v['label'])}.html" })
+                      "uri": f"/{slugify(v['label'])}" })
 
     return nav
 
@@ -98,7 +100,6 @@ async def make_article(page_title: str, client, metadata_only: bool):
         return article_html, article_metadata
 
     else:
-        # TODO handle article remove from local wiki
         print('article not found! it could have been deleted meanwhile\n and we got notified about it')
 
         # check if there's a copy of article in `wiki/` and
@@ -113,27 +114,40 @@ async def make_article(page_title: str, client, metadata_only: bool):
             print(f"delete article err => {e}")
 
 
-async def redirect_article(page_title: str, redirect_target: str):
+async def redirect_article(article_title: str, redirect_target: str):
+    """
+    """
 
-    fn = f"./wiki/{slugify(page_title)}.html"
-    print(f"redirect-article => {fn}")
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    p = Path(article_title)
+    filename = slugify(str(p.stem))
 
-    if await os.path.exists(fn):
-        async with aiofiles.open(fn, mode='r') as f:
-            tree = await f.read()
-            soup = BeautifulSoup(tree, 'lxml')
-            
-            main_h1 = soup.body.main.h1
-            redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+    pattern = f"**/{filename}.html"
+    paths = [p for p
+             in WIKI_DIR.glob(pattern)]
 
-            main_h1.insert_after(redirect)
-            output = soup.prettify(formatter=None)
+    if len(paths) > 0:
+        fn = paths[0]
 
-        async with aiofiles.open(fn, mode='w') as f:
-            await f.write(output)
+        if await aos.path.exists(fn):
+            async with aiofiles.open(fn, mode='r') as f:
+                tree = await f.read()
+                soup = BeautifulSoup(tree, 'lxml')
+                
+                main_h1 = soup.body.main.h1
+                redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
-    else:
-        print(f"redirect-article: {page_title} not found, nothing done")
+                main_h1.insert_after(redirect)
+                output = soup.prettify(formatter=None)
+
+            async with aiofiles.open(fn, mode='w') as f:
+                await f.write(output)
+
+
+            return f"{fn.parent.stem}/{fn.stem}"
+
+        else:
+            print(f"redirect-article: {article_title} not found, nothing done")
 
 
 async def save_article(article: str | None, filepath: str, template, sem):
@@ -148,16 +162,69 @@ async def save_article(article: str | None, filepath: str, template, sem):
         await write_to_disk(filepath, document, sem)
 
 
-async def delete_article(page_title: str):
+async def delete_article(article_title: str, cat: str | None = None):
     """
-    remove local wiki article, if it exists
+    pass article title and remove it from local wiki dir, if it exists.
+
+    let's construct the correct filepath in here
+    instead of demanding the requiring function to
+    do it; in this way we uniformize what we need it
+    and just assume we receive the title of the article
+    and potentially its cat; if cat is None we scan the
+    WIKI_DIR for a matching filename.
     """
 
-    fn = f"wiki/{slugify(page_title)}.html"
+    print(f"delete-article => {article_title, cat}")
 
-    if await os.path.exists(fn):
-        await os.remove(fn)
-        print(f"delete-article: {page_title} removed")
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    p = Path(article_title)
+    filename = slugify(str(p.stem))
+
+    if cat:
+        fn = f"{WIKI_DIR}/{cat}/{filename}.html"
+    else:
+        pattern = f"**/{filename}.html"
+        paths = [p for p
+                 in WIKI_DIR.glob(pattern)]
+
+        print(f"delete-article => scan for full filepath => {paths}")
+        if len(paths) > 0:
+            fn = paths[0]
+        else:
+            print(f"delete-article => scan-dir found no article match for {filename}")
+            return
+
+    if await aos.path.exists(fn):
+        await aos.remove(fn)
+        print(f"delete-article: {article_title} removed")
 
     else:
-        print(f"delete-article: {page_title} not found, nothing done")
+        print(f"delete-article: {article_title} not found, nothing done")
+
+
+async def has_duplicates(article_filename: str, matching_cat: str):
+    """
+    after an article update, check if the embedded category has changed and if true,
+    scan across all category subfolders except the new category to check if
+    a previous version of the article has been left behind.
+    """
+
+    # build list of paths under each subdir except the one matching cat_key
+    # and filter out any path matching <cat>/article_filepath, where cat
+    # is not matching_cat
+
+    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    pattern = "**/*.html"
+    paths = [p for p
+             in WIKI_DIR.glob(pattern)
+             if article_filename in str(p) and not p.parent.stem == matching_cat]
+
+    if len(paths) > 0:
+        print(f"remove these filepaths {paths}!")
+
+    for p in paths:
+        cat = str(p.parent.stem)
+        fn = str(p.stem)
+        await delete_article(fn, cat)
+    
+        

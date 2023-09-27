@@ -4,9 +4,9 @@ import typer
 from typing_extensions import Annotated
 import asyncio
 import time
-from server import main as srv
-from build_wiki import main as bw
-from make_change_in_wiki import main as mc
+from app.server import main as srv
+from app.build_wiki import main as bw
+from app.make_change_in_wiki import main as mc
 load_dotenv()
 
 
@@ -46,8 +46,8 @@ def build_wiki(index_only: Annotated[bool, typer.Option(help="build only Index p
 
 @app.command()
 def make_article(article: Annotated[str, typer.Argument(help="article to work with")],
-                        operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
-
+                 operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
+    
     """
     Update or delete an article in the MediaWiki
     and create a new HTML version of it.
