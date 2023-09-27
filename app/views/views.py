@@ -400,7 +400,7 @@ async def make_search_index(articles, query):
 
     for result in articles:
         print(json.dumps(result, indent=2))
-        result['slug'] = f"{slugify(result['title'])}.html"
+        result['slug'] = slugify(result['title'])
 
     article = {
         'title': "\"" + query + "\" search results",
