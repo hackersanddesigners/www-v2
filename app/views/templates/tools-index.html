@@ -7,8 +7,8 @@
     <table class="table">
       <thead>
         <tr>
-          <th scope="col"><a href="{{ request.url | query_check('sort_by', 'title', True) }}">Title {{ request.url | query_check('sort_dir', 'title') }}</></th>
-            <th scope="col"><a href="{{ request.url | query_check('sort_by', 'category', True) }}">Category {{ request.url | query_check('sort_dir', 'category') }}</a></th>
+          <th scope="col">Title</th>
+            <th scope="col">Category</th>
             <th scope="col">Repository</th>
             <th scope="col">See also</th>
         </tr>

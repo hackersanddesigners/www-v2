@@ -4,7 +4,6 @@ import asyncio
 from .template_utils import (
     make_url_slug,
     make_timestamp,
-    query_check,
 )
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
@@ -118,13 +117,12 @@ async def make_event_index(
         cat: str,
         cat_label: str,
         save_to_disk: bool,
-        sorting: tuple[str, bool],
+        sorting: tuple[str, bool] | None = None,
 ):
 
     filters = {
         'slug': make_url_slug,
-        'ts': make_timestamp,
-        'query_check': query_check,
+        'ts': make_timestamp
     }
 
     template = get_template(f"{cat}-index", filters)
@@ -226,34 +224,35 @@ async def make_event_index(
 
 
     # -- sorting events
+    if sorting:
     
-    # sort events by date desc
-    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+        # sort events by date desc
+        events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
-    if sorting[0] == 'title':
-        events['past'] = sorted(events['past'],
-                                key=lambda d: d['title'],
-                                reverse=sorting[1])
+        if sorting[0] == 'title':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['title'],
+                                    reverse=sorting[1])
             
-    elif sorting[0] == 'location':                
-        events['past'] = sorted(events['past'],
-                                key=lambda d: normalize_data(d['metadata']['location']),
-                                reverse=sorting[1])
+        elif sorting[0] == 'location':                
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: normalize_data(d['metadata']['location']),
+                                    reverse=sorting[1])
 
-    elif sorting[0] == 'date':
-        events['past'] = sorted(events['past'],
-                                key=lambda d: d['metadata']['dates']['start'],
-                                reverse=sorting[1])
+        elif sorting[0] == 'date':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['dates']['start'],
+                                    reverse=sorting[1])
 
-    elif sorting[0] == 'time':
-        events['past'] = sorted(events['past'],
-                                key=lambda d: d['metadata']['times']['start'],
-                                reverse=sorting[1])
+        elif sorting[0] == 'time':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['times']['start'],
+                                    reverse=sorting[1])
 
-    elif sorting[0] == 'time':
-        events['past'] = sorted(events['past'],
-                                key=lambda d: d['metadata']['type'],
-                                reverse=sorting[1])
+        elif sorting[0] == 'type':
+            events['past'] = sorted(events['past'],
+                                    key=lambda d: d['metadata']['type'],
+                                    reverse=sorting[1])
         
     else:
         events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
@@ -269,9 +268,6 @@ async def make_event_index(
         'events': events,
         'nav': nav
     }
-
-    print('events.happening =>', events['happening'])
-    print('events.upcoming =>', events['upcoming'])
 
     if save_to_disk:
         sem = None
@@ -344,32 +340,32 @@ async def make_tool_index(articles,
                           cat: str,
                           cat_label: str,
                           save_to_disk: bool,
-                          sorting: tuple[str, bool]
+                          sorting: tuple[str, bool] | None = None
                           ):
 
     filters = {
         'slug': make_url_slug,
         'ts': make_timestamp,
-        'query_check': query_check
     }
 
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
 
-    if sorting[0] == 'title':
-        articles = sorted(articles,
-                          key=lambda d: d['title'],
-                          reverse=sorting[1])
+    if sorting:
+        if sorting[0] == 'title':
+            articles = sorted(articles,
+                              key=lambda d: d['title'],
+                              reverse=sorting[1])
         
-    elif sorting[0] == 'category':
-        articles = sorted(articles,
-                          key=lambda d: d['metadata']['category'],
-                          reverse=sorting[1])
+        elif sorting[0] == 'category':
+            articles = sorted(articles,
+                              key=lambda d: d['metadata']['category'],
+                              reverse=sorting[1])
 
-    # elif sort_by == 'repository':
-    #     articles = sorted(articles,
-    #                       key=lambda d: d['tool']['label'],
-    #                       reverse=True)
+            # elif sort_by == 'repository':
+            #     articles = sorted(articles,
+            #                       key=lambda d: d['tool']['label'],
+            #                       reverse=True)
         
     else:
         articles = sorted(articles,

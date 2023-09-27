@@ -168,3 +168,18 @@ start off by running `python cli.py --help` to see the available options.
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
 - `uvicorn app.main:app --reload` or use `local-server.sh`.
+
+
+## sort index page
+
+<2023-09-27> we removed the sorting option as for performance reasons we do the sorting only on the
+paginated subset of articles (because we need to parse each article to retrieve the date field, etc).
+
+given it's not particularly useful in retrospect we keep the code but disable it. to put it back:
+
+- re-enable function in `app/main.py`
+- add back to each desired template link / button, the following Jinja2 filter:
+  ```
+  <a href="{{ request.url | query_check('sort_dir', 'type') }}">{{ page }}</a>
+  ```
+- lookup `/app/views/template_utils.py/query_check` for more info

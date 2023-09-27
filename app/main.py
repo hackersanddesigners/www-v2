@@ -22,7 +22,6 @@ from .views.template_utils import (
     make_url_slug,
     make_timestamp,
     paginator,
-    query_check,
 )
 import httpx
 from app.fetch import (
@@ -44,7 +43,6 @@ base_dir = Path.cwd()
 templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
 templates.env.filters['slug'] = make_url_slug
 templates.env.filters['ts'] = make_timestamp
-templates.env.filters['query_check'] = query_check
 
 
 app.mount("/static",
@@ -142,7 +140,6 @@ async def category(request: Request,
     build index page for given category: we build a paginated
     template instead of fetching through all the results of a category
     in one go.
-
     """
     
     cats = config['wiki']['categories']
@@ -200,8 +197,16 @@ async def category(request: Request,
             article = None
             save_to_disk = False
 
-            sort_dir = True if sort_dir == 'desc' else False
-            sorting = (sort_by, sort_dir)
+            # -- <2023-09-27> we remove the sorting option as for
+            #    performance reasons we do the sorting only on the
+            #    paginated subset of articles (because we need to parse
+            #    each article to retrieve the date field, etc).
+            #    given it's not particularly useful in retrospect
+            #    we keep the code but disable it.
+            
+            # sort_dir = True if sort_dir == 'desc' else False
+            # sorting = (sort_by, sort_dir)
+            sorting = None
             
             if cat_label == 'Events':
                 article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sorting)
