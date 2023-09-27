@@ -119,15 +119,15 @@ class WikiPage(Page):
         #    and match any existing filepath in WIKI_DIR, then extract
         #    category (eg sub-dir) from it
 
-        p = Path(url)
-        filename = slugify(str(p.stem))
-
+        filename = slugify(url.lower())
         paths = file_lookup(filename)
 
         if len(paths) > 0:
-            wp = paths[0]
-            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}"
+            fn = paths[0]
+            new_url = f"{fn.parent.stem}/{slugify(str(fn.stem))}"
             return new_url
+        else:
+            return filename
 
     def clean_title(self, title: str) -> str:
         """
