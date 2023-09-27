@@ -2,13 +2,13 @@ from dotenv import load_dotenv
 import os
 import json
 import asyncio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import (
     HTMLResponse,
     RedirectResponse,
 )
-from starlette.exceptions import HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from .views.views import (
@@ -61,13 +61,30 @@ URL = os.getenv('BASE_URL')
 
 with open("settings.toml", mode="rb") as f:
     config = tomli.load(f)
+    
 
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    
+    if exc.status_code == 404:
+        message = "Nothing was found here."
+    elif exc.status_code == 500:
+        message = "Server error."
+    elif 400 <= exc.status_code <= 499:
+        message = "Generic error."
 
-async def not_found(request: Request, exc: HTTPException):
-    return HTMLResponse(content=HTML_404_PAGE, status_code=exc.status_code)
+    article = {
+        "title": "Error",
+        "message": message,
+    }
 
-async def server_error(request: Request, exc: HTTPException):
-    return HTMLResponse(content=HTML_500_PAGE, status_code=exc.status_code)
+    t = templates.TemplateResponse("error.html",
+                                   {"request": request,
+                                    "article": article,
+                                    })
+
+    return HTMLResponse(content=t.body, status_code=exc.status_code)
+
 
 
 @app.get("/", response_class=HTMLResponse)
