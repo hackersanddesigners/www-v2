@@ -2,7 +2,7 @@ from os import getenv
 from pathlib import Path
 
 
-def file_lookup(filename: str):
+def file_lookup(filename: str) -> list[str]:
     """
     Recursively check if given filename is found
     in WIKI_DIR and return list of results.

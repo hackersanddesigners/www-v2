@@ -12,6 +12,7 @@ from app.views.template_utils import (
     make_timestamp,
 )
 from pathlib import Path
+from app.file_ops import file_lookup
 
 
 def make_nav():
@@ -121,10 +122,7 @@ async def redirect_article(article_title: str, redirect_target: str):
     WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     p = Path(article_title)
     filename = slugify(str(p.stem))
-
-    pattern = f"**/{filename}.html"
-    paths = [p for p
-             in WIKI_DIR.glob(pattern)]
+    paths = file_lookup(filename)
 
     if len(paths) > 0:
         fn = paths[0]
@@ -183,9 +181,7 @@ async def delete_article(article_title: str, cat: str | None = None):
     if cat:
         fn = f"{WIKI_DIR}/{cat}/{filename}.html"
     else:
-        pattern = f"**/{filename}.html"
-        paths = [p for p
-                 in WIKI_DIR.glob(pattern)]
+        paths = file_lookup(filename)
 
         print(f"delete-article => scan for full filepath => {paths}")
         if len(paths) > 0:

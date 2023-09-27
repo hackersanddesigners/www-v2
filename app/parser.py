@@ -121,9 +121,7 @@ class WikiPage(Page):
         p = Path(url)
         filename = slugify(str(p.stem))
 
-        pattern = f"**/{filename}.html"
-        paths = [p for p
-                 in self.WIKI_DIR.glob(pattern)]
+        paths = file_lookup(filename)
 
         if len(paths) > 0:
             wp = paths[0]
