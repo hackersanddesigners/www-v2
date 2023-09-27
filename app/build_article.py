@@ -13,15 +13,14 @@ from app.views.template_utils import (
 )
 from pathlib import Path
 
+with open("settings.toml", mode="rb") as f:
+    config = tomli.load(f)
 
 def make_nav():
     """
     make a list of dictionaries {label, uri} as links
     to listed categories in settings.toml
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     cats = config['wiki']['categories']
 
@@ -82,6 +81,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
         article_html = {
             "title": page_title,
+            "wiki_styles_path": f"/assets/styles/{ config['wiki']['stylespage'] }.css",
             "html": body_html,
             "slug": slugify(page_title),
             "nav": nav
@@ -133,7 +133,7 @@ async def redirect_article(article_title: str, redirect_target: str):
             async with aiofiles.open(fn, mode='r') as f:
                 tree = await f.read()
                 soup = BeautifulSoup(tree, 'lxml')
-                
+
                 main_h1 = soup.body.main.h1
                 redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
@@ -143,23 +143,21 @@ async def redirect_article(article_title: str, redirect_target: str):
             async with aiofiles.open(fn, mode='w') as f:
                 await f.write(output)
 
-
             return f"{fn.parent.stem}/{fn.stem}"
 
         else:
             print(f"redirect-article: {article_title} not found, nothing done")
 
 
-async def save_article(article: str | None, filepath: str, template, sem):
+async def save_article(article: str | None, filepath: str, template, sem, ext):
 
     if article is not None:
         filters = {
             'slug': make_url_slug,
             'ts': make_timestamp,
-        }
-
+            }
         document = template.render(article=article)
-        await write_to_disk(filepath, document, sem)
+        await write_to_disk(filepath, document, sem, ext)
 
 
 async def delete_article(article_title: str, cat: str | None = None):
@@ -226,5 +224,3 @@ async def has_duplicates(article_filename: str, matching_cat: str):
         cat = str(p.parent.stem)
         fn = str(p.stem)
         await delete_article(fn, cat)
-    
-        

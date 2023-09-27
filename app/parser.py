@@ -71,6 +71,12 @@ class WikiPage(Page):
         # see above
         return
 
+    def is_styles_page( self, article ) -> bool:
+        """
+        Return True if this page is the wiki styles page
+        """
+        return self.config['wiki']['stylespage'] == article['title']
+
     def file_exists(self, file: str) -> bool:
         """
         Return True if and only if the file (upload) exists:
@@ -91,7 +97,7 @@ class WikiPage(Page):
             filename = f"File:{file}"
             return file_exists(filename, self.download_image)
 
-    
+
     async def file_fetch(self, file: str) -> bool:
         """
         If archive-mode: fetch the file indicated by "file" and save it to disk,
@@ -107,7 +113,7 @@ class WikiPage(Page):
             return t[0]
         else:
             return await fetch_file(file, self.download_image)
-            
+
     def clean_url(self, url: str) -> str:
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
@@ -243,7 +249,7 @@ def parse_tool_tag(tool_key):
 
                 URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
                 response = client.get(URL)
-                
+
                 if response.status_code == 200:
                     text = response.text
                     return mistletoe.markdown(text), repo
@@ -253,10 +259,10 @@ def parse_tool_tag(tool_key):
                           f"double-check that all parameters are correct in the <tool .../> markup\n"
                           f"in the wiki article.")
 
-                    print(f"{response.status_code} error => {[tool_key, repo]}") 
+                    print(f"{response.status_code} error => {[tool_key, repo]}")
                     return False, False
 
-    return False, False    
+    return False, False
 
 
 async def pre_process(article, wiki_page, article_wtp) -> str:
@@ -278,7 +284,7 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
-    article_wtp.insert(0, '__NOTOC__')        
+    article_wtp.insert(0, '__NOTOC__')
 
     for template in article_wtp.templates:
         # save template value somewhere if needed
@@ -364,7 +370,7 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
 def tool_convert_rel_uri_to_abs(items, attr, repo):
     """
     tool plugin: replace each items relative URLs to an absolute one,
-    using the specified attribute 
+    using the specified attribute
     """
 
     if len(items) > 0:
@@ -500,7 +506,7 @@ def get_metadata_field(field):
         return field.value.strip()
     else:
         return None
-    
+
 
 def get_metadata(article):
     """
@@ -533,7 +539,7 @@ def get_metadata(article):
             # collect all metadata from article.template table
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
-    
+
 
     if metadata and not metadata['category']:
         category = get_category(article.wikilinks, metadata, cats)
@@ -558,7 +564,7 @@ def get_images(article):
             images.append(filepath)
 
     return images
- 
+
 
 def get_category(wikilinks, metadata, cats) -> str:
 
@@ -568,7 +574,7 @@ def get_category(wikilinks, metadata, cats) -> str:
         if v['fallback']:
             cat_fallback_key = k
             cat_fallback = v
-            
+
     cat_fallback_label = cat_fallback['label']
 
     if len(wikilinks) > 0:
@@ -600,9 +606,9 @@ def get_category(wikilinks, metadata, cats) -> str:
             if len(intersect) > 1:
                 if cat_fallback_key in intersect:
                      intersect.remove(cat_fallback_key)
-             
+
                 return cats[intersect[0]]['label']
-            
+
             else:
                 return cat_fallback_label
 
@@ -646,7 +652,6 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
             return metadata, images, tool_metadata
 
         wiki_body = await pre_process(article, wiki_page, article_wtp)
-
         # update wiki_article instance
         article['revisions'][0]['slots']['main']['content'] = wiki_body
 
@@ -656,6 +661,11 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
 
         body_html = wiki_render.html
         body_html = post_process(body_html, wiki_page.file_URLs, wiki_page.HTML_MEDIA_DIR, redirect_target)
+
+        if wiki_page.is_styles_page( article ):
+            # dont parse as HTML since we just want the raw CSS
+            body_html = wiki_article
+            metadata['is_styles_page'] = True
 
         print(f"parsed {article['title']}!")
 

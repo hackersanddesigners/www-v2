@@ -30,7 +30,7 @@ from app.fetch import (
     query_continue,
 )
 from app.file_ops import file_lookup
-from app.build_article import make_article 
+from app.build_article import make_article
 from app.build_wiki import get_category
 import tomli
 from slugify import slugify
@@ -53,7 +53,9 @@ app.mount("/static",
 app.mount("/static/media",
           StaticFiles(directory=base_dir / "wiki/static/media"),
           name="media")
-
+app.mount("/assets",
+          StaticFiles(directory=base_dir / "wiki/assets"),
+          name="media")
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
@@ -80,7 +82,7 @@ async def root(request: Request):
     context = create_context(ENV)
     async with httpx.AsyncClient(verify=context) as client:
 
-        frontpage = {"news": None, "upcoming_events": []} 
+        frontpage = {"news": None, "upcoming_events": []}
 
         metadata_only = False
         article, metadata = await make_article("Hackers & Designers", client, metadata_only)
@@ -117,7 +119,7 @@ async def redirect_uri(request: Request, call_next):
     cats = config['wiki']['categories']
     uri_list = [cat['label'].lower() for cat in cats.values()]
     uri_list.append('static')
-    
+
     if uri_first not in uri_list:
         matches = file_lookup(uri)
 
@@ -126,7 +128,7 @@ async def redirect_uri(request: Request, call_next):
             new_url = "/".join(filename.split('/')[1:])
             redirect_url = f"/{new_url}"
             return RedirectResponse(url=redirect_url)
-        
+
 
     response = await call_next(request)
     return response
@@ -144,7 +146,7 @@ async def category(request: Request,
     in one go.
 
     """
-    
+
     cats = config['wiki']['categories']
 
     cat_key = None
@@ -156,7 +158,7 @@ async def category(request: Request,
 
     if not cat_key:
         raise HTTPException(status_code=404)
-    
+
     else:
 
         params = {
@@ -182,13 +184,13 @@ async def category(request: Request,
                 if len(response) > 0 and 'missing' in response[0]:
                     title = response[0]['title']
                     print(f"the page could not be found => {title}")
-            
+
                 else:
                     data.extend(response)
 
             # -- make pagination
             pagination = paginator(data, 50, page)
-                    
+
             metadata_only = True
             art_tasks = []
             for article in pagination['data']:
@@ -202,10 +204,10 @@ async def category(request: Request,
 
             sort_dir = True if sort_dir == 'desc' else False
             sorting = (sort_by, sort_dir)
-            
+
             if cat_label == 'Events':
                 article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sorting)
-                
+
             elif cat_label == 'Collaborators':
                 article = await make_collaborators_index(prepared_articles, cat, cat_label)
 
@@ -217,7 +219,7 @@ async def category(request: Request,
 
             elif cat_label == 'Articles':
                 article = await make_article_index(prepared_articles, cat, cat_label)
-            
+
 
             if article:
                 return templates.TemplateResponse(f"{slugify(cat_key)}-index.html",

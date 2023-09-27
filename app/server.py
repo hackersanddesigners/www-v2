@@ -23,7 +23,6 @@ from app.build_article import (
 import asyncio
 load_dotenv()
 
-
 async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     """
     - listen to UDP message coming from mediawiki instance at SERVER_PORT
@@ -43,9 +42,10 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     }
     template = get_template('article', filters)
     sem = None
+    ext = 'html'
     context = create_context(ENV)
 
-    async with httpx.AsyncClient(verify=context) as client: 
+    async with httpx.AsyncClient(verify=context) as client:
 
         while True:
             data, addr = server_sock.recvfrom(2048)
@@ -66,8 +66,13 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                 try:
                     article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
                     article_category = article_metadata['metadata']['category']
-                    filepath = f"{article_category}/{article_html['slug']}"
-                    await save_article(article_html, filepath, template, sem)
+                    if ( 'is_styles_page' in article_metadata['metadata'] ):
+                        filepath = f"assets/styles/{article_metadata['title']}"
+                        template = get_template('styles', filters)
+                        ext = 'css'
+                    else:
+                        filepath = f"{article_category}/{article_html['slug']}"
+                    await save_article(article_html, filepath, template, sem, ext)
 
                     # check if current article exists in any other category folder
                     # if true, delete it from there
@@ -90,7 +95,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
                 elif msg['log_type'] == 'move':
-                    
+
                     if msg['log_action'] in ['move', 'delete_redir']:
                         try:
                             redirect = msg['log_params']
@@ -109,14 +114,14 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             if make_redirect:
                                 source_article, source_metadata = await make_article(msg['title'], client, metadata_only)
                                 source_filepath = await redirect_article(msg['title'], redirect['target'])
-                                await save_article(source_article, source_filepath, template, sem)
+                                await save_article(source_article, source_filepath, template, sem, ext)
 
-                            await save_article(target_html, target_filepath, template, sem)
+                            await save_article(target_html, target_filepath, template, sem, ext)
 
                             # check if current article exists in any other category folder
                             # if true, delete it from there
                             await has_duplicates(target_html['slug'], target_category)
-                        
+
 
                         except Exception as e:
                             print(f"move article err => {e}")

@@ -8,7 +8,7 @@ media = false
 frontpage = "Hackers & Designers"
 
 # name of stylesheet page
-stylespage = "styles.css"
+stylespage = "Styles.css"
 
 # as a TOML illiterate this seemed the most reasonable setup: apologies if not!
 # please fill out all fields, including "label" even if you set `nav: false`
