@@ -412,11 +412,6 @@ async def make_search_index(articles, query):
 
     return article
 
-    sem = None
-    document = template.render(article=article)
-    # do not write search results to disk
-
-
 
 async def make_sitemap(articles):
 

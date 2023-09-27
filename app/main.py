@@ -123,8 +123,8 @@ async def redirect_uri(request: Request, call_next):
     # this is done to figure out which category each article belongs to.
     # as of <2023-08-22> this is useful for when we add a backlink URL,
     # for which we don't have a category by default. we could parse this
-    # when retrieve the set of backlinks, but is pretty wasteful.
-    # ideally this can be solved by rather having a sqlite cache layer.
+    # when retrieve the set of backlinks, but it is pretty wasteful.
+    # ideally this can be solved by rather having an sqlite cache layer.
 
     uri = request.url.path[1:]
     uri_first = uri.split('/')[0]
@@ -157,13 +157,12 @@ async def search(request: Request, query: str):
 
     # check if exact slug is matches rendered HTML page and redirect to it
 
-    results = await query_wiki(ENV, URL, query )
-
+    results = await query_wiki(ENV, URL, query)
     article = await make_search_index(results, query)
 
     return templates.TemplateResponse("search-index.html",
-                                          {"request": request,
-                                           "article": article})
+                                      {"request": request,
+                                       "article": article})
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
