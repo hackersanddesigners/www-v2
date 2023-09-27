@@ -1,21 +1,21 @@
 {% if pagination.pages | length > 1 %}
 <nav>
   {% if pagination.nav.prev is not none %}
-    <a href="{{ request.url }}">prev</a>
+    <a href="{{ request.url | query_check('page', pagination.nav.prev, True) }}">prev</a>
   {% else %}
     <span>prev</span>
   {% endif %}
 
   {% for page in pagination.pages %}
     {% if page > 0 %}
-      <a href="{{ request.url }}">{{ page }}</a>
+    <a href="{{ request.url | query_check('page', page, True) }}">{{ page }}</a>
     {% else %}
-      <a href="{{ request.url }}">{{ page }}</a>
+      <a href="{{ request.url | query_check('page', page, True) }}">{{ page }}</a>
     {% endif %}
   {% endfor %}
 
   {% if pagination.nav.next is not none %}
-    <a href="{{ request.url }}">next</a>
+      <a href="{{ request.url | query_check('page', pagination.nav.next, True) }}">next</a>
   {% else %}
     <span>next</span>
   {% endif %}

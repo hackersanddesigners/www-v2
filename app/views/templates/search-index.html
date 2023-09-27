@@ -21,7 +21,9 @@
           {{ item.snippet | safe }}
         </div>
       </li>
-    {% endfor %}
+      {% endfor %}
   </ol>
+
+  {% include "pagination.html" %}
 </main>
 {% endblock %}

@@ -2,7 +2,11 @@ from dotenv import load_dotenv
 import os
 import json
 import asyncio
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import (
+    FastAPI,
+    Request,
+    HTTPException,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import (
     HTMLResponse,
@@ -23,6 +27,7 @@ from .views.template_utils import (
     make_url_slug,
     make_timestamp,
     paginator,
+    query_check,
 )
 import httpx
 from app.fetch import (
@@ -45,6 +50,7 @@ base_dir = Path.cwd()
 templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
 templates.env.filters['slug'] = make_url_slug
 templates.env.filters['ts'] = make_timestamp
+templates.env.filters['query_check'] = query_check
 
 
 app.mount("/static",
@@ -84,7 +90,6 @@ async def http_exception_handler(request, exc):
                                     })
 
     return HTMLResponse(content=t.body, status_code=exc.status_code)
-
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -151,7 +156,9 @@ async def redirect_uri(request: Request, call_next):
 
 
 @app.get("/search", response_class=HTMLResponse)
-async def search(request: Request, query: str):
+async def search(request: Request,
+                 query: str,
+                 page: int | None = 0):
     """
     initiate wiki search on website
     """
@@ -159,11 +166,16 @@ async def search(request: Request, query: str):
     # check if exact slug is matches rendered HTML page and redirect to it
 
     results = await query_wiki(ENV, URL, query)
-    article = await make_search_index(results, query)
+
+    # -- make pagination
+    pagination = paginator(results, 5, page)
+    
+    article = await make_search_index(pagination['data'], query)
 
     return templates.TemplateResponse("search-index.html",
                                       {"request": request,
-                                       "article": article})
+                                       "article": article,
+                                       "pagination": pagination})
 
 
 @app.get("/{cat}", response_class=HTMLResponse)
