@@ -1,3 +1,4 @@
+{% if pagination.pages | length > 1 %}
 <nav>
   {% if pagination.nav.prev is not none %}
     <a href="{{ request.url }}">prev</a>
@@ -19,3 +20,4 @@
     <span>next</span>
   {% endif %}
 </nav>
+{% endif %}
