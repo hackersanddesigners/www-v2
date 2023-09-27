@@ -127,6 +127,7 @@ async def redirect_uri(request: Request, call_next):
     # ideally this can be solved by rather having an sqlite cache layer.
 
     uri = request.url.path[1:]
+    uri = uri.replace('.html', '')
     uri_first = uri.split('/')[0]
 
     # build a list of categories, plus other items that might appear
