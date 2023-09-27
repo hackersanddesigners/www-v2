@@ -16,8 +16,8 @@ from .views.views import (
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
-    make_search_index
     make_article_index,
+    make_search_index,
 )
 from .views.template_utils import (
     make_url_slug,
@@ -25,7 +25,12 @@ from .views.template_utils import (
     paginator,
 )
 import httpx
-from app.fetch import create_context
+from app.fetch import (
+    create_context,
+    query_continue,
+    query_wiki,
+)
+from app.file_ops import file_lookup
 from app.build_article import make_article
 from app.build_wiki import get_category
 import tomli
@@ -91,7 +96,6 @@ async def root(request: Request):
 
 @app.middleware("http")
 async def redirect_uri(request: Request, call_next):
->>>>>>> main
     """
     Middleware to check incoming URL and do an article look-up
     to see if anything matches from the local filesystem wiki.
