@@ -43,6 +43,12 @@ we also save to HTML the article content so to have less breaking states of the 
 
 once we have all the wiki data articles out we can do, anything!
 
+### why are we parsing wiki articles instead of retrieving the HTML from MediaWiki's APIs?
+
+because of the underlying intentions of the project, which is to exploit a MediaWiki feature built for real-time streaming purposes, to create a constant backup version of the wiki database into plain-text files.
+
+while parsing `wiki-text` is particularly over-complicated (the cost of any markup syntax), choosing not to simply retrieve HTML from MediaWiki's APIs give us more freedom to build any other project we want to.
+
 ## details
 
 **this is still in progress!**
@@ -170,7 +176,7 @@ to run a local web-server in order to browse the `wiki` folder, you can do:
 - `uvicorn app.main:app --reload` or use `local-server.sh`.
 
 
-## sort index page
+## sort index page notes
 
 <2023-09-27> we removed the sorting option as for performance reasons we do the sorting only on the
 paginated subset of articles (because we need to parse each article to retrieve the date field, etc).
@@ -183,3 +189,5 @@ given it's not particularly useful in retrospect we keep the code but disable it
   <a href="{{ request.url | query_check('sort_dir', 'type') }}">{{ page }}</a>
   ```
 - lookup `/app/views/template_utils.py/query_check` for more info
+
+this feature was 90% done, so if you enable it again, please double-check if anything is missing.
