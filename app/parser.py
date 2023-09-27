@@ -18,6 +18,7 @@ import asyncio
 import tomli
 import mistletoe
 from pathlib import Path
+from app.file_ops import file_lookup
 load_dotenv()
 
 
