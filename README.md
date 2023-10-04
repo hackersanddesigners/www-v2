@@ -65,11 +65,14 @@ structure:
 to run this on a MediaWiki instance, add the following to `LocalSettings.php` (`RCFeeds` example):
 
 ```
-$wgRCFeeds['had-py'] = array(
+$wgRCFeeds['exampleirc'] = array(
     'formatter' => 'JSONRCFeedFormatter',
     'uri' => 'udp://localhost:1338',
     'add_interwiki_prefix' => false,
-    'omit_bots' => true,
+    'omit_bots' => false,
+    'omit_anon' => false, # to detect wiki changes from scripted API requests
+    'omit_minor' => false,
+    'omit_patrolled' => false
 );
 ```
 
