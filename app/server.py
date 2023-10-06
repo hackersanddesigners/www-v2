@@ -64,14 +64,29 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             ):
 
                 try:
-                    article_html, article_metadata = await make_article(msg['title'], client, metadata_only)
-                    article_category = article_metadata['metadata']['category']
-                    filepath = f"{article_category}/{article_html['slug']}"
-                    await save_article(article_html, filepath, template, sem)
+                    article_list = []
 
-                    # check if current article exists in any other category folder
-                    # if true, delete it from there
-                    await has_duplicates(article_html['slug'], article_category)
+                    # article is a tuple in the form: (article_html, article_metadata)
+                    article = await make_article(msg['title'], client, metadata_only)
+                    article_list.append(article)
+
+                    if len(article[1]['translations']) > 0:
+                        art_tasks = []
+                        for translation in article[1]['translations']:
+                            trans_task = make_article(translation, client, metadata_only)
+                            art_tasks.append(asyncio.ensure_future(trans_task))
+
+                        prepared_articles = await asyncio.gather(*art_tasks)
+                        article_list.extend(prepared_articles)
+
+                    for article in article_list:
+                        article_category = article[1]['metadata']['category']
+                        filepath = f"{article_category}/{article[0]['slug']}"
+                        await save_article(article[0], filepath, template, sem)
+
+                        # check if current article exists in any other category folder
+                        # if true, delete it from there
+                        await has_duplicates(article[0]['slug'], article_category)
 
                 except Exception as e:
                     print(f"make-article err => {e}")

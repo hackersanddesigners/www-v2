@@ -55,9 +55,26 @@ def get_article_field(field: str, article):
         return None
 
 
+def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
+    """
+    Return list of URLs pointing to translations of the given article. 
+    """
+
+    with open("settings.toml", mode="rb") as f:
+        config = tomli.load(f)
+
+    translations = config['wiki']['translation_langs']
+    matches = [f"{page_title}/{lang}" for lang in translations]
+
+    return [page['title'] for page in backlinks
+            if page['title'] in matches]
+    
+
 async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
+    article_translations = get_translations(page_title, backlinks)
+
     nav = make_nav()
 
     if article is not None:
@@ -74,6 +91,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "last_modified": last_modified,
                 "backlinks": backlinks,
                 "tool": tool_metadata,
+                "translations": article_translations,
             }
 
             return article_metadata
@@ -85,7 +103,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "title": page_title,
             "html": body_html,
             "slug": slugify(page_title),
-            "nav": nav
+            "nav": nav,
+            "translations": article_translations,
         }
 
         article_metadata = {
@@ -95,7 +114,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "metadata": metadata,
             "last_modified": last_modified,
             "backlinks": backlinks,
-            "nav": nav
+            "nav": nav,
+            "translations": article_translations,
         }
 
         return article_html, article_metadata
