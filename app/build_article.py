@@ -73,7 +73,10 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
 async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
-    article_translations = get_translations(page_title, backlinks)
+
+    article_translations = []
+    if backlinks:
+        article_translations = get_translations(page_title, backlinks)
 
     nav = make_nav()
 
