@@ -312,10 +312,6 @@ def check_file_revision(img_path, file_revs):
 
 
 async def write_blob_to_disk(file_path, file_url):
-    # TODO move this on project init setup?
-    media_path = os.path.abspath(MEDIA_DIR)
-    if not os.path.exists(media_path):
-        os.makedirs(media_path)
 
     req_op = {
         'verb': 'GET',

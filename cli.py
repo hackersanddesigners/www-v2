@@ -14,6 +14,27 @@ app = typer.Typer()
 
 
 @app.command()
+def setup():
+    """
+    Setup necessary folders and files to run the program.
+    """
+
+    WIKI_DIR = os.getenv('WIKI_DIR')
+    MEDIA_DIR = os.getenv('MEDIA_DIR')
+    LOG_DIR = os.getenv('LOG_DIR')
+
+    dir_list = [WIKI_DIR, MEDIA_DIR, LOG_DIR]
+
+    for path_dir in dir_list:
+        dir_path = os.path.abspath(path_dir)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+            print(f"created {dir_path}")
+        else:
+            print(f"{dir_path} exists already")
+
+
+@app.command()
 def server():
     """
     Run server to receive a message whenever an article from the MediaWiki is updated
