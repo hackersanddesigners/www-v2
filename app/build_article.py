@@ -229,6 +229,8 @@ async def has_duplicates(article_filename: str, matching_cat: str):
     # and filter out any path matching <cat>/article_filepath, where cat
     # is not matching_cat
 
+    print(f"check if article has duplicates... => {article_filename, matching_cat}")
+
     pattern = "**/*.html"
     paths = [p for p
              in WIKI_DIR.glob(pattern)
@@ -237,7 +239,11 @@ async def has_duplicates(article_filename: str, matching_cat: str):
     if len(paths) > 0:
         print(f"remove these filepaths {paths}!")
 
-    for p in paths:
-        cat = str(p.parent.stem)
-        fn = str(p.stem)
-        await delete_article(fn, cat)
+        for p in paths:
+            cat = str(p.parent.stem)
+            fn = str(p.stem)
+            await delete_article(fn, cat)
+
+    else:
+        print(f"no duplicates...")
+        return
