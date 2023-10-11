@@ -12,7 +12,12 @@ from app.views.template_utils import (
     make_timestamp,
 )
 from pathlib import Path
+from app.read_settings import main as read_settings
 from app.file_ops import file_lookup
+
+
+WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+config = read_settings()
 
 
 def make_nav():
@@ -20,9 +25,6 @@ def make_nav():
     make a list of dictionaries {label, uri} as links
     to listed categories in settings.toml
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     cats = config['wiki']['categories']
 
@@ -59,9 +61,6 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
     """
     Return list of URLs pointing to translations of the given article. 
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     translations = config['wiki']['translation_langs']
     matches = [f"{page_title}/{lang}" for lang in translations]
@@ -142,7 +141,6 @@ async def redirect_article(article_title: str, redirect_target: str):
     """
     """
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     p = Path(article_title)
     filename = slugify(str(p.stem))
     paths = file_lookup(filename)
@@ -197,7 +195,6 @@ async def delete_article(article_title: str, cat: str | None = None):
 
     print(f"delete-article => {article_title, cat}")
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     p = Path(article_title)
     filename = slugify(str(p.stem))
 
@@ -232,7 +229,6 @@ async def has_duplicates(article_filename: str, matching_cat: str):
     # and filter out any path matching <cat>/article_filepath, where cat
     # is not matching_cat
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     pattern = "**/*.html"
     paths = [p for p
              in WIKI_DIR.glob(pattern)

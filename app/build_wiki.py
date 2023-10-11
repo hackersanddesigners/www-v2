@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from sys import argv
 import os
-import tomli
 import httpx
 from app.fetch import (
     query_continue,
@@ -27,6 +26,7 @@ from app.build_article import (
 import json
 from slugify import slugify
 from app.copy_assets import main as copy_assets
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
@@ -72,9 +72,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     # it's not necessary to fetch the Type info now, as we are going to fetch
     # each page in the list on its own, therefore upon mapping over Event pages
     # we can "manually" pick them apart by `Type:HDSA<year>`
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     cats = config['wiki']['categories']
 

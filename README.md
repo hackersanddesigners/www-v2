@@ -165,6 +165,7 @@ and specific plugin options:
 
 there is a CLI program at `cli.py` to run common operations. currently available commands are:
 
+- `setup`: creates a bunch of necessary folders to run the website 
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
 - `build-wiki`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so

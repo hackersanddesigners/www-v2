@@ -19,25 +19,23 @@ import tomli
 import mistletoe
 from pathlib import Path
 from app.file_ops import file_lookup
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
+config = read_settings()
+MEDIA_DIR = os.getenv('MEDIA_DIR')
+    
 class WikiPage(Page):
-
-    MEDIA_DIR = os.getenv('MEDIA_DIR')
 
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     WIKI_DIR = Path(os.getenv('WIKI_DIR'))
-
-    file_URLs = []
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
-
     download_image = config['wiki']['media']
+    
+    file_URLs = []
 
     def page_load(self, page) -> str:
         """
@@ -189,9 +187,6 @@ def get_tool_metadata(article_wtp: str):
 
     else:
 
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
-
         repo = make_tool_repo(tool_key, config['tool-plugin'])
 
         base_URL = config['tool-plugin']['host'][repo['host']][1]
@@ -203,9 +198,6 @@ def get_tool_metadata(article_wtp: str):
 def parse_tool_tag(tool_key):
 
     if tool_key is not None:
-
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
 
         repo = make_tool_repo(tool_key, config['tool-plugin'])
 
@@ -268,9 +260,6 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
       the wiki article can be fixed instead
     - if redirect is not None, extend article.body w/ redirect link
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     download_image = config['wiki']['media']
 
@@ -367,9 +356,6 @@ def tool_convert_rel_uri_to_abs(items, attr, repo):
     """
 
     if len(items) > 0:
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
-
         for item in items:
             uri = item[attr]
 
@@ -420,9 +406,6 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
 
     canonical_url = config['domain']['canonical_url']
 
@@ -515,9 +498,6 @@ def get_metadata(article):
     extract article category
     """
 
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
-
     cats = config['wiki']['categories']
     cat_keys = cats.keys()
 
@@ -551,7 +531,6 @@ def get_metadata(article):
 
 def get_images(article):
 
-    MEDIA_DIR = os.getenv('MEDIA_DIR')
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])

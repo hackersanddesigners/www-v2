@@ -38,8 +38,8 @@ from app.fetch import (
 from app.file_ops import file_lookup
 from app.build_article import make_article
 from app.build_wiki import get_category
-import tomli
 from slugify import slugify
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
@@ -65,8 +65,7 @@ ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 
 
-with open("settings.toml", mode="rb") as f:
-    config = tomli.load(f)
+config = read_settings()
     
 
 @app.exception_handler(StarletteHTTPException)
