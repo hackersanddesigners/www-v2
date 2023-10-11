@@ -105,6 +105,10 @@ async def fetch_article(title: str, client):
             if article['ns'] == -1:
                 article = None
 
+            # filter out `Concept:<title>` articles
+            if article['title'].startswith("Concept:"):
+                article = None
+
         if 'backlinks' in data['query']:
             backlinks = data['query']['backlinks']
 
