@@ -127,6 +127,25 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                 articles_metadata_index.extend(articles_metadata)
 
             else:
+
+                # check for any article translation present as backlink in prepared_articles,
+                # fetch it and add it to the list of articles to write to disk (article_list)
+
+                # do we really need to do a second pass like this to fetch any translated
+                # article and add it to the prepated_articles list, and then loop
+                # over that list again and again?
+                for item in prepared_articles:
+                    if item is not None:
+                        trans_tasks = []
+                        if len(item[1]['translations']) > 0:
+                            for translation in item[1]['translations']:
+                                trans_task = make_article(translation, client, metadata_only)
+                                trans_tasks.append(asyncio.ensure_future(trans_task))
+
+                            t_articles = await asyncio.gather(*trans_tasks)
+                            article_list.extend(prepared_articles)
+
+                        
                 articles_metadata = [item[1] for item in prepared_articles if item is not None]
                 articles_metadata_index.extend(articles_metadata)
 
