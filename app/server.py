@@ -68,6 +68,9 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # article is a tuple in the form: (article_html, article_metadata)
                     article = await make_article(msg['title'], client, metadata_only)
+                    if article is None:
+                        return
+                    
                     article_list.append(article)
 
                     if len(article[1]['translations']) > 0:
@@ -89,7 +92,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         await has_duplicates(article[0]['slug'], article_category)
 
                 except Exception as e:
-                    print(f"make-article err => {e}")
+                    print(f"make-article err ({msg['title']}) => {e}")
                     traceback.print_exc()
 
             elif msg['type'] == 'log':
