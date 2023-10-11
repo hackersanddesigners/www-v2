@@ -88,15 +88,15 @@ async def fetch_article(title: str, client):
         'redirects': '1'
     }
 
+    article = None
+    backlinks = None
+    redirect_target = None
+
     try:
         response = await client.get(URL, params=params)
         data = response.json()
 
         response.raise_for_status()
-
-        article = None
-        backlinks = None
-        redirect_target = None
 
         if 'pages' in data['query']:
             article = data['query']['pages'][0]
@@ -116,7 +116,7 @@ async def fetch_article(title: str, client):
 
     except httpx.HTTPError as exc:
         print(f"get-article err => {exc}")
-        return None, None, None
+        return article, backlinks, redirect_target
 
 
 async def query_wiki(ENV: str, URL: str, query: str):
