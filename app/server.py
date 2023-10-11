@@ -57,11 +57,9 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             metadata_only = False
 
-            if (
-                    msg['type'] in ['new', 'edit']
-                    or msg['type'] == 'log'
-                    and msg['log_action'] in ['restore', 'delete_redir']
-            ):
+            if (msg['type'] in ['new', 'edit']
+                or msg['type'] == 'log'
+                and msg['log_action'] in ['restore', 'delete_redir']):
 
                 try:
                     article_list = []
