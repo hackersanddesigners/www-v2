@@ -195,3 +195,9 @@ given it's not particularly useful in retrospect we keep the code but disable it
 - lookup `/app/views/template_utils.py/query_check` for more info
 
 this feature was 90% done, so if you enable it again, please double-check if anything is missing.
+
+## self-help
+
+known problems so far:
+
+- keep one category per article, else the parser might pick up any other category option added to the list of categories. this is due to the fact that we're reading from a dictionary of categories and by default Python does not keep the dictionary "ordered". ad of <2023-10-11> we agreed to keep one category per article, if that will change in the future, the problem will be bigger — as we organize articles in the wiki by directories (one directory is one category), having multiple category will produce duplicate articles across several directories. 
