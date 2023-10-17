@@ -157,20 +157,34 @@ class WikiPage(Page):
 
 
 def make_tool_repo(tool_key: str, config_tool):
+    """
+    Parse MW custom <tool> tag into a dictionary. We use this
+    to retrieve the content of the README file from the git repo.
+    """
+
+    repo = {"host": None, "branch": [], "file": None}
+    
     tokens = tool_key.split()
 
-    repo = {"host": None, "branch": None}
     for t in tokens:
         # let's split only `<word>=<word>` items
         if '=' in t:
             prop = t.split('=')
-            repo[prop[0].strip()] = prop[1][1:-1].strip()
+            
+            if t == 'branch':
+                repo[prop[0].strip()].append(prop[1][1:-1].strip())
+            else:
+                repo[prop[0].strip()] = prop[1][1:-1].strip()
 
     if repo['host'] == None:
         repo['host'] = config_tool['host_default']
 
-    if repo['branch'] == None:
+    if len(repo['branch']) == 0:
         repo['branch'] = config_tool['branch_default']
+
+    if repo['file'] == None:
+        repo['file'] = config_tool['file_default']
+
 
     return repo
 
