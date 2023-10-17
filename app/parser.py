@@ -534,19 +534,42 @@ def get_metadata(article):
     return metadata
 
 
-def get_images(article):
-
+async def get_images(article):
+    """
+    Prepare list of images for given Index page.
+    If not copying images locally, we need to fetch them
+    frome the wiki one by one and it slows down the loading
+    of the page. TODO => move to create static index pages?
+    """
+    
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
+    download_image = config['wiki']['media']
+
     images = []
+    tasks = []
+
+    async def file_fetch(file: str, download: bool) -> bool:
+        if not download:
+            t = await fetch_file(file, download_image)
+            images.append(t[1])
+        else:
+            t = await fetch_file(file, download)
+            images.append(t[1])
+    
     for wikilink in article.wikilinks:
         if wikilink.title.lower().startswith('file:'):
-            filename = wikilink.title[5:].strip()
-            filepath = HTML_MEDIA_DIR + "/" + filename
-            images.append(filepath)
+            # filename = wikilink.title[5:].strip()
+            # filepath = HTML_MEDIA_DIR + "/" + filename
+            # images.append(filepath)
+            
+            task = file_fetch(wikilink.title, download_image)
+            tasks.append(asyncio.ensure_future(task))
 
+    await asyncio.gather(*tasks)
+    
     return images
  
 
@@ -625,7 +648,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
 
         article_wtp = wtp.parse(wiki_article)
         metadata = get_metadata(article_wtp)
-        images = get_images(article_wtp)
+        images = await get_images(article_wtp)
 
         tool_metadata = None
         if metadata_only:
