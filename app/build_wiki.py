@@ -73,6 +73,8 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     # each page in the list on its own, therefore upon mapping over Event pages
     # we can "manually" pick them apart by `Type:HDSA<year>`
 
+    config = read_settings()
+
     cats = config['wiki']['categories']
 
     cat_tasks = []
