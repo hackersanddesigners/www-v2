@@ -20,6 +20,7 @@ import mistletoe
 from pathlib import Path
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
+from urllib.parse import unquote
 load_dotenv()
 
 
@@ -261,8 +262,6 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
     - if redirect is not None, extend article.body w/ redirect link
     """
 
-    download_image = config['wiki']['media']
-
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
@@ -382,7 +381,8 @@ def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
     MW URL file instance
     """
 
-    f = Path(file)
+    f = Path(unquote(file))
+    
     url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
     img_tag = soup.find(src=re.compile(url_match))
 
@@ -440,14 +440,16 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 link.attrs['href'] = uri
             
 
-    # -- img src replacement
-    #    replace local URL to instead pointing to
-    #    MW server instance
-    if len(file_URLs) > 0:
-        for url in file_URLs:
-            file = url.split('/').pop()
-            if file:
-                replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
+    download_image = config['wiki']['media']
+    if not download_image:
+        # -- img src replacement
+        #    replace local URL to instead pointing to
+        #    MW server instance
+        if len(file_URLs) > 0:
+            for url in file_URLs:
+                file = url.split('/').pop()
+                if file:
+                    replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
 
     # -- tool parser
     # naive regex to grab the <tool ... /> string
@@ -539,8 +541,7 @@ def get_images(article):
     for wikilink in article.wikilinks:
         if wikilink.title.lower().startswith('file:'):
             filename = wikilink.title[5:].strip()
-            filepath = HTML_MEDIA_DIR + filename
-
+            filepath = HTML_MEDIA_DIR + "/" + filename
             images.append(filepath)
 
     return images
