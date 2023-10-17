@@ -163,7 +163,9 @@ def make_tool_repo(tool_key: str, config_tool):
     """
 
     repo = {"host": None, "branch": [], "file": None}
-    
+    fallback_branch = config['tool-plugin']['branch_default']
+    repo['branch'] = fallback_branch
+
     tokens = tool_key.split()
 
     for t in tokens:
@@ -172,7 +174,11 @@ def make_tool_repo(tool_key: str, config_tool):
             prop = t.split('=')
             
             if t == 'branch':
-                repo[prop[0].strip()].append(prop[1][1:-1].strip())
+                v = prop[1][1:-1].strip()
+
+                if v not in repo['branch']:
+                    repo['branch'].append(v)
+                    
             else:
                 repo[prop[0].strip()] = prop[1][1:-1].strip()
 
@@ -229,40 +235,23 @@ def parse_tool_tag(tool_key):
         with httpx.Client(verify=context) as client:
 
             base_URL = config['tool-plugin']['host'][repo['host']][0]
-            URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
+            URL_tokens = [base_URL, repo['user'], repo['repo'], repo['branch'][0], repo['file']]
 
-            response = client.get(URL)
+            for branch in repo['branch']:
 
-            # we're assuming that in case the URL return 404
-            # it's the branch name the problem, so we fallback
-            # to two options: main, master. we try both,
-            # in case we get still 404, return nothing
-            if response.status_code == 200:
-                text = response.text
-                return mistletoe.markdown(text), repo
+                URL_tokens[3] = branch
+                URL = "/".join(URL_tokens)
 
-            elif response.status_code == 404:
-
-                # let's remove the previous branch value from the list
-                # since it brought us to a 404
-                repo['branch'].pop(0)
-
-                URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
                 response = client.get(URL)
-                
+
                 if response.status_code == 200:
                     text = response.text
                     return mistletoe.markdown(text), repo
 
-                else:
-                    print(f"repo's {URL} status code is {response.status_code}.\n",
-                          f"double-check that all parameters are correct in the <tool .../> markup\n"
-                          f"in the wiki article.")
+            return False, False
 
-                    print(f"{response.status_code} error => {[tool_key, repo]}") 
-                    return False, False
-
-    return False, False    
+    else:
+        return False, False
 
 
 async def pre_process(article, wiki_page, article_wtp) -> str:

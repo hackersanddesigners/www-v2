@@ -474,7 +474,7 @@ async def make_index_sections(articles_metadata, cat: str, cat_label: str):
         await make_publishing_index(articles_metadata, cat, cat_label)
 
     if cat == 'Tools':
-        await make_tool_index(articles_metadata, cat, cat_label)
+        await make_tool_index(articles_metadata, cat, cat_label, False)
 
     if cat == 'Articles':
         await make_article_index(articles_metadata, cat, cat_label)
