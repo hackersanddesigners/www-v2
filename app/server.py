@@ -92,7 +92,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     for article in article_list:
                         article_category = article[1]['metadata']['category']
                         filepath = f"{article_category}/{article[0]['slug']}"
-                        await save_article(article[0], filepath, template, sem)
+                        await save_article(article[0], filepath, template, sem, 'html')
 
                         # check if current article exists in any other category folder
                         # if true, delete it from there
