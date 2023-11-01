@@ -9,18 +9,14 @@
 /* basic reset */
 
 html {
-    box-sizing: border-box
+    box-sizing: border-box;
 }
 
 *, *:before, *:after {
-    box-sizing: inherit
+    box-sizing: inherit;
 }
 
-html, body,
-h1, h2, h3, h4, h5, h6,
-p,
-ol, ul, li,
-figure {
+html, body {
     margin: 0;
     padding: 0
 }
@@ -29,9 +25,6 @@ img {
     max-width: 100%;
 }
 
-p:not(:last-child) {
-    padding-bottom: 1rem;
-}
 
 .x {
     display: flex;

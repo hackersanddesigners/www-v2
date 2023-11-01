@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<main class="pt1 pr1 pb2 pl1">
+<main id="main-content" class="pt1 pr1 pb2 pl1">
   <h1>{{ article.title }}</h1>
   {% for article in article.articles %}
   <figure class="pb1">
@@ -20,7 +20,7 @@
     </figcaption>
   </figure>
   {% endfor %}
-  
+
   {% include "pagination.html" %}
 </main>
 

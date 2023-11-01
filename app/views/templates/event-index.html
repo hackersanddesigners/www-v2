@@ -1,55 +1,68 @@
 {% extends "base.html" %}
 {% block content %}
-<main>
+<main id="main-content">
   {% if article.events.happening | length > 0 %}
-  <section>
-    <h2>Happening now</h2>
-    {% for event in article.events.happening %}
-    <div>
-      <a href="/{{ event.title | slug }}.html">{{ event.title }}</a>
+    <section>
+      <h2>Happening now</h2>
+      {% for event in article.events.happening %}
       <div>
-        {{ event.metadata.location }}
-        {{ event.metadata.date }}
-        {{ event.metadata.time }}
+        <a href="/{{ event.title | slug }}.html">{{ event.title }}</a>
+        <div>
+          {{ event.metadata.location }}
+          {{ event.metadata.date }}
+          {{ event.metadata.time }}
+        </div>
       </div>
-    </div>
     {% endfor %}
   </section>
   {% endif %}
   <section>
-    <h2>Upcoming Events</h2>
+    <h2>Upcoming</h2>
     {% if article.events.upcoming | length > 0 %}
-    <div class="x xdr xw">
-    {% for event in article.events.upcoming %}
-    <figure class="w30">
-      <img src="{{ event.images[0] }}">
-      <figcaption>
-        <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
-        <p>
-          {% if event.metadata.location %}
-          {{ event.metadata.location }}
-          {% endif %}
-          <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
-          {% if event.metadata.dates.end %}
-          – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
-          {% endif %}
-          {% if event.metadata.time %}
-          <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
-          {% if event.metadata.times.end %}
-          – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
-          {% endif %}
-        </p>
-        {% endif %}
-      </figcaption>
-    </figure>
-    {% endfor %}
+      <div class="">
+      {% for event in article.events.upcoming %}
+        <figure class="">
+          <img
+            src="{{ event.images[0] }}"
+            alt=""
+          >
+          <!-- TODO add alt text -->
+          <!-- TODO: replace figcaption with just p tag -->
+            <figcaption>
+            <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+            <p>
+              {% if event.metadata.location %}
+                {{ event.metadata.location }}
+              {% endif %}
+              <time datetime="{{ event.metadata.dates.start }}">
+                {{ event.metadata.dates.start }}
+              </time>
+              {% if event.metadata.dates.end %} –
+                <time datetime="{{ event.metadata.dates.end }}">
+                  {{ event.metadata.dates.end }}
+                </time>
+              {% endif %}
+              {% if event.metadata.time %}
+                <time datetime="{{ event.metadata.times.start }}">
+                  {{ event.metadata.times.start }}
+                </time>
+                {% if event.metadata.times.end %}–
+                  <time datetime="{{ event.metadata.times.end }}">
+                    {{ event.metadata.times.end }}
+                  </time>
+                {% endif %}
+              </p>
+            {% endif %}
+          </figcaption>
+        </figure>
+      {% endfor %}
     </div>
     {% else %}
-    <p>No upcoming event at the moment.</p>
+      <p>No upcoming event at the moment.</p>
     {% endif %}
   </section>
   <section>
-    <h2>Past Events</h2>
+    <h2>Past</h2>
     {% if article.events.past | length > 0 %}
     <input type="text" class="table-input-filter" placeholder="Filter the list of events...">
     <div class="table-container">
@@ -95,15 +108,15 @@
           {% endfor %}
         </tbody>
       </table>
-    </div> 
+    </div>
 
     {% else %}
     <p>No past event at the moment. (??)</p>
     {% endif %}
   </section>
-  
+
   {% include "pagination.html" %}
-  
+
 </main>
 
 <script src="/static/scripts/tables.js"></script>
