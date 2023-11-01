@@ -18,15 +18,14 @@ def query_check(url: str,
 
         new_url = ""
         query_params = parse_qs(url.query)
-
         
-        sort_icon = sorting(query_params,
-                            query_key,
-                            ['sort_by', 'sort_dir'],
-                            query_value)
+        # sort_icon = sorting(query_params,
+        #                     query_key,
+        #                     ['sort_by', 'sort_dir'],
+        #                     query_value)
         
-        if query_key == 'sort_dir':
-            return sort_icon
+        # if query_key == 'sort_dir':
+        #     return sort_icon
         
         if query_key in query_params:
 
@@ -134,9 +133,25 @@ def ts_pad_hour(tokens):
         return ":".join(tokens)
 
 
-def paginator(items, list_size: int, cursor: int):
-    
+def paginator(items: list[dict], list_size: int, cursor: int):
+
     cursors = []
+    pagination = []
+    cur_prev = None
+    cur_next = None
+    
+    if len(items) == 0:
+            return {
+                "pages": pagination,
+                "data": items,
+                "nav": {
+                    "current": cursor,
+                    "prev": cur_prev,
+                    "next": cur_next,
+                }
+            }
+
+    
     for i in range(len(items)):
         pagenum, offset = divmod(i, list_size)
         if offset == 0:
@@ -146,17 +161,14 @@ def paginator(items, list_size: int, cursor: int):
     # we use this value to set the left-hand side of the slice command
     # eg where we want to start slicing from
 
-    pagination = []
     for idx, page in enumerate(cursors):
         pagination.append(idx)
         
     data = items[cursors[cursor] : (cursors[cursor] + list_size)]
 
-    cur_prev = None
     if cursor > 0:
         cur_prev = cursor - 1
     
-    cur_next = None
     if cursor < len(cursors) - 1:
         cur_next = cursor + 1
 

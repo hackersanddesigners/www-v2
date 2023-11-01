@@ -9,7 +9,7 @@ from app.log_to_file import main as log
 import filetype
 from urllib.parse import unquote
 load_dotenv()
-
+import json
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
@@ -62,8 +62,8 @@ async def query_continue(client, url, params):
             sem = None
             msg = f"query-continue e => {params['titles']}\n"
             await log('error', msg, sem)
-            
- 
+
+
 
 def article_exists(title) -> bool:
     WIKI_DIR = os.getenv('WIKI_DIR')
@@ -88,21 +88,25 @@ async def fetch_article(title: str, client):
         'redirects': '1'
     }
 
+    article = None
+    backlinks = None
+    redirect_target = None
+
     try:
         response = await client.get(URL, params=params)
         data = response.json()
 
         response.raise_for_status()
 
-        article = None
-        backlinks = None
-        redirect_target = None
-
         if 'pages' in data['query']:
             article = data['query']['pages'][0]
 
             # ns: -1 is part of Special Pages, we don't parse those
             if article['ns'] == -1:
+                article = None
+
+            # filter out `Concept:<title>` articles
+            if article and article['title'].startswith("Concept:"):
                 article = None
 
         if 'backlinks' in data['query']:
@@ -112,11 +116,39 @@ async def fetch_article(title: str, client):
             redirect_target = data['query']['redirects'][0]['to']
 
         return article, backlinks, redirect_target
-          
+
 
     except httpx.HTTPError as exc:
         print(f"get-article err => {exc}")
-        return None, None, None
+        return article, backlinks, redirect_target
+
+
+async def query_wiki(ENV: str, URL: str, query: str):
+    print(f"Querying mediawiki for { query } ...")
+
+    params = {
+        'action': 'query',
+        'list': 'search',
+        'srsearch': query,
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1',
+    }
+
+    context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0)
+    results = []
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
+        async for response in query_continue(client, URL, params):
+            response = response['search']
+            if len(response) > 0 and 'missing' in response[0]:
+                title = response[0]['title']
+                print(f"the page could not be found => {title}")
+                return False
+            else:
+                results.extend(response)
+
+    return results
 
 
 def file_exists(title: str, download: bool) -> bool:
@@ -224,7 +256,7 @@ async def fetch_file(title: str, download: bool):
 
     if not download:
         return (True, file_last['imageinfo'][0]['url'])
-        
+
     else:
         # -- read file from disk given file name
         #    and diff between timestamps
@@ -245,7 +277,7 @@ async def fetch_file(title: str, download: bool):
         else:
             await write_blob_to_disk(img_path, file_url)
             file_exists["downloaded"] = True
-                
+
 
         # if file:
         # - has been found on upstream wiki to exist
@@ -284,10 +316,6 @@ def check_file_revision(img_path, file_revs):
 
 
 async def write_blob_to_disk(file_path, file_url):
-    # TODO move this on project init setup?
-    media_path = os.path.abspath(MEDIA_DIR)
-    if not os.path.exists(media_path):
-        os.makedirs(media_path)
 
     req_op = {
         'verb': 'GET',

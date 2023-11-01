@@ -2,13 +2,17 @@ from dotenv import load_dotenv
 import os
 import json
 import asyncio
-from fastapi import FastAPI, Request
+from fastapi import (
+    FastAPI,
+    Request,
+    HTTPException,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import (
     HTMLResponse,
     RedirectResponse,
 )
-from starlette.exceptions import HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from .views.views import (
@@ -17,6 +21,7 @@ from .views.views import (
     make_publishing_index,
     make_tool_index,
     make_article_index,
+    make_search_index,
 )
 from .views.template_utils import (
     make_url_slug,
@@ -28,12 +33,13 @@ import httpx
 from app.fetch import (
     create_context,
     query_continue,
+    query_wiki,
 )
 from app.file_ops import file_lookup
 from app.build_article import make_article
 from app.build_wiki import get_category
-import tomli
 from slugify import slugify
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
@@ -61,15 +67,30 @@ ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 
 
-with open("settings.toml", mode="rb") as f:
-    config = tomli.load(f)
+config = read_settings()
 
 
-async def not_found(request: Request, exc: HTTPException):
-    return HTMLResponse(content=HTML_404_PAGE, status_code=exc.status_code)
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
 
-async def server_error(request: Request, exc: HTTPException):
-    return HTMLResponse(content=HTML_500_PAGE, status_code=exc.status_code)
+    if exc.status_code == 404:
+        message = "Nothing was found here."
+    elif exc.status_code == 500:
+        message = "Server error."
+    elif 400 <= exc.status_code <= 499:
+        message = "Generic error."
+
+    article = {
+        "title": "Error",
+        "message": message,
+    }
+
+    t = templates.TemplateResponse("error.html",
+                                   {"request": request,
+                                    "article": article,
+                                    })
+
+    return HTMLResponse(content=t.body, status_code=exc.status_code)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -108,10 +129,11 @@ async def redirect_uri(request: Request, call_next):
     # this is done to figure out which category each article belongs to.
     # as of <2023-08-22> this is useful for when we add a backlink URL,
     # for which we don't have a category by default. we could parse this
-    # when retrieve the set of backlinks, but is pretty wasteful.
-    # ideally this can be solved by rather having a sqlite cache layer.
+    # when retrieve the set of backlinks, but it is pretty wasteful.
+    # ideally this can be solved by rather having an sqlite cache layer.
 
     uri = request.url.path[1:]
+    uri = uri.replace('.html', '')
     uri_first = uri.split('/')[0]
 
     # build a list of categories, plus other items that might appear
@@ -134,6 +156,29 @@ async def redirect_uri(request: Request, call_next):
     return response
 
 
+@app.get("/search", response_class=HTMLResponse)
+async def search(request: Request,
+                 query: str,
+                 page: int | None = 0):
+    """
+    initiate wiki search on website
+    """
+
+    # check if exact slug is matches rendered HTML page and redirect to it
+
+    results = await query_wiki(ENV, URL, query)
+
+    # -- make pagination
+    pagination = paginator(results, 5, page)
+
+    article = await make_search_index(pagination['data'], query)
+
+    return templates.TemplateResponse("search-index.html",
+                                      {"request": request,
+                                       "article": article,
+                                       "pagination": pagination})
+
+
 @app.get("/{cat}", response_class=HTMLResponse)
 async def category(request: Request,
                    cat: str,
@@ -144,7 +189,6 @@ async def category(request: Request,
     build index page for given category: we build a paginated
     template instead of fetching through all the results of a category
     in one go.
-
     """
 
     cats = config['wiki']['categories']
@@ -202,8 +246,16 @@ async def category(request: Request,
             article = None
             save_to_disk = False
 
-            sort_dir = True if sort_dir == 'desc' else False
-            sorting = (sort_by, sort_dir)
+            # -- <2023-09-27> we remove the sorting option as for
+            #    performance reasons we do the sorting only on the
+            #    paginated subset of articles (because we need to parse
+            #    each article to retrieve the date field, etc).
+            #    given it's not particularly useful in retrospect
+            #    we keep the code but disable it.
+
+            # sort_dir = True if sort_dir == 'desc' else False
+            # sorting = (sort_by, sort_dir)
+            sorting = None
 
             if cat_label == 'Events':
                 article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sorting)

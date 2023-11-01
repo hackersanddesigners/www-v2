@@ -20,7 +20,7 @@ if you want to stick to Python's standard tools, then:
 
 ### packages
 
-to install all packages do: 
+to install all packages do:
 
 - try: `python3 -m pip install -r requirements.txt`
 - else, make sure to upgrade pip: `python3 -m pip install --upgrade pip` and try again with the above command
@@ -33,7 +33,7 @@ whenever you install a new package with `pip`, update the requirements list with
 
 this is a program to export data from MediaWiki into a mostly static website.
 
-the underlying idea is to make it easier to archive and distribute the website in a more accessible format to work with: 
+the underlying idea is to make it easier to archive and distribute the website in a more accessible format to work with:
 
 - we export each article into its Mediawiki plain text syntax
 - add it to a git repo
@@ -42,6 +42,12 @@ the underlying idea is to make it easier to archive and distribute the website i
 we also save to HTML the article content so to have less breaking states of the website, and distribute that into the git repo too. we include images and other files part of each article.
 
 once we have all the wiki data articles out we can do, anything!
+
+### why are we parsing wiki articles instead of retrieving the HTML from MediaWiki's APIs?
+
+because of the underlying intentions of the project, which is to exploit a MediaWiki feature built for real-time streaming purposes, to create a constant backup version of the wiki database into plain-text files.
+
+while parsing `wiki-text` is particularly over-complicated (the cost of any markup syntax), choosing not to simply retrieve HTML from MediaWiki's APIs give us more freedom to build any other project we want to.
 
 ## details
 
@@ -55,15 +61,18 @@ structure:
   - `<h&d.nl>` (frontpage as `static-page.html`?)
   - `<h&d.nl/p/static-page.html>`
   - `<h&d.nl/s/<search-query>`
-  
+
 to run this on a MediaWiki instance, add the following to `LocalSettings.php` (`RCFeeds` example):
 
 ```
-$wgRCFeeds['had-py'] = array(
+$wgRCFeeds['exampleirc'] = array(
     'formatter' => 'JSONRCFeedFormatter',
     'uri' => 'udp://localhost:1338',
     'add_interwiki_prefix' => false,
-    'omit_bots' => true,
+    'omit_bots' => false,
+    'omit_anon' => false, # to detect wiki changes from scripted API requests
+    'omit_minor' => false,
+    'omit_patrolled' => false
 );
 ```
 
@@ -156,6 +165,7 @@ and specific plugin options:
 
 there is a CLI program at `cli.py` to run common operations. currently available commands are:
 
+- `setup`: creates a bunch of necessary folders to run the website 
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
 - `build-wiki`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
@@ -168,3 +178,26 @@ start off by running `python cli.py --help` to see the available options.
 to run a local web-server in order to browse the `wiki` folder, you can do:
 
 - `uvicorn app.main:app --reload` or use `local-server.sh`.
+
+
+## sort index page notes
+
+<2023-09-27> we removed the sorting option as for performance reasons we do the sorting only on the
+paginated subset of articles (because we need to parse each article to retrieve the date field, etc).
+
+given it's not particularly useful in retrospect we keep the code but disable it. to put it back:
+
+- re-enable function in `app/main.py`
+- add back to each desired template link / button, the following Jinja2 filter:
+  ```
+  <a href="{{ request.url | query_check('sort_dir', 'type') }}">{{ page }}</a>
+  ```
+- lookup `/app/views/template_utils.py/query_check` for more info
+
+this feature was 90% done, so if you enable it again, please double-check if anything is missing.
+
+## self-help
+
+known problems so far:
+
+- keep one category per article, else the parser might pick up any other category option added to the list of categories. this is due to the fact that we're reading from a dictionary of categories and by default Python does not keep the dictionary "ordered". ad of <2023-10-11> we agreed to keep one category per article, if that will change in the future, the problem will be bigger — as we organize articles in the wiki by directories (one directory is one category), having multiple category will produce duplicate articles across several directories. 

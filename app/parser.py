@@ -18,25 +18,25 @@ import asyncio
 import tomli
 import mistletoe
 from pathlib import Path
+from app.file_ops import file_lookup
+from app.read_settings import main as read_settings
+from urllib.parse import unquote
 load_dotenv()
 
 
-class WikiPage(Page):
+config = read_settings()
+MEDIA_DIR = os.getenv('MEDIA_DIR')
 
-    MEDIA_DIR = os.getenv('MEDIA_DIR')
+class WikiPage(Page):
 
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    download_image = config['wiki']['media']
 
     file_URLs = []
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
-
-    download_image = config['wiki']['media']
 
     def page_load(self, page) -> str:
         """
@@ -124,17 +124,15 @@ class WikiPage(Page):
         #    and match any existing filepath in WIKI_DIR, then extract
         #    category (eg sub-dir) from it
 
-        p = Path(url)
-        filename = slugify(str(p.stem))
-
-        pattern = f"**/{filename}.html"
-        paths = [p for p
-                 in self.WIKI_DIR.glob(pattern)]
+        filename = slugify(url.lower())
+        paths = file_lookup(filename)
 
         if len(paths) > 0:
-            wp = paths[0]
-            new_url = f"{wp.parent.stem}/{slugify(str(wp.stem))}"
+            fn = paths[0]
+            new_url = f"{fn.parent.stem}/{slugify(str(fn.stem))}"
             return new_url
+        else:
+            return filename
 
     def clean_title(self, title: str) -> str:
         """
@@ -165,20 +163,40 @@ class WikiPage(Page):
 
 
 def make_tool_repo(tool_key: str, config_tool):
+    """
+    Parse MW custom <tool> tag into a dictionary. We use this
+    to retrieve the content of the README file from the git repo.
+    """
+
+    repo = {"host": None, "branch": [], "file": None}
+    fallback_branch = config['tool-plugin']['branch_default']
+    repo['branch'] = fallback_branch
+
     tokens = tool_key.split()
 
-    repo = {"host": None, "branch": None}
     for t in tokens:
         # let's split only `<word>=<word>` items
         if '=' in t:
             prop = t.split('=')
-            repo[prop[0].strip()] = prop[1][1:-1].strip()
+
+            if t == 'branch':
+                v = prop[1][1:-1].strip()
+
+                if v not in repo['branch']:
+                    repo['branch'].append(v)
+
+            else:
+                repo[prop[0].strip()] = prop[1][1:-1].strip()
 
     if repo['host'] == None:
         repo['host'] = config_tool['host_default']
 
-    if repo['branch'] == None:
+    if len(repo['branch']) == 0:
         repo['branch'] = config_tool['branch_default']
+
+    if repo['file'] == None:
+        repo['file'] = config_tool['file_default']
+
 
     return repo
 
@@ -196,9 +214,6 @@ def get_tool_metadata(article_wtp: str):
 
     else:
 
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
-
         repo = make_tool_repo(tool_key, config['tool-plugin'])
 
         base_URL = config['tool-plugin']['host'][repo['host']][1]
@@ -210,9 +225,6 @@ def get_tool_metadata(article_wtp: str):
 def parse_tool_tag(tool_key):
 
     if tool_key is not None:
-
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
 
         repo = make_tool_repo(tool_key, config['tool-plugin'])
 
@@ -229,40 +241,23 @@ def parse_tool_tag(tool_key):
         with httpx.Client(verify=context) as client:
 
             base_URL = config['tool-plugin']['host'][repo['host']][0]
-            URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
+            URL_tokens = [base_URL, repo['user'], repo['repo'], repo['branch'][0], repo['file']]
 
-            response = client.get(URL)
+            for branch in repo['branch']:
 
-            # we're assuming that in case the URL return 404
-            # it's the branch name the problem, so we fallback
-            # to two options: main, master. we try both,
-            # in case we get still 404, return nothing
-            if response.status_code == 200:
-                text = response.text
-                return mistletoe.markdown(text), repo
+                URL_tokens[3] = branch
+                URL = "/".join(URL_tokens)
 
-            elif response.status_code == 404:
-
-                # let's remove the previous branch value from the list
-                # since it brought us to a 404
-                repo['branch'].pop(0)
-
-                URL = f"{base_URL}/{repo['user']}/{repo['repo']}/{ repo['branch'][0] }/{repo['file']}"
                 response = client.get(URL)
 
                 if response.status_code == 200:
                     text = response.text
                     return mistletoe.markdown(text), repo
 
-                else:
-                    print(f"repo's {URL} status code is {response.status_code}.\n",
-                          f"double-check that all parameters are correct in the <tool .../> markup\n"
-                          f"in the wiki article.")
+            return False, False
 
-                    print(f"{response.status_code} error => {[tool_key, repo]}")
-                    return False, False
-
-    return False, False
+    else:
+        return False, False
 
 
 async def pre_process(article, wiki_page, article_wtp) -> str:
@@ -275,11 +270,6 @@ async def pre_process(article, wiki_page, article_wtp) -> str:
       the wiki article can be fixed instead
     - if redirect is not None, extend article.body w/ redirect link
     """
-
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
-
-    download_image = config['wiki']['media']
 
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
@@ -374,9 +364,6 @@ def tool_convert_rel_uri_to_abs(items, attr, repo):
     """
 
     if len(items) > 0:
-        with open("settings.toml", mode="rb") as f:
-            config = tomli.load(f)
-
         for item in items:
             uri = item[attr]
 
@@ -403,7 +390,8 @@ def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
     MW URL file instance
     """
 
-    f = Path(file)
+    f = Path(unquote(file))
+
     url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
     img_tag = soup.find(src=re.compile(url_match))
 
@@ -425,8 +413,10 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     - replace Tool's wiki syntax to actual HTML
     - if non archive-mode: update img's src to point to MW image server
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
-      and change them to be relative URLs?
+      and change them to be relative URLs
     """
+
+    canonical_url = config['domain']['canonical_url']
 
     soup = BeautifulSoup(article, 'lxml')
 
@@ -442,28 +432,33 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
-        # if link.attrs['href'].startswith('https://hackersanddesigners.nl'):
+        if link.attrs['href'].startswith(canonical_url):
             # (eg https://hackersanddesigners.nl, no subdomain)
             # and re-write the URL to be in relative format
             # eg point to a page in *this* wiki
 
-            # TODO: URL should be following new URL format,
-            # design first new URL format
+            url_parse = urlparse(link.attrs['href'])
+            uri = slugify(url_parse.path.split('/')[-1].lower())
+            matches = file_lookup(uri)
 
-            # print('EXTERNAL LINK =>', urlparse(link.attrs['href']))
-            # url_parse = urlparse(link.attrs['href'])
-            # rel_url = url_parse.path
-            # print('rel-url =>', rel_url)
-            # link.attrs['href'] =
+            if len(matches) > 0:
+                filename = str(matches[0]).split('.')[0]
+                new_url = "/".join(filename.split('/')[1:])
+                link.attrs['href'] = f"/{new_url}"
+            else:
+                link.attrs['href'] = uri
 
-    # -- img src replacement
-    #    replace local URL to instead pointing to
-    #    MW server instance
-    if len(file_URLs) > 0:
-        for url in file_URLs:
-            file = url.split('/').pop()
-            if file:
-                replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
+
+    download_image = config['wiki']['media']
+    if not download_image:
+        # -- img src replacement
+        #    replace local URL to instead pointing to
+        #    MW server instance
+        if len(file_URLs) > 0:
+            for url in file_URLs:
+                file = url.split('/').pop()
+                if file:
+                    replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
 
     # -- tool parser
     # naive regex to grab the <tool ... /> string
@@ -514,9 +509,6 @@ def get_metadata(article):
     extract article category
     """
 
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
-
     cats = config['wiki']['categories']
     cat_keys = cats.keys()
 
@@ -548,20 +540,41 @@ def get_metadata(article):
     return metadata
 
 
-def get_images(article):
+async def get_images(article):
+    """
+    Prepare list of images for given Index page.
+    If not copying images locally, we need to fetch them
+    frome the wiki one by one and it slows down the loading
+    of the page. TODO => move to create static index pages?
+    """
 
-    MEDIA_DIR = os.getenv('MEDIA_DIR')
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
     # so that HTML URI works correctly
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
+    download_image = config['wiki']['media']
+
     images = []
+    tasks = []
+
+    async def file_fetch(file: str, download: bool) -> bool:
+        if not download:
+            t = await fetch_file(file, download_image)
+            images.append(t[1])
+        else:
+            t = await fetch_file(file, download)
+            images.append(t[1])
+
     for wikilink in article.wikilinks:
         if wikilink.title.lower().startswith('file:'):
-            filename = wikilink.title[5:].strip()
-            filepath = HTML_MEDIA_DIR + filename
+            # filename = wikilink.title[5:].strip()
+            # filepath = HTML_MEDIA_DIR + "/" + filename
+            # images.append(filepath)
 
-            images.append(filepath)
+            task = file_fetch(wikilink.title, download_image)
+            tasks.append(asyncio.ensure_future(task))
+
+    await asyncio.gather(*tasks)
 
     return images
 
@@ -641,7 +654,7 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
 
         article_wtp = wtp.parse(wiki_article)
         metadata = get_metadata(article_wtp)
-        images = get_images(article_wtp)
+        images = await get_images(article_wtp)
 
         tool_metadata = None
         if metadata_only:

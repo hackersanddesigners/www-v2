@@ -12,6 +12,12 @@ from app.views.template_utils import (
     make_timestamp,
 )
 from pathlib import Path
+from app.read_settings import main as read_settings
+from app.file_ops import file_lookup
+
+
+WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+config = read_settings()
 
 with open("settings.toml", mode="rb") as f:
     config = tomli.load(f)
@@ -53,9 +59,26 @@ def get_article_field(field: str, article):
         return None
 
 
+def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
+    """
+    Return list of URLs pointing to translations of the given article.
+    """
+
+    translations = config['wiki']['translation_langs']
+    matches = [f"{page_title}/{lang}" for lang in translations]
+
+    return [page['title'] for page in backlinks
+            if page['title'] in matches]
+
+
 async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
+
+    article_translations = []
+    if backlinks:
+        article_translations = get_translations(page_title, backlinks)
+
     nav = make_nav()
 
     if article is not None:
@@ -72,6 +95,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "last_modified": last_modified,
                 "backlinks": backlinks,
                 "tool": tool_metadata,
+                "translations": article_translations,
             }
 
             return article_metadata
@@ -84,7 +108,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "wiki_styles_path": f"/assets/styles/{ config['wiki']['stylespage'] }.css",
             "html": body_html,
             "slug": slugify(page_title),
-            "nav": nav
+            "nav": nav,
+            "translations": article_translations,
         }
 
         article_metadata = {
@@ -94,7 +119,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "metadata": metadata,
             "last_modified": last_modified,
             "backlinks": backlinks,
-            "nav": nav
+            "nav": nav,
+            "translations": article_translations,
         }
 
         return article_html, article_metadata
@@ -118,13 +144,9 @@ async def redirect_article(article_title: str, redirect_target: str):
     """
     """
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     p = Path(article_title)
     filename = slugify(str(p.stem))
-
-    pattern = f"**/{filename}.html"
-    paths = [p for p
-             in WIKI_DIR.glob(pattern)]
+    paths = file_lookup(filename)
 
     if len(paths) > 0:
         fn = paths[0]
@@ -174,16 +196,13 @@ async def delete_article(article_title: str, cat: str | None = None):
 
     print(f"delete-article => {article_title, cat}")
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     p = Path(article_title)
     filename = slugify(str(p.stem))
 
     if cat:
         fn = f"{WIKI_DIR}/{cat}/{filename}.html"
     else:
-        pattern = f"**/{filename}.html"
-        paths = [p for p
-                 in WIKI_DIR.glob(pattern)]
+        paths = file_lookup(filename)
 
         print(f"delete-article => scan for full filepath => {paths}")
         if len(paths) > 0:
@@ -211,7 +230,8 @@ async def has_duplicates(article_filename: str, matching_cat: str):
     # and filter out any path matching <cat>/article_filepath, where cat
     # is not matching_cat
 
-    WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+    print(f"check if article has duplicates... => {article_filename, matching_cat}")
+
     pattern = "**/*.html"
     paths = [p for p
              in WIKI_DIR.glob(pattern)
@@ -220,7 +240,11 @@ async def has_duplicates(article_filename: str, matching_cat: str):
     if len(paths) > 0:
         print(f"remove these filepaths {paths}!")
 
-    for p in paths:
-        cat = str(p.parent.stem)
-        fn = str(p.stem)
-        await delete_article(fn, cat)
+        for p in paths:
+            cat = str(p.parent.stem)
+            fn = str(p.stem)
+            await delete_article(fn, cat)
+
+    else:
+        print(f"no duplicates...")
+        return

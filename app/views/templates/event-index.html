@@ -56,21 +56,11 @@
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'title', True) }}">Title {{ request.url | query_check('sort_dir', 'title') }}</a>
-            </th>
-            <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'location', True) }}">Location {{ request.url | query_check('sort_dir', 'location') }}</a>
-            </th>
-            <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'date', True) }}">Date {{ request.url | query_check('sort_dir', 'date') }}</a>
-            </th>
-            <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'time', True) }}">Time {{ request.url | query_check('sort_dir', 'time') }}</a>
-            </th>
-            <th scope="col">
-              <a href="{{ request.url | query_check('sort_by', 'type', True) }}">Type {{ request.url | query_check('sort_dir', 'type') }}</a>
-            </th>
+            <th scope="col">Title</th>
+            <th scope="col">Location</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time</th>
+            <th scope="col">Type</th>
           </tr>
         </thead>
         <tbody>

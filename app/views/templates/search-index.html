@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .searchmatch {
+    background-color: yellow;
+  }
+</style>
+<main id="main-content">
+  <h1>Search results for query "{{ article['query'] }}"</h1>
+  <ol>
+    {% for item in article.results %}
+      <li>
+        <h3>
+          <a href="/{{ item.slug }}">
+            {{ item.title }}
+          </a>
+        </h3>
+        <p> Last edited on <time datetime="{{ item.timestamp }}">{{ item.timestamp }}</time> </p>
+        <p> Word count: {{ item.wordcount }}</p>
+        <div class="snippet">
+          {{ item.snippet | safe }}
+        </div>
+      </li>
+      {% endfor %}
+  </ol>
+
+  {% include "pagination.html" %}
+</main>
+{% endblock %}

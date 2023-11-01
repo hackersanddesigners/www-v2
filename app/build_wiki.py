@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from sys import argv
 import os
-import tomli
 import httpx
 from app.fetch import (
     query_continue,
@@ -27,6 +26,7 @@ from app.build_article import (
 import json
 from slugify import slugify
 from app.copy_assets import main as copy_assets
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
@@ -73,8 +73,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
     # each page in the list on its own, therefore upon mapping over Event pages
     # we can "manually" pick them apart by `Type:HDSA<year>`
 
-    with open("settings.toml", mode="rb") as f:
-        config = tomli.load(f)
+    config = read_settings()
 
     cats = config['wiki']['categories']
 
@@ -127,6 +126,25 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                 articles_metadata_index.extend(articles_metadata)
 
             else:
+
+                # check for any article translation present as backlink in prepared_articles,
+                # fetch it and add it to the list of articles to write to disk (article_list)
+
+                # do we really need to do a second pass like this to fetch any translated
+                # article and add it to the prepated_articles list, and then loop
+                # over that list again and again?
+                for item in prepared_articles:
+                    if item is not None:
+                        trans_tasks = []
+                        if len(item[1]['translations']) > 0:
+                            for translation in item[1]['translations']:
+                                trans_task = make_article(translation, client, metadata_only)
+                                trans_tasks.append(asyncio.ensure_future(trans_task))
+
+                            t_articles = await asyncio.gather(*trans_tasks)
+                            article_list.extend(prepared_articles)
+
+                        
                 articles_metadata = [item[1] for item in prepared_articles if item is not None]
                 articles_metadata_index.extend(articles_metadata)
 
