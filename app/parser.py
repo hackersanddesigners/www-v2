@@ -75,7 +75,7 @@ class WikiPage(Page):
         """
         Return True if this page is the wiki styles page
         """
-        return self.config['wiki']['stylespage'] == article['title']
+        return config['wiki']['stylespage'] == article['title']
 
     def file_exists(self, file: str) -> bool:
         """
