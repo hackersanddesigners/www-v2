@@ -45,6 +45,9 @@
 
 }
 
+
+/* basic reset */
+
 *,
 *::before,
 *::after {
@@ -52,10 +55,26 @@
   position         : relative;
 }
 
+
+/* intentionally setting outlines */
+
 *:focus {
   outline          : var(--focus);
 }
 
+
+/* accessibility */
+
+@media (prefers-reduced-motion) {
+  * {
+    animation      : none !important;
+    transform      : none !important;
+    opacity        : unset !important;
+  }
+}
+
+
+/* document strucutre */
 
 html,
 body {
@@ -66,6 +85,25 @@ body {
   scroll-behavior  : smooth;
   background-color : var(--light-grey);
 }
+header,
+footer,
+main {
+  padding: 1rem;
+}
+h1 {
+}
+p, img {
+  max-width        : min( 100%, 40rem );
+}
+main {
+  min-height: 80%;
+  /* max-width: min(100%, 40rem); */
+  /* margin: 0 auto; */
+}
+
+
+
+/* anchors */
 
 a,
 a:active,
@@ -77,8 +115,7 @@ a:focus {
 }
 
 
-
-/* https://tangible-cloud.be/en/open-call/ */
+/* lists */
 
 ul {
   margin: 0;
@@ -109,6 +146,9 @@ ul li:last-of-type:hover::before {
   content: '╚══ ';
 }
 
+
+/* table of contents */
+
 #toc {
   border-top: 0.3rem double;
   border-right: 0.3rem double;
@@ -118,8 +158,6 @@ ul li:last-of-type:hover::before {
   /* max-width:50%; */
   /* float: right; */
 }
-
-
 #toctitle h2 {
   margin: 0;
   font-size: 1rem;
@@ -132,17 +170,7 @@ ul li:last-of-type:hover::before {
 }
 
 
-
-header,
-footer,
-main {
-  padding: 1rem;
-}
-
-h1 {
-}
-
-
+/* navigation */
 
 header nav ul {
   list-style: none;
@@ -150,7 +178,6 @@ header nav ul {
   padding: 0;
   display: flex;
 }
-
 header nav ul li {
   /* margin-right: 0.5rem; */
   margin: 0.2rem 0.3rem;
@@ -166,7 +193,6 @@ header nav ul li a:hover {
   padding: 0.4rem 0;
   border-bottom: 0.1rem solid black;
 }
-
 header a.skip-to-main {
   position: absolute;
   /* left: 1rem; */
@@ -181,14 +207,8 @@ header a.skip-to-main:focus {
 }
 
 
-main {
-  min-height: 80%;
-  max-width: min(100%, 40rem);
-  /* margin: 0 auto; */
-}
+/* images */
 
-main section {
-}
 figure {
   border: var(--thin);
   background-color: var(--white);
@@ -199,39 +219,54 @@ figure {
 figure:focus-within {
   outline: var(--focus);
 }
-
 img,
 figure img {
-  max-width: 100%;
 }
-
 figure audio,
 figure video {
   width: 100%;
 }
-
 figure figcaption {
   font-style: italic;
   text-align: center;
 }
 
 
-
-#grid {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-collapse: collapse;
-}
-#grid td {
-  height : calc( 10 * 1rem);
-  min-width  : calc( 10 * 1rem);
-  border : var(--very-thin);
-}
-
 /* forms */
 
 input[type=submit] {
   cursor: pointer;
+}
+
+
+/* pages: search  */
+
+.searchmatch {
+  background-color: var(--yellow);
+}
+
+
+/* pages: events */
+
+section.upcoming {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  overflow: scroll;
+}
+section.upcoming h2 {
+  width: 100%;
+}
+section.upcoming article.event {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  font-style: italic;
+  padding: 1rem;
+  max-width: 20rem;
+  background-color: var(--white);
+  border: var(--solid);
+
 }

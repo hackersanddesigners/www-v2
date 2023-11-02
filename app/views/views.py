@@ -79,12 +79,12 @@ def normalize_data(item):
     Convert None to "" (empty string) if value
     is missing, else make value uppercase.
     """
-    
+
     if item:
         return item.upper()
     else:
         return ''
-    
+
 
 async def make_front_index(article_title: str):
 
@@ -141,6 +141,7 @@ async def make_event_index(
     }
 
     date_now = arrow.now()
+
 
     for article in articles:
 
@@ -225,7 +226,7 @@ async def make_event_index(
 
     # -- sorting events
     if sorting:
-    
+
         # sort events by date desc
         events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
@@ -233,8 +234,8 @@ async def make_event_index(
             events['past'] = sorted(events['past'],
                                     key=lambda d: d['title'],
                                     reverse=sorting[1])
-            
-        elif sorting[0] == 'location':                
+
+        elif sorting[0] == 'location':
             events['past'] = sorted(events['past'],
                                     key=lambda d: normalize_data(d['metadata']['location']),
                                     reverse=sorting[1])
@@ -253,11 +254,11 @@ async def make_event_index(
             events['past'] = sorted(events['past'],
                                     key=lambda d: d['metadata']['type'],
                                     reverse=sorting[1])
-        
+
     else:
         events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-        
-    
+
+
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
     nav = make_nav()
@@ -356,7 +357,7 @@ async def make_tool_index(articles,
             articles = sorted(articles,
                               key=lambda d: d['title'],
                               reverse=sorting[1])
-        
+
         elif sorting[0] == 'category':
             articles = sorted(articles,
                               key=lambda d: d['metadata']['category'],
@@ -366,12 +367,12 @@ async def make_tool_index(articles,
             #     articles = sorted(articles,
             #                       key=lambda d: d['tool']['label'],
             #                       reverse=True)
-        
+
     else:
         articles = sorted(articles,
                           key=lambda d: d['title'],
                           reverse=True)
-        
+
 
     article = {
         'title': cat_label,
