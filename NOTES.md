@@ -113,4 +113,16 @@ alternatively, or as an addendum, we could really setup a hot-cache (?) layer us
 
 clearly setting up the sqlite takes some time, but probably less headaches and  maintenance than figuring out how to do something with MediaWiki. having a two-layers cache (text files and sqlite) would also help in case something changes in the article or webiste structure, and we need to rebuild the sqlite tables from scratches, as we can use the text file archive as data source.
 
+## archive
 
+originally the whole software was born out of a desire to keep a wikitext "plain-text" cache of the MediaWiki, as a way to make backup easier to maintain. today <2023-11-02>, while starting to actually work on it, i wondered if this is a good idea still?
+
+work-wise, it only takes one more function to write the wikitext as file on disk, plus some git-helper functions if we want to host it in a git repo.
+
+in terms of benefits from using it though, what would we gain:
+
+- we need to parse once again the wikitext into some useful format and convert it into another format. do we use the [wikitextparser](https://github.com/5j9/wikitextparser) (or equivalent) like we're doing now, and then do something with it?
+- wouldn't HTML overall be a little more structured, and so a little be easier to parse with the myriad of existing tools — unlike the very loosy wikitext syntax?
+  - the downside is that if we rely on the HTML files used to build the website, we would have extra HTML used for general website layout, and possibly some filtering work done already at the level of the wikitext syntax to fit the needs of the website
+  
+overall i can't tell if this archive is ever going to be used much as an input for other projects, and probably relying on the static HTML folder could be enough. if more needs arise, it takes one more function to save the wikitext version of each article into a file, or redirect it to some other specific function / project.
