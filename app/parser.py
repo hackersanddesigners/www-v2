@@ -254,7 +254,7 @@ def parse_tool_tag(tool_key):
         return False, False
 
 
-async def pre_process(article, wiki_page, article_wtp) -> str:
+async def pre_processpost_(article, wiki_page, article_wtp) -> str:
     """
     - update wikilinks [[<>]] to point to correct locations,
       so that WikiTextParser does its job just fine.
@@ -416,10 +416,10 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     # we insert some custom HTML to add a reference
     # that the current article has been moved to another URL
-    if redirect_target is not None:
-        redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+    # if redirect_target is not None:
+    #     redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
-        soup.body.insert(0, redirect)
+    #     soup.body.insert(0, redirect)
 
     links = soup.find_all('a')
     for link in links:
@@ -443,6 +443,9 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 link.attrs['href'] = uri
             
 
+    # TODO we don't archive whole wiki locally anymore
+    # remove logic that relies on this settings.toml value
+    # and always point images to MW
     download_image = config['wiki']['media']
     if not download_image:
         # -- img src replacement
@@ -495,11 +498,11 @@ def get_metadata_field(field):
         return field.value.strip()
     else:
         return None
-    
+
 
 def get_metadata(article):
     """
-    extract wiki template tags from article, if any
+    extract wiki template tags from article, if any.
     extract article category
     """
 
@@ -507,9 +510,11 @@ def get_metadata(article):
     cat_keys = cats.keys()
 
     metadata = {
-        "category": "",
+        "categories": [],
     }
-    templates = article.templates
+
+    # templates = article.templates
+    templates = []
 
     if len(templates) > 0:
 
@@ -525,11 +530,10 @@ def get_metadata(article):
             # collect all metadata from article.template table
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
-    
 
-    if metadata and not metadata['category']:
-        category = get_category(article.wikilinks, metadata, cats)
-        metadata['category'] = slugify(category)
+                
+    categories = get_category(article['categories'], cats)
+    metadata['categories'] = [slugify(cat) for cat in categories]
 
     return metadata
 
@@ -573,7 +577,7 @@ async def get_images(article):
     return images
  
 
-def get_category(wikilinks, metadata, cats) -> str:
+def get_category(categories, cats) -> [str]:
 
     cat_fallback = None
     cat_fallback_key = ""
@@ -581,51 +585,17 @@ def get_category(wikilinks, metadata, cats) -> str:
         if v['fallback']:
             cat_fallback_key = k
             cat_fallback = v
-            
+
     cat_fallback_label = cat_fallback['label']
 
-    if len(wikilinks) > 0:
-        categories = []
+    if len(categories) > 0:
+        return [cat['category'] for cat in categories]
 
-        for wikilink in wikilinks:
-            if wikilink.title.lower().startswith('category:'):
-                key = wikilink.title.split(':')[-1].strip()
-                if key:
-                    categories.append(key)
-
-        if len(categories) > 0:
-            desired_categories = cats.keys()
-
-            # we want to have one category per article
-            # in case there's more than one, we hope that the second
-            # one is "Article", and we do the following:
-            # - make a set intersection for desired_categories and one for
-            #   the article's categories
-            # - convert to a list, check if there's more than one category:
-            #   if yes, check if "Article" is present and remove
-            #   and we return the first item in the list: if there's
-            #   more than one item left still, we pick simply the first.
-
-            dc_set = set(desired_categories)
-            c_set = set(categories)
-            intersect = list(dc_set.intersection(c_set))
-
-            if len(intersect) > 1:
-                if cat_fallback_key in intersect:
-                     intersect.remove(cat_fallback_key)
-             
-                return cats[intersect[0]]['label']
-            
-            else:
-                return cat_fallback_label
-
-        else:
-            return cat_fallback_label
     else:
-        return cat_fallback_label
+        return [cat_fallback_label]
 
 
-async def parser(article: str, metadata_only: bool, redirect_target: str | None = None):
+async def parser(article: dict[str, int], metadata_only: bool, redirect_target: str | None = None):
     """
     - instantiate WikiPage class
     - if redirect is not None, make custom HTML page
@@ -636,40 +606,32 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
 
     print(f"parsing article {article['title']}...")
 
-    wiki_page = WikiPage(article)
-    wiki_page_errors = wiki_page.errors
-    if len(wiki_page_errors) > 0:
-        for error in wiki_page_errors:
-            print('wiki-page err =>', error)
+    metadata = get_metadata(article)
+    # images = await get_images(article_wtp)
 
-    wiki_article = wiki_page.page_load(article)
+    # tool_metadata = None
+    # if metadata_only:
 
-    if wiki_article is not None:
+        # if metadata and metadata['category'] == 'Tools':
+        #     tool_metadata = get_tool_metadata(article_wtp.string)
 
-        article_wtp = wtp.parse(wiki_article)
-        metadata = get_metadata(article_wtp)
-        images = await get_images(article_wtp)
+        # return metadata
+        # , images, tool_metadata
 
-        tool_metadata = None
-        if metadata_only:
+    # wiki_body = await pre_process(article, wiki_page, article_wtp)
 
-            if metadata and metadata['category'] == 'Tools':
-                tool_metadata = get_tool_metadata(article_wtp.string)
+    # update wiki_article instance
+    # article['revisions'][0]['slots']['main']['content'] = wiki_body
 
-            return metadata, images, tool_metadata
+    # wiki_render = wiki_page.render()
+    # if len(wiki_render.errors) > 0:
+    #     print(f":: wiki-page-render errors => {wiki_render.errors}")
 
-        wiki_body = await pre_process(article, wiki_page, article_wtp)
+    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
-        # update wiki_article instance
-        article['revisions'][0]['slots']['main']['content'] = wiki_body
+    # body_html = wiki_render.html
+    body_html = post_process(article['text'], article['images'], HTML_MEDIA_DIR, redirect_target)
 
-        wiki_render = wiki_page.render()
-        if len(wiki_render.errors) > 0:
-            print(f":: wiki-page-render errors => {wiki_render.errors}")
+    print(f"parsed {article['title']}!")
 
-        body_html = wiki_render.html
-        body_html = post_process(body_html, wiki_page.file_URLs, wiki_page.HTML_MEDIA_DIR, redirect_target)
-
-        print(f"parsed {article['title']}!")
-
-        return body_html, metadata
+    return body_html, metadata
