@@ -128,6 +128,8 @@ async def fetch_article(title: str, client):
         if len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
 
+        import json
+        print(f"article => {json.dumps(article, indent=4)}")
         return article, backlinks, redirect_target
 
 
