@@ -115,12 +115,23 @@ async def fetch_article(title: str, client):
 
         query_response.raise_for_status()
 
+        query_data['query'] = query_data
+
         print(f"fetch-article => {json.dumps(query_data, indent=4)}")
 
-        article = parse_data['parse']
-        article['revisions'] = query_data['query']['pages'][0]['revisions']
+        # ns: -1 is part of Special Pages, we don't parse those
+        if query_data['ns'] == -1:
+            article = None
 
-        backlinks = query_data['query']['backlinks']
+        # filter out `Concept:<title>` articles
+        if query_data['title'].startswith("Concept:"):
+            article = None
+
+
+        article = parse_data['parse']
+        article['revisions'] = query_data['pages'][0]['revisions']
+
+        backlinks = query_data['backlinks']
 
         if len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']

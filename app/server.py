@@ -57,6 +57,14 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             metadata_only = False
 
+            # namespace: -1 is part of Special Pages, we don't parse those
+            if msg['namespace'] == -1:
+                return
+
+            # filter out `Concept:<title>` articles
+            if msg['title'].startswith("Concept:"):
+                return
+
             if (msg['type'] in ['new', 'edit']
                 or msg['type'] == 'log'
                 and msg['log_action'] in ['restore', 'delete_redir']):
