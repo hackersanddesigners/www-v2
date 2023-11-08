@@ -75,14 +75,23 @@ def article_exists(title) -> bool:
 async def fetch_article(title: str, client):
     print(f"fetching article {title}...")
 
-    params = {
+    # for HTML-parsed wiki article
+    parse_params = {
+        'action': 'parse',
+        'prop': 'text|langlinks|categories|images|properties',
+        'page': title,
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1',
+    }
+
+    # for wiki article's revisions and backlinks fields
+    query_params = {
         'action': 'query',
-        'prop': 'revisions|images',
         'titles': title,
-        'rvprop': 'content|timestamp',
-        'rvslots': '*',
-        'list': 'backlinks',
+        'prop': 'revisions',
         'bltitle': title,
+        'list': 'backlinks',
         'formatversion': '2',
         'format': 'json',
         'redirects': '1'
@@ -93,27 +102,28 @@ async def fetch_article(title: str, client):
     redirect_target = None
 
     try:
-        response = await client.get(URL, params=params)
-        data = response.json()
+        parse_response = await client.get(URL, params=parse_params)
+        parse_data = parse_response.json()
 
-        response.raise_for_status()
+        parse_response.raise_for_status()
 
-        if 'pages' in data['query']:
-            article = data['query']['pages'][0]
+        import json
+        print(f"fetch-article => {json.dumps(parse_data, indent=4)}")
 
-            # ns: -1 is part of Special Pages, we don't parse those
-            if article['ns'] == -1:
-                article = None
+        query_response = await client.get(URL, params=query_params)
+        query_data = query_response.json()
 
-            # filter out `Concept:<title>` articles
-            if article and article['title'].startswith("Concept:"):
-                article = None
+        query_response.raise_for_status()
 
-        if 'backlinks' in data['query']:
-            backlinks = data['query']['backlinks']
+        print(f"fetch-article => {json.dumps(query_data, indent=4)}")
 
-        if 'redirects' in data['query']:
-            redirect_target = data['query']['redirects'][0]['to']
+        article = parse_data['parse']
+        article['revisions'] = query_data['query']['pages'][0]['revisions']
+
+        backlinks = query_data['query']['backlinks']
+
+        if len(article['redirects']) > 0:
+            redirect_target = article['redirects'][0]['to']
 
         return article, backlinks, redirect_target
 
