@@ -129,7 +129,7 @@ async def fetch_article(title: str, client):
 
 
         article = parse_data['parse']
-        article['revisions'] = query_data['pages'][0]['revisions']
+        article['revisions'] = query_data['pages'][0]['revisions'][0]
 
         backlinks = query_data['backlinks']
 

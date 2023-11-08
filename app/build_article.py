@@ -81,7 +81,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     if article is not None:
 
-        last_modified = article['revisions'][0]['timestamp']
+        last_modified = article['revisions']['timestamp']
 
         if metadata_only:
             metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
