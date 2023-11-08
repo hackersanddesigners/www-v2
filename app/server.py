@@ -18,7 +18,6 @@ from app.build_article import (
     redirect_article,
     save_article,
     delete_article,
-    has_duplicates
 )
 import asyncio
 load_dotenv()
@@ -76,7 +75,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     article = await make_article(msg['title'], client, metadata_only)
                     if article is None:
                         return
-                    
+
                     article_list.append(article)
 
                     if len(article[1]['translations']) > 0:
@@ -89,13 +88,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         article_list.extend(prepared_articles)
 
                     for article in article_list:
-                        article_category = article[1]['metadata']['category']
-                        filepath = f"{article_category}/{article[0]['slug']}"
+                        filepath = f"{article[0]['slug']}"
                         await save_article(article[0], filepath, template, sem)
-
-                        # check if current article exists in any other category folder
-                        # if true, delete it from there
-                        await has_duplicates(article[0]['slug'], article_category)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
@@ -137,10 +131,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                             await save_article(target_html, target_filepath, template, sem)
 
-                            # check if current article exists in any other category folder
-                            # if true, delete it from there
-                            await has_duplicates(target_html['slug'], target_category)
-                        
 
                         except Exception as e:
                             print(f"move article err => {e}")

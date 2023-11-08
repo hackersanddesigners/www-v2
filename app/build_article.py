@@ -217,33 +217,3 @@ async def delete_article(article_title: str, cat: str | None = None):
     else:
         print(f"delete-article: {article_title} not found, nothing done")
 
-
-async def has_duplicates(article_filename: str, matching_cat: str):
-    """
-    after an article update, check if the embedded category has changed and if true,
-    scan across all category subfolders except the new category to check if
-    a previous version of the article has been left behind.
-    """
-
-    # build list of paths under each subdir except the one matching cat_key
-    # and filter out any path matching <cat>/article_filepath, where cat
-    # is not matching_cat
-
-    print(f"check if article has duplicates... => {article_filename, matching_cat}")
-
-    pattern = "**/*.html"
-    paths = [p for p
-             in WIKI_DIR.glob(pattern)
-             if article_filename in str(p) and not p.parent.stem == matching_cat]
-
-    if len(paths) > 0:
-        print(f"remove these filepaths {paths}!")
-
-        for p in paths:
-            cat = str(p.parent.stem)
-            fn = str(p.stem)
-            await delete_article(fn, cat)
-
-    else:
-        print(f"no duplicates...")
-        return
