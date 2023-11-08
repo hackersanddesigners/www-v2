@@ -117,7 +117,8 @@ async def fetch_article(title: str, client):
             article = None
 
         # filter out `Concept:<title>` articles
-        if parse_data['parse']['title'].startswith("Concept:"):
+        import json
+        print(f"parse_data => {json.dumps(parse_data, indent=4)}")
         if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
             article = None
 
@@ -130,7 +131,6 @@ async def fetch_article(title: str, client):
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
 
-        import json
         print(f"article => {json.dumps(article, indent=4)}")
         return article, backlinks, redirect_target
 
