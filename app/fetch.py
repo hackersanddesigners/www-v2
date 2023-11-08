@@ -78,7 +78,7 @@ async def fetch_article(title: str, client):
     # for HTML-parsed wiki article
     parse_params = {
         'action': 'parse',
-        'prop': 'text|langlinks|categories|images|properties',
+        'prop': 'text|langlinks|categories|templates|images|properties',
         'page': title,
         'formatversion': '2',
         'format': 'json',
