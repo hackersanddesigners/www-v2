@@ -104,29 +104,21 @@ async def fetch_article(title: str, client):
     try:
         parse_response = await client.get(URL, params=parse_params)
         parse_data = parse_response.json()
-
         parse_response.raise_for_status()
-
-        import json
-        print(f"fetch-article => {json.dumps(parse_data, indent=4)}")
 
         query_response = await client.get(URL, params=query_params)
         query_data = query_response.json()
-
         query_response.raise_for_status()
 
-        query_data['query'] = query_data
-
-        print(f"fetch-article => {json.dumps(query_data, indent=4)}")
+        query_data = query_data['query']
 
         # ns: -1 is part of Special Pages, we don't parse those
-        if query_data['ns'] == -1:
+        if query_data['pages'][0]['ns'] == -1:
             article = None
 
         # filter out `Concept:<title>` articles
-        if query_data['title'].startswith("Concept:"):
+        if parse_data['parse']['title'].startswith("Concept:"):
             article = None
-
 
         article = parse_data['parse']
         article['revisions'] = query_data['pages'][0]['revisions'][0]
