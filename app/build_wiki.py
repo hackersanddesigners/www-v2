@@ -154,8 +154,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                 save_tasks = []
                 for idx, article in enumerate(articles_html):
                     article_metadata = articles_metadata[idx]
-                    article_category = article_metadata['metadata']['category']
-                    filepath = f"{article_category}/{article['slug']}"
+                    filepath = f"{article['slug']}"
 
                     task = save_article(article, filepath, template, sem)
                     save_tasks.append(asyncio.ensure_future(task))
