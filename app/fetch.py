@@ -118,14 +118,16 @@ async def fetch_article(title: str, client):
 
         # filter out `Concept:<title>` articles
         if parse_data['parse']['title'].startswith("Concept:"):
+        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
             article = None
 
-        article = parse_data['parse']
-        article['revisions'] = query_data['pages'][0]['revisions'][0]
+        if 'parse' in parse_data:
+            article = parse_data['parse']
+            article['revisions'] = query_data['pages'][0]['revisions'][0]
 
         backlinks = query_data['backlinks']
 
-        if len(article['redirects']) > 0:
+        if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
 
         import json
