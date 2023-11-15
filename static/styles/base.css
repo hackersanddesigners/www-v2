@@ -92,7 +92,7 @@ main {
 }
 h1 {
 }
-p, img {
+p, img, ul, ol, h1, h2, h3, h4, h5, h6 {
   max-width        : min( 100%, 40rem );
 }
 main {
@@ -256,29 +256,43 @@ input[type=submit] {
 
 /* pages: events */
 
-section.upcoming {
+section.current,
+section.upcoming,
+section.past {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 1rem;
   overflow: scroll;
 }
-section.upcoming h2 {
+section.current h2,
+section.upcoming h2,
+section.past h2 {
   width: 100%;
+  max-width: unset;
 }
-section.upcoming article.event {
+section.current article.event,
+section.upcoming article.event,
+section.past article.event  {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
   text-align: center;
   font-style: italic;
   padding: 1rem;
-  max-width: 20rem;
   background-color: var(--white);
   border: var(--solid);
-
+  max-width: 30rem;
 }
-
+section.current article.event img {
+  max-height: 40rem;
+}
+section.upcoming article.event img {
+  max-height: 20rem;
+}
+section.past article.event img {
+  max-height: 10rem;
+}
 
 /* pages: articles */
 

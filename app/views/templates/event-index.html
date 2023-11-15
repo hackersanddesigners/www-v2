@@ -6,7 +6,7 @@
   <!-- CURRENTLY HAPPENING -->
 
   {% if article.events.happening | length > 0 %}
-    <section>
+    <section class="current">
       <h2>Happening now</h2>
       {% for event in article.events.happening %}
         <div>
@@ -38,6 +38,7 @@
           <p>
             {% if event.metadata.location %}
               {{ event.metadata.location }}
+              <br>
             {% endif %}
             <time datetime="{{ event.metadata.dates.start }}">
               {{ event.metadata.dates.start }}
@@ -68,61 +69,44 @@
   <!-- TODO: are we sticking to table view? what about in mobile? -->
 
   {% if article.events.past | length > 0 %}
-    <section>
+    <section class="past">
       <h2>Past</h2>
-      <!-- <input type="text" class="table-input-filter" placeholder="Filter the list of events..."> -->
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Title</th>
-              <th scope="col">Location</th>
-              <th scope="col">Date</th>
-              <th scope="col">Time</th>
-              <th scope="col">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for event in article.events.past %}
-              <tr
-                data-title="{{ event.title }}"
-                data-location="{{ event.metadata.location }}"
-                data-dateStart="{{ event.metadata.dates.start }}"
-                data-timeStart="{{ event.metadata.times.start }}"
-              >
-                <td>
-                  <a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a>
-                </td>
-                <td>
-                  {% if event.metadata.location %}
-                    {{ event.metadata.location }}
-                  {% else %}-{% endif %}
-                </td>
-                <td>
-                  <time datetime="{{ event.metadata.dates.start }}">{{ event.metadata.dates.start }}</time>
-                  {% if event.metadata.dates.end %}
-                    – <time datetime="{{ event.metadata.dates.end }}">{{ event.metadata.dates.end }}</time>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if event.metadata.time %}
-                    <time datetime="{{ event.metadata.times.start }}">{{ event.metadata.times.start }}</time>
-                    {% if event.metadata.times.end %}
-                      – <time datetime="{{ event.metadata.times.end }}">{{ event.metadata.times.end }}</time>
-                    {% endif %}
-                  {% endif %}
-                </td>
-                <td>
-                  {% if event.metadata.type %}
-                    {{ event.metadata.type }}
-                  {% else %}-{% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-      {% else %}
-      <p>No past event at the moment. (??)</p>
+      {% for event in article.events.past %}
+      <article class="event">
+        <img
+          src="{{ event.images[0] }}"
+          alt=""
+        >
+        <!-- TODO add alt text -->
+        <div>
+          <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+          <p>
+            {% if event.metadata.location %}
+              {{ event.metadata.location }}
+              <br>
+            {% endif %}
+            <time datetime="{{ event.metadata.dates.start }}">
+              {{ event.metadata.dates.start }}
+            </time>
+            {% if event.metadata.dates.end %} –
+              <time datetime="{{ event.metadata.dates.end }}">
+                {{ event.metadata.dates.end }}
+              </time>
+            {% endif %}
+            {% if event.metadata.time %}
+              <time datetime="{{ event.metadata.times.start }}">
+                {{ event.metadata.times.start }}
+              </time>
+              {% if event.metadata.times.end %}–
+                <time datetime="{{ event.metadata.times.end }}">
+                  {{ event.metadata.times.end }}
+                </time>
+              {% endif %}
+            </p>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
     </section>
   {% endif %}
 
