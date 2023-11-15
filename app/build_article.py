@@ -110,6 +110,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "slug": slugify(page_title),
             "nav": nav,
             "translations": article_translations,
+            "category": metadata['category']
         }
 
         article_metadata = {

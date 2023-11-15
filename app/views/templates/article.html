@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <main id="main-content">
+  <main id="main-content" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
     <h1>{{ article['title'] }}</h1>
     {{ article['html'] | safe }}
   </main>
