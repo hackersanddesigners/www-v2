@@ -34,6 +34,14 @@ def make_nav():
             nav.append({ "label": v['label'],
                       "uri": f"/{slugify(v['label'])}" })
 
+    nav.extend([{
+        "label": "About",
+        "uri": "About.html"
+    },{
+    "label": "Contact",
+        "uri": "Contact.html"
+    }])
+
     return nav
 
 
