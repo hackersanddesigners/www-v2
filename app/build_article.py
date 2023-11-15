@@ -30,7 +30,8 @@ def make_nav():
 
     nav = []
     for k, v in cats.items():
-        nav.append({ "label": v['label'],
+        if v['nav']:
+            nav.append({ "label": v['label'],
                       "uri": f"/{slugify(v['label'])}" })
 
     return nav
@@ -59,7 +60,7 @@ def get_article_field(field: str, article):
 
 def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
     """
-    Return list of URLs pointing to translations of the given article. 
+    Return list of URLs pointing to translations of the given article.
     """
 
     translations = config['wiki']['translation_langs']
@@ -67,7 +68,7 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
 
     return [page['title'] for page in backlinks
             if page['title'] in matches]
-    
+
 
 async def make_article(page_title: str, client, metadata_only: bool):
 
