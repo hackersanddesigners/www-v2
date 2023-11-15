@@ -172,6 +172,10 @@ ul li:last-of-type:hover::before {
 
 /* navigation */
 
+header {
+  display: flex;
+}
+
 header nav ul {
   list-style: none;
   margin: 0;
@@ -204,6 +208,10 @@ header a.skip-to-main {
 }
 header a.skip-to-main:focus {
   transform: translateY(0);
+}
+
+header input[type="search"] {
+  margin-left: 1rem;
 }
 
 
@@ -269,4 +277,11 @@ section.upcoming article.event {
   background-color: var(--white);
   border: var(--solid);
 
+}
+
+
+/* pages: articles */
+
+article.article-item h3 {
+  margin-bottom: 0;
 }

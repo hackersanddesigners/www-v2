@@ -4,11 +4,16 @@
 <main id="main-content" class="pt1 pr1 pb2 pl1">
   <h1>{{ article.title }}</h1>
   {% for article in article.articles %}
-  <figure class="pb1">
+  <article class="article-item">
     {% if article.image %}
-    <img src="{{ article.images[0] }}">
+    <img
+      src="{{ article.images[0] }}"
+      lazy="true"
+      alt=""
+    >
+    <!-- TODO: alt-text -->
     {% endif %}
-    <figcaption>
+    <div>
       <h3><a href="/{{ category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
       {% if article.backlinks | length > 0 %}
       <div>See also:
@@ -17,8 +22,8 @@
         {% endfor %}
       </div>
       {% endif %}
-    </figcaption>
-  </figure>
+    </div>
+  </article>
   {% endfor %}
 
   {% include "pagination.html" %}
