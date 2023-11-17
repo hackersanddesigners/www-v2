@@ -117,8 +117,6 @@ async def fetch_article(title: str, client):
             article = None
 
         # filter out `Concept:<title>` articles
-        import json
-        print(f"parse_data => {json.dumps(parse_data, indent=4)}")
         if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
             article = None
 
