@@ -19,6 +19,7 @@ from app.build_article import (
     save_article,
     delete_article,
 )
+from app.build_category_index import make_category_index
 import asyncio
 load_dotenv()
 
@@ -87,6 +88,28 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         prepared_articles = await asyncio.gather(*art_tasks)
                         article_list.extend(prepared_articles)
 
+                    # -- update every category index page the article has
+                    cat_tasks = []
+                    for cat in article[1]['metadata']['categories']:
+                        task = make_category_index(cat)
+                        cat_tasks.append(asyncio.ensure_future(task))
+
+                    prepared_category_indexes = await asyncio.gather(*cat_tasks)
+                    print(f"prepared_category_indexes :: {prepared_category_indexes}")
+                    prepared_category_indexes = [item for item
+                                                 in prepared_category_indexes
+                                                 if item is not None]
+
+                    cat_tasks_html = []
+                    for cat_index in prepared_category_indexes:
+                        filepath = f"{cat_index['slug']}"
+                        task = save_article(cat_index, filepath, template, sem)
+                        cat_tasks_html.append(asyncio.ensure_future(task))
+
+                    await asyncio.gather(*cat_tasks_html)
+                    # --
+
+                    # -- write article to disk
                     for article in article_list:
                         filepath = f"{article[0]['slug']}"
                         await save_article(article[0], filepath, template, sem)
