@@ -78,11 +78,13 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # article is a tuple in the form: (article_html, article_metadata)
                     article = await make_article(msg['title'], client, metadata_only)
-                    if article is None:
+
+                    if not article:
                         return
 
                     article_list.append(article)
 
+                    # -- make article translations articles
                     if len(article[1]['translations']) > 0:
                         art_tasks = []
                         for translation in article[1]['translations']:
