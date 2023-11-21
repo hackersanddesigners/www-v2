@@ -48,10 +48,17 @@ async def get_article(page_title: str, client):
         return None
 
 
-def get_article_field(field: str, article):
+def get_article_field(field: str, article: dict[str]):
 
     if field in article:
-        return article[field]
+        article_field = article[field]
+        
+        if field == 'templates':
+            if len(article_field) > 0:
+                template = article_field[0]['title'].split(':')[-1]
+                return template
+        else:
+            return article_field
 
     else:
         return None
@@ -73,6 +80,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
+    # TODO we wouldn't need this get_translations func anymore,
+    # since the HTML article contains alreasy links to available translations (?)
     article_translations = []
     if backlinks:
         article_translations = get_translations(page_title, backlinks)
@@ -84,7 +93,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         last_modified = article['revisions']['timestamp']
 
         if metadata_only:
-            metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
+            metadata, images = await parser(article, metadata_only, redirect_target)
 
             article_metadata = {
                 "title": article['title'],
@@ -92,14 +101,13 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "metadata": metadata,
                 "last_modified": last_modified,
                 "backlinks": backlinks,
-                "tool": tool_metadata,
                 "translations": article_translations,
             }
 
             return article_metadata
 
 
-        body_html, metadata = await parser(article, metadata_only, redirect_target)
+        body_html, metadata, images = await parser(article, metadata_only, redirect_target)
 
         article_html = {
             "title": page_title,
@@ -112,7 +120,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_metadata = {
             "title": article['title'],
             "images": get_article_field('images', article),
-            "template": get_article_field('template', article),
+            "template": get_article_field('templates', article),
             "metadata": metadata,
             "last_modified": last_modified,
             "backlinks": backlinks,

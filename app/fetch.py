@@ -112,12 +112,16 @@ async def fetch_article(title: str, client):
 
         query_data = query_data['query']
 
-        # ns: -1 is part of Special Pages, we don't parse those
+        # -- ns: -1 is part of Special Pages, we don't parse those
         if query_data['pages'][0]['ns'] == -1:
             article = None
 
-        # filter out `Concept:<title>` articles
+        # -- filter out `Concept:<title>` articles
         if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
+            article = None
+
+        # -- filter out `Special:<title>` articles
+        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Special:"):
             article = None
 
         if 'parse' in parse_data:
@@ -129,7 +133,7 @@ async def fetch_article(title: str, client):
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
 
-        print(f"article => {json.dumps(article, indent=4)}")
+        # print(f"article => {json.dumps(article, indent=4)}")
         return article, backlinks, redirect_target
 
 
@@ -252,9 +256,9 @@ async def fetch_file(title: str, download: bool):
 
             if 'missing' in response['pages'][0]:
                 title = response['pages'][0]['title']
+
                 msg = f"the image could not be found => {title}\n"
                 sem = None
-
                 await log('error', msg, sem)
 
                 if not download:

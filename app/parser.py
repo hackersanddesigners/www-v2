@@ -572,17 +572,13 @@ def get_metadata(article):
     return metadata
 
 
-async def get_images(article):
+async def get_images(HTML_MEDIA_DIR: str, images_list: list[str]):
     """
     Prepare list of images for given Index page.
     If not copying images locally, we need to fetch them
-    frome the wiki one by one and it slows down the loading
+    from the wiki one by one and it slows down the loading
     of the page. TODO => move to create static index pages?
     """
-    
-    # remove `wiki` as first stem in tree-path from MEDIA_DIR
-    # so that HTML URI works correctly
-    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     download_image = config['wiki']['media']
 
@@ -596,20 +592,15 @@ async def get_images(article):
         else:
             t = await fetch_file(file, download)
             images.append(t[1])
-    
-    for wikilink in article.wikilinks:
-        if wikilink.title.lower().startswith('file:'):
-            # filename = wikilink.title[5:].strip()
-            # filepath = HTML_MEDIA_DIR + "/" + filename
-            # images.append(filepath)
-            
-            task = file_fetch(wikilink.title, download_image)
-            tasks.append(asyncio.ensure_future(task))
+
+    for image in images_list:
+        image = f"File:{image}"
+        task = file_fetch(image, download_image)
+        tasks.append(asyncio.ensure_future(task))
 
     await asyncio.gather(*tasks)
-    
     return images
- 
+
 
 def get_category(categories, cats) -> [str]:
 
@@ -629,7 +620,9 @@ def get_category(categories, cats) -> [str]:
         return [cat_fallback_label]
 
 
-async def parser(article: dict[str, int], metadata_only: bool, redirect_target: str | None = None):
+async def parser(article: dict[str, int],
+                 metadata_only: bool,
+                 redirect_target: str | None = None):
     """
     - instantiate WikiPage class
     - if redirect is not None, make custom HTML page
@@ -640,32 +633,20 @@ async def parser(article: dict[str, int], metadata_only: bool, redirect_target: 
 
     print(f"parsing article {article['title']}...")
 
-    metadata = get_metadata(article)
-    # images = await get_images(article_wtp)
-
-    # tool_metadata = None
-    # if metadata_only:
-
-        # if metadata and metadata['category'] == 'Tools':
-        #     tool_metadata = get_tool_metadata(article_wtp.string)
-
-        # return metadata
-        # , images, tool_metadata
-
-    # wiki_body = await pre_process(article, wiki_page, article_wtp)
-
-    # update wiki_article instance
-    # article['revisions'][0]['slots']['main']['content'] = wiki_body
-
-    # wiki_render = wiki_page.render()
-    # if len(wiki_render.errors) > 0:
-    #     print(f":: wiki-page-render errors => {wiki_render.errors}")
-
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
-    # body_html = wiki_render.html
-    body_html = post_process(article['text'], article['images'], HTML_MEDIA_DIR, redirect_target)
+    metadata = get_metadata(article)
+    images = await get_images(HTML_MEDIA_DIR, article['images'])
+
+    if metadata_only:
+        return metadata, images
+
+
+    body_html = post_process(article['text'],
+                             article['images'],
+                             HTML_MEDIA_DIR,
+                             redirect_target)
 
     print(f"parsed {article['title']}!")
 
-    return body_html, metadata
+    return body_html, metadata, images
