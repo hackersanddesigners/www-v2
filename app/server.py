@@ -65,6 +65,10 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             if msg['title'].startswith("Concept:"):
                 return
 
+            # filter our `Special:<title>` articles
+            if msg['title'].startswith("Special:"):
+                return
+
             if (msg['type'] in ['new', 'edit']
                 or msg['type'] == 'log'
                 and msg['log_action'] in ['restore', 'delete_redir']):
