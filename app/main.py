@@ -115,43 +115,43 @@ async def root(request: Request):
                                            "article": article})
 
 
-@app.middleware("http")
-async def redirect_uri(request: Request, call_next):
-    """
-    Middleware to check incoming URL and do an article look-up
-    to see if anything matches from the local filesystem wiki.
-    If anything matches, redirects the incoming request to the
-    correct URL.
-    """
+# @app.middleware("http")
+# async def redirect_uri(request: Request, call_next):
+#     """
+#     Middleware to check incoming URL and do an article look-up
+#     to see if anything matches from the local filesystem wiki.
+#     If anything matches, redirects the incoming request to the
+#     correct URL.
+#     """
 
-    # this is done to figure out which category each article belongs to.
-    # as of <2023-08-22> this is useful for when we add a backlink URL,
-    # for which we don't have a category by default. we could parse this
-    # when retrieve the set of backlinks, but it is pretty wasteful.
-    # ideally this can be solved by rather having an sqlite cache layer.
+#     # this is done to figure out which category each article belongs to.
+#     # as of <2023-08-22> this is useful for when we add a backlink URL,
+#     # for which we don't have a category by default. we could parse this
+#     # when retrieve the set of backlinks, but it is pretty wasteful.
+#     # ideally this can be solved by rather having an sqlite cache layer.
 
-    uri = request.url.path[1:]
-    uri = uri.replace('.html', '')
-    uri_first = uri.split('/')[0]
+#     uri = request.url.path[1:]
+#     uri = uri.replace('.html', '')
+#     uri_first = uri.split('/')[0]
 
-    # build a list of categories, plus other items that might appear
-    # as first item in the URI (eg. `/static`)
-    cats = config['wiki']['categories']
-    uri_list = [cat['label'].lower() for cat in cats.values()]
-    uri_list.append('static')
+#     # build a list of categories, plus other items that might appear
+#     # as first item in the URI (eg. `/static`)
+#     cats = config['wiki']['categories']
+#     uri_list = [cat['label'].lower() for cat in cats.values()]
+#     uri_list.append('static')
     
-    if uri_first not in uri_list:
-        matches = file_lookup(uri)
+#     if uri_first not in uri_list:
+#         matches = file_lookup(uri)
 
-        if len(matches) > 0:
-            filename = str(matches[0]).split('.')[0]
-            new_url = "/".join(filename.split('/')[1:])
-            redirect_url = f"/{new_url}"
-            return RedirectResponse(url=redirect_url)
+#         if len(matches) > 0:
+#             filename = str(matches[0]).split('.')[0]
+#             new_url = "/".join(filename.split('/')[1:])
+#             redirect_url = f"/{new_url}"
+#             return RedirectResponse(url=redirect_url)
         
 
-    response = await call_next(request)
-    return response
+#     response = await call_next(request)
+#     return response
 
 
 @app.get("/search", response_class=HTMLResponse)
@@ -177,7 +177,7 @@ async def search(request: Request,
                                        "pagination": pagination})
 
 
-@app.get("/{cat}", response_class=HTMLResponse)
+@app.get("/cat/{cat}", response_class=HTMLResponse)
 async def category(request: Request,
                    cat: str,
                    page: int | None = 0,
@@ -279,8 +279,8 @@ async def category(request: Request,
                                                    "article": article})
 
 
-@app.get("/{cat}/{article}", response_class=HTMLResponse)
-async def article(request: Request, cat: str, article: str):
+@app.get("/{article}", response_class=HTMLResponse)
+async def article(request: Request, article: str):
     """
     return HTML article from disk
     """
