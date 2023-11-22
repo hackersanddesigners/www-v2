@@ -133,7 +133,6 @@ async def fetch_article(title: str, client):
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
 
-        # print(f"article => {json.dumps(article, indent=4)}")
         return article, backlinks, redirect_target
 
 

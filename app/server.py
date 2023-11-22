@@ -82,17 +82,27 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     if not article:
                         return
 
+                    # TODO if we remove below code for translations,
+                    # we don't need to append article to the list and
+                    # loop over it. update_categories hadles its own
+                    # async iterator to write HTML to disk (unless we
+                    # find a better way to run just one async iterator)
+                    # thing is we need to `await make_article()` above
+                    # immediately, before handling collateral article's
+                    # functions like translaions, categories update, etc
+                    # since if article returns None, we stop everything
+                    # right there.
                     article_list.append(article)
 
                     # -- make article translations articles
-                    if len(article[1]['translations']) > 0:
-                        art_tasks = []
-                        for translation in article[1]['translations']:
-                            trans_task = make_article(translation, client, metadata_only)
-                            art_tasks.append(asyncio.ensure_future(trans_task))
+                    # if len(article[1]['translations']) > 0:
+                    #     art_tasks = []
+                    #     for translation in article[1]['translations']:
+                    #         trans_task = make_article(translation, client, metadata_only)
+                    #         art_tasks.append(asyncio.ensure_future(trans_task))
 
-                        prepared_articles = await asyncio.gather(*art_tasks)
-                        article_list.extend(prepared_articles)
+                    #     prepared_articles = await asyncio.gather(*art_tasks)
+                    #     article_list.extend(prepared_articles)
 
                     # -- update every category index page the article has
                     #    and write it to disk

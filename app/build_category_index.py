@@ -91,10 +91,7 @@ async def make_category_index(cat: str, page: int | None = 0) -> str:
         save_to_disk = False
         sorting = None
 
-        print(f"make-cat-index template => {cat_label}")
-
         if cat_label == 'Events':
-            print(f"pagination => {pagination}")
             article = await make_event_index(prepared_articles,
                                              cat_key,
                                              cat_label,
@@ -116,8 +113,6 @@ async def make_category_index(cat: str, page: int | None = 0) -> str:
 
 
         if article:
-            import json
-            print(f"build-cat-index (return article) :: {cat_key} => {json.dumps(article, indent=4)}")
             return (article)
 
 
@@ -131,7 +126,6 @@ async def update_categories(categories: list[str], template, sem):
         cat_tasks.append(asyncio.ensure_future(task))
 
     prepared_category_indexes = await asyncio.gather(*cat_tasks)
-    print(f"prepared_category_indexes :: {prepared_category_indexes}")
     prepared_category_indexes = [item for item
                                  in prepared_category_indexes
                                  if item is not None]
