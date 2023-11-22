@@ -79,11 +79,12 @@ async def fetch_article(title: str, client):
     # for HTML-parsed wiki article
     parse_params = {
         'action': 'parse',
-        'prop': 'text|langlinks|categories|templates|images|properties',
+        'prop': 'text|langlinks|categories|templates|images|properties|revid',
         'page': title,
         'formatversion': '2',
         'format': 'json',
         'redirects': '1',
+        'disableeditsection': '1',
     }
 
     # for wiki article's revisions and backlinks fields
