@@ -127,6 +127,10 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         try:
                             await delete_article(msg['title'])
 
+                            # -- TODO scan all category index HTML templates
+                            #    with bs4 and remove any block + link pointing
+                            #    to article removed just above.
+
                         except Exception as e:
                             print(f"delete article err => {e}")
                             traceback.print_exc()
