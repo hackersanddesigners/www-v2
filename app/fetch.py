@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+import json
 import arrow
 import httpx
 from pathlib import Path
@@ -9,7 +10,7 @@ from app.log_to_file import main as log
 import filetype
 from urllib.parse import unquote
 load_dotenv()
-import json
+
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
