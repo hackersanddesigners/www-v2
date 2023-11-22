@@ -174,33 +174,15 @@ ul li:last-of-type:hover::before {
 
 header {
   display: flex;
+  gap: 0.5rem;
 }
-
-header nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-}
-header nav ul li {
-  /* margin-right: 0.5rem; */
-  margin: 0.2rem 0.3rem;
-}
-header nav ul li::before {
-  content: unset !important;
-}
-header nav ul li a {
-  padding: 0.2rem 0;
-  border-bottom: 0.3rem double black;
-}
-header nav ul li a:hover {
-  padding: 0.4rem 0;
-  border-bottom: 0.1rem solid black;
+header nav a {
+  padding: 0 0.25rem;
 }
 header a.skip-to-main {
   position: absolute;
   /* left: 1rem; */
-  padding: 0.2rem 0.3rem;
+  padding: 0 0.25rem;
   background-color: var(--light-grey);
   transform: translateY(-200%);
   transition: transform var(--fast) linear;
@@ -211,7 +193,6 @@ header a.skip-to-main:focus {
 }
 
 header input[type="search"] {
-  margin-left: 1rem;
 }
 
 

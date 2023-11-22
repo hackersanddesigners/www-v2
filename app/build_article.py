@@ -61,7 +61,7 @@ def get_article_field(field: str, article: dict[str]):
 
     if field in article:
         article_field = article[field]
-        
+
         if field == 'templates':
             if len(article_field) > 0:
                 template = article_field[0]['title'].split(':')[-1]
@@ -124,7 +124,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "slug": slugify(page_title),
             "nav": nav,
             "translations": article_translations,
-            "category": metadata['category']
+            # "category": metadata['category']
         }
 
         article_metadata = {
@@ -234,4 +234,3 @@ async def delete_article(article_title: str, cat: str | None = None):
 
     else:
         print(f"delete-article: {article_title} not found, nothing done")
-
