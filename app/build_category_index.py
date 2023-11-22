@@ -16,7 +16,10 @@ from .views.views import (
     make_article_index,
 )
 from app.read_settings import main as read_settings
-from app.build_article import make_article
+from app.build_article import (
+    make_article,
+    save_article,
+)
 
 
 ENV = os.getenv('ENV')
@@ -116,3 +119,27 @@ async def make_category_index(cat: str, page: int | None = 0) -> str:
             import json
             print(f"build-cat-index (return article) :: {cat_key} => {json.dumps(article, indent=4)}")
             return (article)
+
+
+async def update_categories(categories: list[str], template, sem):
+    """
+    """
+
+    cat_tasks = []
+    for cat in categories:
+        task = make_category_index(cat)
+        cat_tasks.append(asyncio.ensure_future(task))
+
+    prepared_category_indexes = await asyncio.gather(*cat_tasks)
+    print(f"prepared_category_indexes :: {prepared_category_indexes}")
+    prepared_category_indexes = [item for item
+                                 in prepared_category_indexes
+                                 if item is not None]
+
+    cat_tasks_html = []
+    for cat_index in prepared_category_indexes:
+        filepath = f"{cat_index['slug']}"
+        task = save_article(cat_index, filepath, template, sem)
+        cat_tasks_html.append(asyncio.ensure_future(task))
+        
+    await asyncio.gather(*cat_tasks_html)
