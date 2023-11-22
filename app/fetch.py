@@ -75,14 +75,24 @@ def article_exists(title) -> bool:
 async def fetch_article(title: str, client):
     print(f"fetching article {title}...")
 
-    params = {
+    # for HTML-parsed wiki article
+    parse_params = {
+        'action': 'parse',
+        'prop': 'text|langlinks|categories|templates|images|properties|revid',
+        'page': title,
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1',
+        'disableeditsection': '1',
+    }
+
+    # for wiki article's revisions and backlinks fields
+    query_params = {
         'action': 'query',
-        'prop': 'revisions|images',
         'titles': title,
-        'rvprop': 'content|timestamp',
-        'rvslots': '*',
-        'list': 'backlinks',
+        'prop': 'revisions',
         'bltitle': title,
+        'list': 'backlinks',
         'formatversion': '2',
         'format': 'json',
         'redirects': '1'
@@ -93,28 +103,38 @@ async def fetch_article(title: str, client):
     redirect_target = None
 
     try:
-        response = await client.get(URL, params=params)
-        data = response.json()
+        parse_response = await client.get(URL, params=parse_params)
+        parse_data = parse_response.json()
+        parse_response.raise_for_status()
 
-        response.raise_for_status()
+        query_response = await client.get(URL, params=query_params)
+        query_data = query_response.json()
+        query_response.raise_for_status()
 
-        if 'pages' in data['query']:
-            article = data['query']['pages'][0]
+        query_data = query_data['query']
 
-            # ns: -1 is part of Special Pages, we don't parse those
-            if article['ns'] == -1:
-                article = None
+        # -- ns: -1 is part of Special Pages, we don't parse those
+        if query_data['pages'][0]['ns'] == -1:
+            article = None
 
-            # filter out `Concept:<title>` articles
-            if article and article['title'].startswith("Concept:"):
-                article = None
+        # -- filter out `Concept:<title>` articles
+        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
+            article = None
 
-        if 'backlinks' in data['query']:
-            backlinks = data['query']['backlinks']
+        # -- filter out `Special:<title>` articles
+        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Special:"):
+            article = None
 
-        if 'redirects' in data['query']:
-            redirect_target = data['query']['redirects'][0]['to']
+        if 'parse' in parse_data:
+            article = parse_data['parse']
+            article['revisions'] = query_data['pages'][0]['revisions'][0]
 
+        backlinks = query_data['backlinks']
+
+        if article and len(article['redirects']) > 0:
+            redirect_target = article['redirects'][0]['to']
+
+        # print(f"article => {json.dumps(article, indent=4)}")
         return article, backlinks, redirect_target
 
 
@@ -237,9 +257,9 @@ async def fetch_file(title: str, download: bool):
 
             if 'missing' in response['pages'][0]:
                 title = response['pages'][0]['title']
+
                 msg = f"the image could not be found => {title}\n"
                 sem = None
-
                 await log('error', msg, sem)
 
                 if not download:

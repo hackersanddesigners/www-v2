@@ -254,7 +254,7 @@ def parse_tool_tag(tool_key):
         return False, False
 
 
-async def pre_process(article, wiki_page, article_wtp) -> str:
+async def pre_processpost_(article, wiki_page, article_wtp) -> str:
     """
     - update wikilinks [[<>]] to point to correct locations,
       so that WikiTextParser does its job just fine.
@@ -411,15 +411,17 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     """
 
     canonical_url = config['domain']['canonical_url']
+    mw_url = config['domain']['mw_url']
 
     soup = BeautifulSoup(article, 'lxml')
 
+    # TODO we don't need this, since MW should give us back a redirected page in case?
     # we insert some custom HTML to add a reference
     # that the current article has been moved to another URL
-    if redirect_target is not None:
-        redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+    # if redirect_target is not None:
+    #     redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
 
-        soup.body.insert(0, redirect)
+    #     soup.body.insert(0, redirect)
 
     links = soup.find_all('a')
     for link in links:
@@ -441,19 +443,54 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 link.attrs['href'] = f"/{new_url}"
             else:
                 link.attrs['href'] = uri
-            
 
-    download_image = config['wiki']['media']
-    if not download_image:
-        # -- img src replacement
-        #    replace local URL to instead pointing to
-        #    MW server instance
-        if len(file_URLs) > 0:
-            for url in file_URLs:
-                file = url.split('/').pop()
-                if file:
-                    replace_img_src_url_to_mw(soup, file, url, HTML_MEDIA_DIR)
+        elif link.attrs['href'].startswith('/index.php'):
 
+            # -- update URL for link to image
+            if '=File:' in link.attrs['href']:
+                link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
+
+                if link.img:
+                    img_tag = link.img
+                    img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
+
+                    if 'srcset' in img_tag.attrs:
+                        srcset_list = [url.strip() for url in img_tag.attrs['srcset'].split(',')]
+
+                        srcset_list_new = []
+                        for item in srcset_list:
+                            tokens = item.split(' ')
+                            tokens[0] = f"{mw_url}{tokens[0]}"
+                            srcset_new = " ".join(tokens)
+
+                            srcset_list_new.append(srcset_new)
+
+                        if srcset_list_new:
+                            img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
+
+            else:
+                # -- update URL of any other link
+
+                # this file-lookup is done to make sure
+                # articles' filename on disks matches
+                # URL used in the article files.
+                # as of <2023-11-08> i am not entirely sure
+                # this is useful, but when thinking about it
+                # it could be well helpful.
+                
+                url_parse = urlparse(link.attrs['href'])
+                uri_title = unquote(url_parse.query.split('=')[-1])
+                uri = slugify(uri_title).lower()
+                matches = file_lookup(uri)
+
+                if len(matches) > 0:
+                    filename = str(matches[0]).split('.')[0]
+                    new_url = "/".join(filename.split('/')[1:])
+                    link.attrs['href'] = f"/{new_url}"
+                else:
+                    link.attrs['href'] = f"/{uri}"
+
+                    
     # -- tool parser
     # naive regex to grab the <tool ... /> string
     tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
@@ -495,11 +532,11 @@ def get_metadata_field(field):
         return field.value.strip()
     else:
         return None
-    
+
 
 def get_metadata(article):
     """
-    extract wiki template tags from article, if any
+    extract wiki template tags from article, if any.
     extract article category
     """
 
@@ -507,9 +544,11 @@ def get_metadata(article):
     cat_keys = cats.keys()
 
     metadata = {
-        "category": "",
+        "categories": [],
     }
-    templates = article.templates
+
+    # templates = article.templates
+    templates = []
 
     if len(templates) > 0:
 
@@ -525,26 +564,21 @@ def get_metadata(article):
             # collect all metadata from article.template table
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
-    
 
-    if metadata and not metadata['category']:
-        category = get_category(article.wikilinks, metadata, cats)
-        metadata['category'] = slugify(category)
+                
+    categories = get_category(article['categories'], cats)
+    metadata['categories'] = [slugify(cat) for cat in categories]
 
     return metadata
 
 
-async def get_images(article):
+async def get_images(HTML_MEDIA_DIR: str, images_list: list[str]):
     """
     Prepare list of images for given Index page.
     If not copying images locally, we need to fetch them
-    frome the wiki one by one and it slows down the loading
+    from the wiki one by one and it slows down the loading
     of the page. TODO => move to create static index pages?
     """
-    
-    # remove `wiki` as first stem in tree-path from MEDIA_DIR
-    # so that HTML URI works correctly
-    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     download_image = config['wiki']['media']
 
@@ -558,22 +592,17 @@ async def get_images(article):
         else:
             t = await fetch_file(file, download)
             images.append(t[1])
-    
-    for wikilink in article.wikilinks:
-        if wikilink.title.lower().startswith('file:'):
-            # filename = wikilink.title[5:].strip()
-            # filepath = HTML_MEDIA_DIR + "/" + filename
-            # images.append(filepath)
-            
-            task = file_fetch(wikilink.title, download_image)
-            tasks.append(asyncio.ensure_future(task))
+
+    for image in images_list:
+        image = f"File:{image}"
+        task = file_fetch(image, download_image)
+        tasks.append(asyncio.ensure_future(task))
 
     await asyncio.gather(*tasks)
-    
     return images
- 
 
-def get_category(wikilinks, metadata, cats) -> str:
+
+def get_category(categories, cats) -> [str]:
 
     cat_fallback = None
     cat_fallback_key = ""
@@ -581,51 +610,19 @@ def get_category(wikilinks, metadata, cats) -> str:
         if v['fallback']:
             cat_fallback_key = k
             cat_fallback = v
-            
+
     cat_fallback_label = cat_fallback['label']
 
-    if len(wikilinks) > 0:
-        categories = []
+    if len(categories) > 0:
+        return [cat['category'] for cat in categories]
 
-        for wikilink in wikilinks:
-            if wikilink.title.lower().startswith('category:'):
-                key = wikilink.title.split(':')[-1].strip()
-                if key:
-                    categories.append(key)
-
-        if len(categories) > 0:
-            desired_categories = cats.keys()
-
-            # we want to have one category per article
-            # in case there's more than one, we hope that the second
-            # one is "Article", and we do the following:
-            # - make a set intersection for desired_categories and one for
-            #   the article's categories
-            # - convert to a list, check if there's more than one category:
-            #   if yes, check if "Article" is present and remove
-            #   and we return the first item in the list: if there's
-            #   more than one item left still, we pick simply the first.
-
-            dc_set = set(desired_categories)
-            c_set = set(categories)
-            intersect = list(dc_set.intersection(c_set))
-
-            if len(intersect) > 1:
-                if cat_fallback_key in intersect:
-                     intersect.remove(cat_fallback_key)
-             
-                return cats[intersect[0]]['label']
-            
-            else:
-                return cat_fallback_label
-
-        else:
-            return cat_fallback_label
     else:
-        return cat_fallback_label
+        return [cat_fallback_label]
 
 
-async def parser(article: str, metadata_only: bool, redirect_target: str | None = None):
+async def parser(article: dict[str, int],
+                 metadata_only: bool,
+                 redirect_target: str | None = None):
     """
     - instantiate WikiPage class
     - if redirect is not None, make custom HTML page
@@ -636,40 +633,20 @@ async def parser(article: str, metadata_only: bool, redirect_target: str | None 
 
     print(f"parsing article {article['title']}...")
 
-    wiki_page = WikiPage(article)
-    wiki_page_errors = wiki_page.errors
-    if len(wiki_page_errors) > 0:
-        for error in wiki_page_errors:
-            print('wiki-page err =>', error)
+    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
-    wiki_article = wiki_page.page_load(article)
+    metadata = get_metadata(article)
+    images = await get_images(HTML_MEDIA_DIR, article['images'])
 
-    if wiki_article is not None:
+    if metadata_only:
+        return metadata, images
 
-        article_wtp = wtp.parse(wiki_article)
-        metadata = get_metadata(article_wtp)
-        images = await get_images(article_wtp)
 
-        tool_metadata = None
-        if metadata_only:
+    body_html = post_process(article['text'],
+                             article['images'],
+                             HTML_MEDIA_DIR,
+                             redirect_target)
 
-            if metadata and metadata['category'] == 'Tools':
-                tool_metadata = get_tool_metadata(article_wtp.string)
+    print(f"parsed {article['title']}!")
 
-            return metadata, images, tool_metadata
-
-        wiki_body = await pre_process(article, wiki_page, article_wtp)
-
-        # update wiki_article instance
-        article['revisions'][0]['slots']['main']['content'] = wiki_body
-
-        wiki_render = wiki_page.render()
-        if len(wiki_render.errors) > 0:
-            print(f":: wiki-page-render errors => {wiki_render.errors}")
-
-        body_html = wiki_render.html
-        body_html = post_process(body_html, wiki_page.file_URLs, wiki_page.HTML_MEDIA_DIR, redirect_target)
-
-        print(f"parsed {article['title']}!")
-
-        return body_html, metadata
+    return body_html, metadata, images

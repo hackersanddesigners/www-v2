@@ -57,10 +57,17 @@ async def get_article(page_title: str, client):
         return None
 
 
-def get_article_field(field: str, article):
+def get_article_field(field: str, article: dict[str]):
 
     if field in article:
-        return article[field]
+        article_field = article[field]
+        
+        if field == 'templates':
+            if len(article_field) > 0:
+                template = article_field[0]['title'].split(':')[-1]
+                return template
+        else:
+            return article_field
 
     else:
         return None
@@ -82,6 +89,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
+    # TODO we wouldn't need this get_translations func anymore,
+    # since the HTML article contains alreasy links to available translations (?)
     article_translations = []
     if backlinks:
         article_translations = get_translations(page_title, backlinks)
@@ -90,10 +99,10 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     if article is not None:
 
-        last_modified = article['revisions'][0]['timestamp']
+        last_modified = article['revisions']['timestamp']
 
         if metadata_only:
-            metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
+            metadata, images = await parser(article, metadata_only, redirect_target)
 
             article_metadata = {
                 "title": article['title'],
@@ -101,14 +110,13 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "metadata": metadata,
                 "last_modified": last_modified,
                 "backlinks": backlinks,
-                "tool": tool_metadata,
                 "translations": article_translations,
             }
 
             return article_metadata
 
 
-        body_html, metadata = await parser(article, metadata_only, redirect_target)
+        body_html, metadata, images = await parser(article, metadata_only, redirect_target)
 
         article_html = {
             "title": page_title,
@@ -122,7 +130,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_metadata = {
             "title": article['title'],
             "images": get_article_field('images', article),
-            "template": get_article_field('template', article),
+            "template": get_article_field('templates', article),
             "metadata": metadata,
             "last_modified": last_modified,
             "backlinks": backlinks,
@@ -227,33 +235,3 @@ async def delete_article(article_title: str, cat: str | None = None):
     else:
         print(f"delete-article: {article_title} not found, nothing done")
 
-
-async def has_duplicates(article_filename: str, matching_cat: str):
-    """
-    after an article update, check if the embedded category has changed and if true,
-    scan across all category subfolders except the new category to check if
-    a previous version of the article has been left behind.
-    """
-
-    # build list of paths under each subdir except the one matching cat_key
-    # and filter out any path matching <cat>/article_filepath, where cat
-    # is not matching_cat
-
-    print(f"check if article has duplicates... => {article_filename, matching_cat}")
-
-    pattern = "**/*.html"
-    paths = [p for p
-             in WIKI_DIR.glob(pattern)
-             if article_filename in str(p) and not p.parent.stem == matching_cat]
-
-    if len(paths) > 0:
-        print(f"remove these filepaths {paths}!")
-
-        for p in paths:
-            cat = str(p.parent.stem)
-            fn = str(p.stem)
-            await delete_article(fn, cat)
-
-    else:
-        print(f"no duplicates...")
-        return

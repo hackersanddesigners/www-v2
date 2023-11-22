@@ -18,8 +18,8 @@ from app.build_article import (
     redirect_article,
     save_article,
     delete_article,
-    has_duplicates
 )
+from app.build_category_index import make_category_index
 import asyncio
 load_dotenv()
 
@@ -57,6 +57,18 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
             metadata_only = False
 
+            # namespace: -1 is part of Special Pages, we don't parse those
+            if msg['namespace'] == -1:
+                return
+
+            # filter out `Concept:<title>` articles
+            if msg['title'].startswith("Concept:"):
+                return
+
+            # filter our `Special:<title>` articles
+            if msg['title'].startswith("Special:"):
+                return
+
             if (msg['type'] in ['new', 'edit']
                 or msg['type'] == 'log'
                 and msg['log_action'] in ['restore', 'delete_redir']):
@@ -66,11 +78,13 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # article is a tuple in the form: (article_html, article_metadata)
                     article = await make_article(msg['title'], client, metadata_only)
-                    if article is None:
+
+                    if not article:
                         return
-                    
+
                     article_list.append(article)
 
+                    # -- make article translations articles
                     if len(article[1]['translations']) > 0:
                         art_tasks = []
                         for translation in article[1]['translations']:
@@ -80,14 +94,31 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         prepared_articles = await asyncio.gather(*art_tasks)
                         article_list.extend(prepared_articles)
 
-                    for article in article_list:
-                        article_category = article[1]['metadata']['category']
-                        filepath = f"{article_category}/{article[0]['slug']}"
-                        await save_article(article[0], filepath, template, sem)
+                    # -- update every category index page the article has
+                    cat_tasks = []
+                    for cat in article[1]['metadata']['categories']:
+                        task = make_category_index(cat)
+                        cat_tasks.append(asyncio.ensure_future(task))
 
-                        # check if current article exists in any other category folder
-                        # if true, delete it from there
-                        await has_duplicates(article[0]['slug'], article_category)
+                    prepared_category_indexes = await asyncio.gather(*cat_tasks)
+                    print(f"prepared_category_indexes :: {prepared_category_indexes}")
+                    prepared_category_indexes = [item for item
+                                                 in prepared_category_indexes
+                                                 if item is not None]
+
+                    cat_tasks_html = []
+                    for cat_index in prepared_category_indexes:
+                        filepath = f"{cat_index['slug']}"
+                        task = save_article(cat_index, filepath, template, sem)
+                        cat_tasks_html.append(asyncio.ensure_future(task))
+
+                    await asyncio.gather(*cat_tasks_html)
+                    # --
+
+                    # -- write article to disk
+                    for article in article_list:
+                        filepath = f"{article[0]['slug']}"
+                        await save_article(article[0], filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
@@ -129,10 +160,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                             await save_article(target_html, target_filepath, template, sem)
 
-                            # check if current article exists in any other category folder
-                            # if true, delete it from there
-                            await has_duplicates(target_html['slug'], target_category)
-                        
 
                         except Exception as e:
                             print(f"move article err => {e}")
