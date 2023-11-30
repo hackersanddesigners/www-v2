@@ -99,8 +99,8 @@ main {
 }
 header,
 footer,
-p,
-div,
+p:not(.image, .iframe),
+div:not(.mw-parser-output),
 ul,
 ol,
 h1,
@@ -115,10 +115,19 @@ h6
 }
 
 img,
-iframe
+p.image,
+iframe,
+p.iframe
 {
   max-width: var(--expanded-width);
   margin-inline: auto;
+}
+
+p.image {
+  text-align: center;
+}
+img {
+  height: auto;
 }
 
 main {
@@ -130,6 +139,8 @@ main {
   justify-content: center; */
 }
 
+div.mw-parser-output {
+}
 
 
 /* anchors */
