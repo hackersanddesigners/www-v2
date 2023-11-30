@@ -100,7 +100,7 @@ header,
 footer,
 p:not(.image, .iframe),
 div:not(.mw-parser-output),
-ul,
+ul:not(.gallery),
 ol,
 h1,
 h2,
@@ -168,7 +168,6 @@ ul li::before {
   content: '├─ ';
   content: '╠═ ';
 }
-ul li:focus::before,
 ul li:focus-within::before,
 ul li:hover::before {
   content: '├── ';
@@ -178,7 +177,6 @@ ul li:last-of-type::before {
   content: '└─ ';
   content: '╚═ ';
 }
-ul li:last-of-type:focus::before,
 ul li:last-of-type:focus-within::before,
 ul li:last-of-type:hover::before {
   content: '└── ';
@@ -237,9 +235,6 @@ header a.skip-to-main:focus {
   transform: translateY(0);
 }
 
-header input[type="search"] {
-}
-
 
 /* images */
 
@@ -263,6 +258,28 @@ figure video {
 figure figcaption {
   font-style: italic;
   text-align: center;
+}
+
+
+/* galleries */
+
+ul.gallery {
+  max-width: 100%;
+  display: flex;
+}
+
+ul.gallery li::before,
+ul.gallery li:hover::before,
+ul.gallery li:focus-within::before {
+  content: '';
+}
+
+ul.gallery li div {
+  margin: 0 !important;
+  width: unset !important;
+}
+ul.gallery li div img {
+  height: auto !important;
 }
 
 

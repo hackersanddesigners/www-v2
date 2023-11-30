@@ -502,6 +502,13 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
         iframe.parent.attrs['class'] = 'iframe'
 
 
+    # strip "thumb" images of their thumb status in their URLs
+    # and get the original full size
+    thumbs = soup.select('.thumb img')
+    for thumb in thumbs:
+        if thumb.has_attr('src'):
+            thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
+
     # -- tool parser
     # naive regex to grab the <tool ... /> string
     tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
