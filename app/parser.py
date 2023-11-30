@@ -495,6 +495,12 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                     link.attrs['href'] = f"/{uri}"
 
 
+    # add a tag class for iframe wrappers
+    iframes = soup.find_all('iframe')
+    for iframe in iframes:
+        iframe.parent.attrs['class'] = 'iframe'
+
+
     # -- tool parser
     # naive regex to grab the <tool ... /> string
     tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
