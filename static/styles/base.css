@@ -93,9 +93,8 @@ body {
   background-color : var(--light-grey);
 }
 header,
-footer,
-main {
-  /* padding-block: 1rem; */
+footer {
+  padding-block: 1rem;
 }
 header,
 footer,
@@ -217,11 +216,11 @@ ul li:last-of-type:hover::before {
 /* navigation */
 
 header {
-  padding-block: 1rem;
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
 }
+
 header nav a {
   padding: 0 0.25rem;
 }
