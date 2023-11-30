@@ -469,7 +469,8 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                             img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
 
                     # strip images of their wrappers
-                    link.parent.replaceWith( img_tag )
+                    link.parent.attrs['class'] = 'image'
+                    link.replaceWith( img_tag )
 
             else:
                 # -- update URL of any other link
