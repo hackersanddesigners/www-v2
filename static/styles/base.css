@@ -228,6 +228,13 @@ input[type=submit] {
 }
 
 
+/* articles */
+
+.mw-parser-output > table:first-of-type {
+  background-color: none;
+}
+
+
 /* pages: search  */
 
 .searchmatch {
