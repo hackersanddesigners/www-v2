@@ -26,7 +26,7 @@ load_dotenv()
 
 config = read_settings()
 MEDIA_DIR = os.getenv('MEDIA_DIR')
-    
+
 class WikiPage(Page):
 
     # remove `wiki` as first stem in tree-path from MEDIA_DIR
@@ -35,7 +35,7 @@ class WikiPage(Page):
 
     WIKI_DIR = Path(os.getenv('WIKI_DIR'))
     download_image = config['wiki']['media']
-    
+
     file_URLs = []
 
     def page_load(self, page) -> str:
@@ -91,7 +91,7 @@ class WikiPage(Page):
             filename = f"File:{file}"
             return file_exists(filename, self.download_image)
 
-    
+
     async def file_fetch(self, file: str) -> bool:
         """
         If archive-mode: fetch the file indicated by "file" and save it to disk,
@@ -107,7 +107,7 @@ class WikiPage(Page):
             return t[0]
         else:
             return await fetch_file(file, self.download_image)
-            
+
     def clean_url(self, url: str) -> str:
         """
         Clean "url" (which is a wikilink) to become a valid URL to call.
@@ -172,13 +172,13 @@ def make_tool_repo(tool_key: str, config_tool):
         # let's split only `<word>=<word>` items
         if '=' in t:
             prop = t.split('=')
-            
+
             if t == 'branch':
                 v = prop[1][1:-1].strip()
 
                 if v not in repo['branch']:
                     repo['branch'].append(v)
-                    
+
             else:
                 repo[prop[0].strip()] = prop[1][1:-1].strip()
 
@@ -268,7 +268,7 @@ async def pre_processpost_(article, wiki_page, article_wtp) -> str:
     # <2022-10-13> as we are in the process of "designing our own TOC"
     # we need to inject `__NOTOC__` to every article to avoid
     # wikitexthtml to create a TOC
-    article_wtp.insert(0, '__NOTOC__')        
+    article_wtp.insert(0, '__NOTOC__')
 
     for template in article_wtp.templates:
         # save template value somewhere if needed
@@ -354,7 +354,7 @@ async def pre_processpost_(article, wiki_page, article_wtp) -> str:
 def tool_convert_rel_uri_to_abs(items, attr, repo):
     """
     tool plugin: replace each items relative URLs to an absolute one,
-    using the specified attribute 
+    using the specified attribute
     """
 
     if len(items) > 0:
@@ -385,7 +385,7 @@ def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
     """
 
     f = Path(unquote(file))
-    
+
     url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
     img_tag = soup.find(src=re.compile(url_match))
 
@@ -436,7 +436,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
             url_parse = urlparse(link.attrs['href'])
             uri = slugify(url_parse.path.split('/')[-1].lower())
             matches = file_lookup(uri)
-            
+
             if len(matches) > 0:
                 filename = str(matches[0]).split('.')[0]
                 new_url = "/".join(filename.split('/')[1:])
@@ -468,6 +468,9 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                         if srcset_list_new:
                             img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
 
+                    # strip images of their wrappers
+                    link.parent.replaceWith( img_tag )
+
             else:
                 # -- update URL of any other link
 
@@ -477,7 +480,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 # as of <2023-11-08> i am not entirely sure
                 # this is useful, but when thinking about it
                 # it could be well helpful.
-                
+
                 url_parse = urlparse(link.attrs['href'])
                 uri_title = unquote(url_parse.query.split('=')[-1])
                 uri = slugify(uri_title).lower()
@@ -490,7 +493,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 else:
                     link.attrs['href'] = f"/{uri}"
 
-                    
+
     # -- tool parser
     # naive regex to grab the <tool ... /> string
     tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
@@ -565,7 +568,7 @@ def get_metadata(article):
             for key in templates_keys:
                 metadata[key.lower()] = get_metadata_field(t.get_arg(key))
 
-                
+
     categories = get_category(article['categories'], cats)
     metadata['categories'] = [slugify(cat) for cat in categories]
 
