@@ -43,6 +43,13 @@
   --very-slow      : 1s;
 
 
+  /* sizing */
+
+  --base-width     : min( 100%, 40rem );
+  --expanded-width : min( 100%, 70rem );
+
+
+
 }
 
 
@@ -88,17 +95,39 @@ body {
 header,
 footer,
 main {
-  padding: 1rem;
+  /* padding-block: 1rem; */
 }
-h1 {
+header,
+footer,
+p,
+div,
+ul,
+ol,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6
+{
+  max-width : var(--base-width);
+  margin-inline: auto;
 }
-p, img, ul, ol, h1, h2, h3, h4, h5, h6 {
-  max-width        : min( 100%, 40rem );
+
+img,
+iframe
+{
+  max-width: var(--expanded-width);
+  margin-inline: auto;
 }
+
 main {
-  min-height: 80%;
+  /* min-height: 80%; */
   /* max-width: min(100%, 40rem); */
   /* margin: 0 auto; */
+  /* display:flex;
+  flex-direction: column;
+  justify-content: center; */
 }
 
 
@@ -118,7 +147,7 @@ a:focus {
 /* lists */
 
 ul {
-  margin: 0;
+  margin-block: 0;
   padding-left: 1rem;
 }
 ul li {
@@ -168,12 +197,18 @@ ul li:last-of-type:hover::before {
 .tocnumber {
   display: none;
 }
+#mw-toc-heading {
+  margin: 0;
+}
+
 
 
 /* navigation */
 
 header {
+  padding-block: 1rem;
   display: flex;
+  justify-content: space-between;
   gap: 0.5rem;
 }
 header nav a {
@@ -231,7 +266,6 @@ input[type=submit] {
 /* articles */
 
 .mw-parser-output > table:first-of-type {
-  background-color: none;
 }
 
 
