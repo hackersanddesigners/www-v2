@@ -45,7 +45,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     sem = None
     context = create_context(ENV)
 
-    async with httpx.AsyncClient(verify=context) as client: 
+    async with httpx.AsyncClient(verify=context) as client:
 
         while True:
             data, addr = server_sock.recvfrom(2048)
@@ -94,25 +94,25 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         prepared_articles = await asyncio.gather(*art_tasks)
                         article_list.extend(prepared_articles)
 
-                    # -- update every category index page the article has
-                    cat_tasks = []
-                    for cat in article[1]['metadata']['categories']:
-                        task = make_category_index(cat)
-                        cat_tasks.append(asyncio.ensure_future(task))
+                    # # -- update every category index page the article has
+                    # cat_tasks = []
+                    # for cat in article[1]['metadata']['categories']:
+                    #     task = make_category_index(cat)
+                    #     cat_tasks.append(asyncio.ensure_future(task))
 
-                    prepared_category_indexes = await asyncio.gather(*cat_tasks)
-                    print(f"prepared_category_indexes :: {prepared_category_indexes}")
-                    prepared_category_indexes = [item for item
-                                                 in prepared_category_indexes
-                                                 if item is not None]
+                    # prepared_category_indexes = await asyncio.gather(*cat_tasks)
+                    # print(f"prepared_category_indexes :: {prepared_category_indexes}")
+                    # prepared_category_indexes = [item for item
+                    #                              in prepared_category_indexes
+                    #                              if item is not None]
 
-                    cat_tasks_html = []
-                    for cat_index in prepared_category_indexes:
-                        filepath = f"{cat_index['slug']}"
-                        task = save_article(cat_index, filepath, template, sem)
-                        cat_tasks_html.append(asyncio.ensure_future(task))
+                    # cat_tasks_html = []
+                    # for cat_index in prepared_category_indexes:
+                    #     filepath = f"{cat_index['slug']}"
+                    #     task = save_article(cat_index, filepath, template, sem)
+                    #     cat_tasks_html.append(asyncio.ensure_future(task))
 
-                    await asyncio.gather(*cat_tasks_html)
+                    # await asyncio.gather(*cat_tasks_html)
                     # --
 
                     # -- write article to disk
@@ -137,7 +137,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
                 elif msg['log_type'] == 'move':
-                    
+
                     if msg['log_action'] in ['move', 'delete_redir']:
                         try:
                             redirect = msg['log_params']
