@@ -428,63 +428,14 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
-        if link.attrs['href'].startswith(canonical_url):
-            # (eg https://hackersanddesigners.nl, no subdomain)
-            # and re-write the URL to be in relative format
-            # eg point to a page in *this* wiki
-
-            url_parse = urlparse(link.attrs['href'])
-            uri = slugify(url_parse.path.split('/')[-1].lower())
-            matches = file_lookup(uri)
-
-            if len(matches) > 0:
-                filename = str(matches[0]).split('.')[0]
-                new_url = "/".join(filename.split('/')[1:])
-                link.attrs['href'] = f"/{new_url}"
-            else:
-                link.attrs['href'] = uri
-
-        elif link.attrs['href'].startswith('/index.php'):
-
-            # -- update URL for link to image
-            if '=File:' in link.attrs['href']:
-                link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
-
-                if link.img:
-                    img_tag = link.img
-                    img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
-
-                    if 'srcset' in img_tag.attrs:
-                        srcset_list = [url.strip() for url in img_tag.attrs['srcset'].split(',')]
-
-                        srcset_list_new = []
-                        for item in srcset_list:
-                            tokens = item.split(' ')
-                            tokens[0] = f"{mw_url}{tokens[0]}"
-                            srcset_new = " ".join(tokens)
-
-                            srcset_list_new.append(srcset_new)
-
-                        if srcset_list_new:
-                            img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
-
-                    # strip images of their wrappers
-                    link.parent.attrs['class'] = 'image'
-                    link.replaceWith( img_tag )
-
-            else:
-                # -- update URL of any other link
-
-                # this file-lookup is done to make sure
-                # articles' filename on disks matches
-                # URL used in the article files.
-                # as of <2023-11-08> i am not entirely sure
-                # this is useful, but when thinking about it
-                # it could be well helpful.
+        if link.has_attr("href"):
+            if link.attrs['href'].startswith(canonical_url):
+                # (eg https://hackersanddesigners.nl, no subdomain)
+                # and re-write the URL to be in relative format
+                # eg point to a page in *this* wiki
 
                 url_parse = urlparse(link.attrs['href'])
-                uri_title = unquote(url_parse.query.split('=')[-1])
-                uri = slugify(uri_title).lower()
+                uri = slugify(url_parse.path.split('/')[-1].lower())
                 matches = file_lookup(uri)
 
                 if len(matches) > 0:
@@ -492,7 +443,57 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                     new_url = "/".join(filename.split('/')[1:])
                     link.attrs['href'] = f"/{new_url}"
                 else:
-                    link.attrs['href'] = f"/{uri}"
+                    link.attrs['href'] = uri
+
+            elif link.attrs['href'].startswith('/index.php'):
+
+                # -- update URL for link to image
+                if '=File:' in link.attrs['href']:
+                    link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
+
+                    if link.img:
+                        img_tag = link.img
+                        img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
+
+                        if 'srcset' in img_tag.attrs:
+                            srcset_list = [url.strip() for url in img_tag.attrs['srcset'].split(',')]
+
+                            srcset_list_new = []
+                            for item in srcset_list:
+                                tokens = item.split(' ')
+                                tokens[0] = f"{mw_url}{tokens[0]}"
+                                srcset_new = " ".join(tokens)
+
+                                srcset_list_new.append(srcset_new)
+
+                            if srcset_list_new:
+                                img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
+
+                        # strip images of their wrappers
+                        link.parent.attrs['class'] = 'image'
+                        link.replaceWith( img_tag )
+
+                else:
+                    # -- update URL of any other link
+
+                    # this file-lookup is done to make sure
+                    # articles' filename on disks matches
+                    # URL used in the article files.
+                    # as of <2023-11-08> i am not entirely sure
+                    # this is useful, but when thinking about it
+                    # it could be well helpful.
+
+                    url_parse = urlparse(link.attrs['href'])
+                    uri_title = unquote(url_parse.query.split('=')[-1])
+                    uri = slugify(uri_title).lower()
+                    matches = file_lookup(uri)
+
+                    if len(matches) > 0:
+                        filename = str(matches[0]).split('.')[0]
+                        new_url = "/".join(filename.split('/')[1:])
+                        link.attrs['href'] = f"/{new_url}"
+                    else:
+                        link.attrs['href'] = f"/{uri}"
 
 
     # add a tag class for iframe wrappers
