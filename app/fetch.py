@@ -84,6 +84,7 @@ async def fetch_article(title: str, client):
         'format': 'json',
         'redirects': '1',
         'disableeditsection': '1',
+        'disablestylededuplication': '1',
     }
 
     # for wiki article's revisions and backlinks fields
