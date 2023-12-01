@@ -27,7 +27,7 @@ import json
 from slugify import slugify
 from app.copy_assets import main as copy_assets
 from app.read_settings import main as read_settings
-from app.build_category_index import make_category_index
+from app.build_category_index import update_categories
 load_dotenv()
 
 
@@ -153,27 +153,10 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                 articles_metadata = [item[1] for item in prepared_articles if item is not None]
                 articles_metadata_index.extend(articles_metadata)
 
-                # -- update category index
-                cat_tasks = []
-                for k, v in cats.items():
-                    cat = cats[k]['label'].lower()
-                    task = make_category_index(cat)
-                    cat_tasks.append(asyncio.ensure_future(task))
-
-                prepared_category_indexes = await asyncio.gather(*cat_tasks)
-                prepared_category_indexes = [item for item
-                                             in prepared_category_indexes
-                                             if item is not None]
-
-                for cat_index in prepared_category_indexes:
-                    pass
-                    # print(f"cat-index => {json.dumps(cat_index, indent=4)}")
-
                 # -- save single article
                 articles_html = [item[0] for item in prepared_articles if item is not None]
 
                 save_tasks = []
-
                 for idx, article in enumerate(articles_html):
                     article_metadata = articles_metadata[idx]
                     filepath = f"{article['slug']}"
@@ -181,20 +164,14 @@ async def main(ENV: str, URL: str, metadata_only: bool):
                     task = save_article(article, filepath, template, sem)
                     save_tasks.append(asyncio.ensure_future(task))
 
-                # for cat_index in prepared_category_indexes:
-                #     filepath = f"{article['slug']}"
-
-                #     task = save_article(article, filepath, template, sem)
-                #     print(f"add cat-index: {article['slug']} to save_tasks")
-                #     save_tasks.append(asyncio.ensure_future(task))
 
                 # write all articles to disk
                 await asyncio.gather(*save_tasks)
 
 
-            # -- create index sections
-            # TODO how does this fit with the web-server routing setup?
-            await make_index_sections(articles_metadata, cat, cat_label)
+        # -- update category index
+        categories = [k.lower() for k,v in cats.items()]
+        await update_categories(categories, template, sem)
 
         # -- make front-page
         await make_front_index(config['wiki']['frontpage'])

@@ -19,7 +19,7 @@ from app.build_article import (
     save_article,
     delete_article,
 )
-from app.build_category_index import make_category_index
+from app.build_category_index import update_categories
 import asyncio
 load_dotenv()
 
@@ -82,38 +82,33 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     if not article:
                         return
 
+                    # TODO if we remove below code for translations,
+                    # we don't need to append article to the list and
+                    # loop over it. update_categories hadles its own
+                    # async iterator to write HTML to disk (unless we
+                    # find a better way to run just one async iterator)
+                    # thing is we need to `await make_article()` above
+                    # immediately, before handling collateral article's
+                    # functions like translaions, categories update, etc
+                    # since if article returns None, we stop everything
+                    # right there.
                     article_list.append(article)
 
                     # -- make article translations articles
-                    if len(article[1]['translations']) > 0:
-                        art_tasks = []
-                        for translation in article[1]['translations']:
-                            trans_task = make_article(translation, client, metadata_only)
-                            art_tasks.append(asyncio.ensure_future(trans_task))
+                    # if len(article[1]['translations']) > 0:
+                    #     art_tasks = []
+                    #     for translation in article[1]['translations']:
+                    #         trans_task = make_article(translation, client, metadata_only)
+                    #         art_tasks.append(asyncio.ensure_future(trans_task))
 
-                        prepared_articles = await asyncio.gather(*art_tasks)
-                        article_list.extend(prepared_articles)
+                    #     prepared_articles = await asyncio.gather(*art_tasks)
+                    #     article_list.extend(prepared_articles)
 
-                    # # -- update every category index page the article has
-                    # cat_tasks = []
-                    # for cat in article[1]['metadata']['categories']:
-                    #     task = make_category_index(cat)
-                    #     cat_tasks.append(asyncio.ensure_future(task))
-
-                    # prepared_category_indexes = await asyncio.gather(*cat_tasks)
-                    # print(f"prepared_category_indexes :: {prepared_category_indexes}")
-                    # prepared_category_indexes = [item for item
-                    #                              in prepared_category_indexes
-                    #                              if item is not None]
-
-                    # cat_tasks_html = []
-                    # for cat_index in prepared_category_indexes:
-                    #     filepath = f"{cat_index['slug']}"
-                    #     task = save_article(cat_index, filepath, template, sem)
-                    #     cat_tasks_html.append(asyncio.ensure_future(task))
-
-                    # await asyncio.gather(*cat_tasks_html)
-                    # --
+                    # -- update every category index page the article has
+                    #    and write it to disk
+                    await update_categories(article[1]['metadata']['categories'],
+                                            template,
+                                            sem)
 
                     # -- write article to disk
                     for article in article_list:
@@ -131,6 +126,10 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     if msg['log_action'] == 'delete':
                         try:
                             await delete_article(msg['title'])
+
+                            # -- TODO scan all category index HTML templates
+                            #    with bs4 and remove any block + link pointing
+                            #    to article removed just above.
 
                         except Exception as e:
                             print(f"delete article err => {e}")

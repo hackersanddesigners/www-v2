@@ -11,7 +11,11 @@ from app.fetch import (
 )
 import httpx
 from slugify import slugify
-from bs4 import BeautifulSoup
+from bs4 import (
+    BeautifulSoup,
+    NavigableString,
+    Tag,
+)
 import re
 from urllib.parse import urlparse
 import asyncio
@@ -544,12 +548,60 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
         return article
 
 
-def get_metadata_field(field):
+def get_table_data_row(td):
+    """
+    Extracts data from HTML's <td> tag
+    """
 
-    if field is not None:
-        return field.value.strip()
-    else:
-        return None
+    for item in td.children:
+        if isinstance(item, NavigableString):
+            continue
+        if isinstance(item, Tag):
+            # <td> contains the data in the format
+            # => {key}::{value}, let's get only the value
+            content = item.string.split('::')[-1]
+
+            return content
+
+
+def get_data_from_HTML_table(article_html):
+    """
+    Extracts data from HTML's <tbody> tag: we map over
+    each <th> element and check if it matches against any
+    of the specified keys in table_keys. Those keys are taken
+    from MW's own table keys and it's the subset of data we
+    care about.
+    """
+
+    table_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
+
+    soup = BeautifulSoup(article_html, 'lxml')
+    table = soup.find('tbody')
+
+    # <tr> => table-row
+    # <th> => table-header (where we check for a given key)
+    # <td> => table-datacell (where we fetch our desired content)
+
+    info = {}
+
+    if table is not None:
+        for tr in table.children:
+            # we skip DOM strings and look only for DOM tags
+            if isinstance(tr, NavigableString):
+                continue
+            if isinstance(tr, Tag):
+                table_key = tr.th
+
+                if table_key is not None and table_key.string is not None:
+                    table_key = table_key.string.strip()
+
+                    if  table_key in table_keys:
+                        if tr.td:
+                            info[table_key.lower()] = None
+                            info[table_key.lower()] = get_table_data_row(tr.td)
+
+
+    return info
 
 
 def get_metadata(article):
@@ -558,32 +610,16 @@ def get_metadata(article):
     extract article category
     """
 
-    cats = config['wiki']['categories']
-    cat_keys = cats.keys()
-
     metadata = {
+        "info": {},
         "categories": [],
     }
 
-    # templates = article.templates
-    templates = []
+    info = get_data_from_HTML_table(article['text'])
+    metadata['info'] = info
 
-    if len(templates) > 0:
-
-        templates_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
-
-        for t in article.templates:
-            label = t.name.strip()
-            if label in cat_keys:
-                if not cats[label]['fallback']:
-                    cat_label = cats[label]['label']
-                    metadata['category'] = slugify(cat_label)
-
-            # collect all metadata from article.template table
-            for key in templates_keys:
-                metadata[key.lower()] = get_metadata_field(t.get_arg(key))
-
-
+    cats = config['wiki']['categories']
+    cat_keys = cats.keys()
     categories = get_category(article['categories'], cats)
     metadata['categories'] = [slugify(cat) for cat in categories]
 
