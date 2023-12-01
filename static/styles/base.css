@@ -266,6 +266,10 @@ figure figcaption {
 ul.gallery {
   max-width: 100%;
   display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  /* flex-wrap: wrap; */
+  overflow: scroll;
 }
 
 ul.gallery li::before,
@@ -274,12 +278,18 @@ ul.gallery li:focus-within::before {
   content: '';
 }
 
+ul.gallery li {
+}
+ul.gallery li,
 ul.gallery li div {
   margin: 0 !important;
+  height: max-content;
   width: unset !important;
 }
 ul.gallery li div img {
   height: auto !important;
+  width: unset;
+
 }
 
 
