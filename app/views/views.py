@@ -428,20 +428,3 @@ async def make_article_index(articles, cat, cat_label):
     document = template.render(article=article)
     await write_to_disk(article['slug'], document, sem)
 
-
-async def make_index_sections(articles_metadata, cat: str, cat_label: str):
-
-    if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Collaborators':
-        await make_collaborators_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Publishing':
-        await make_publishing_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Tools':
-        await make_tool_index(articles_metadata, cat, cat_label, False)
-
-    if cat == 'Articles':
-        await make_article_index(articles_metadata, cat, cat_label)
