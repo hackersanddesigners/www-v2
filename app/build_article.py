@@ -177,7 +177,7 @@ async def redirect_article(article_title: str, redirect_target: str):
             print(f"redirect-article: {article_title} not found, nothing done")
 
 
-async def save_article(article: str | None, filepath: str, template, sem):
+async def save_article(article: str | None, filepath: str, template: str, sem: int):
 
     if article is not None:
         filters = {

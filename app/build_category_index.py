@@ -20,6 +20,7 @@ from app.build_article import (
     make_article,
     save_article,
 )
+from app.write_to_disk import main as write_to_disk
 
 
 ENV = os.getenv('ENV')
@@ -27,11 +28,9 @@ URL = os.getenv('BASE_URL')
 config = read_settings()
 
 
-async def make_category_index(cat: str, page: int | None = 0) -> str:
+async def make_category_index(cat: str, page: int | None = 0):
     """
     """
-
-    print(f"make-cat-index => {cat, page}")
 
     cat_key = None
     cat_label = None
@@ -125,7 +124,7 @@ async def update_categories(categories: list[str], template, sem):
     cat_tasks_html = []
     for cat_index in prepared_category_indexes:
         filepath = f"{cat_index['slug']}"
-        task = save_article(cat_index, filepath, template, sem)
+        task = write_to_disk(filepath, cat_index['html'], sem)
         cat_tasks_html.append(asyncio.ensure_future(task))
         
     await asyncio.gather(*cat_tasks_html)
