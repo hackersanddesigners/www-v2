@@ -46,18 +46,6 @@ def make_nav():
     return nav
 
 
-async def get_article(page_title: str, client):
-
-    article, backlinks, redirect_target = await fetch_article(page_title, client)
-
-    if article is not None:
-        return article
-
-    else:
-        print(f"{page_title} return empty")
-        return None
-
-
 def get_article_field(field: str, article: dict[str]):
 
     if field in article:
