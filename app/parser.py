@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import os
-from typing import Optional
 from app.fetch import (
     article_exists,
     fetch_file,
@@ -69,27 +68,6 @@ def make_tool_repo(tool_key: str, config_tool):
     return repo
 
 
-def get_tool_metadata(article_wtp: str):
-
-    tool_keywords = re.findall(r"<tool(.*?)/>", article_wtp)
-
-    tool_key = None
-    for tk in tool_keywords:
-        tool_key = tk.strip()
-
-    if tool_key is None:
-        return None
-
-    else:
-
-        repo = make_tool_repo(tool_key, config['tool-plugin'])
-
-        base_URL = config['tool-plugin']['host'][repo['host']][1]
-        URL = f"{base_URL}/{repo['user']}/{repo['repo']}"
-
-        return {"uri": URL, "label": repo['host']}
-
-
 def parse_tool_tag(tool_key):
 
     if tool_key is not None:
@@ -126,103 +104,6 @@ def parse_tool_tag(tool_key):
 
     else:
         return False, False
-
-
-async def pre_processpost_(article, wiki_page, article_wtp) -> str:
-    """
-    - update wikilinks [[<>]] to point to correct locations,
-      so that WikiTextParser does its job just fine.
-    - check for any malformed (and known / used) wiki tags,
-      for instance the gallery tag: either try to fix it
-      (if knowning how), or else report it somewhere so that
-      the wiki article can be fixed instead
-    - if redirect is not None, extend article.body w/ redirect link
-    """
-
-    # <2022-10-13> as we are in the process of "designing our own TOC"
-    # we need to inject `__NOTOC__` to every article to avoid
-    # wikitexthtml to create a TOC
-    article_wtp.insert(0, '__NOTOC__')
-
-    for template in article_wtp.templates:
-        # save template value somewhere if needed
-        # before running below code
-        article['template'] = template.name.strip()
-        del template[:]
-
-    tasks = []
-    for wikilink in article_wtp.wikilinks:
-
-        if wikilink.title.lower().startswith('category:'):
-            cat = wikilink.title.split(':')[-1]
-            del wikilink[:]
-
-        elif wikilink.title.lower().startswith('file:'):
-            task = wiki_page.file_fetch(wikilink.title)
-            tasks.append(asyncio.ensure_future(task))
-
-        else:
-
-            # -- convert normal wikilink to standard URL
-
-            # most times only a wikilink like this is added:
-            # [Title of Other Page]
-            # wikilink.title => Title of Other Page
-            # wikilink.text => None
-            # wikilink.target => Title of Other Page
-            #
-            # and Mediawiki automatically converts that into a proper URL,
-            # so we set wikilink.text to either wikilink.text / wikilink.target
-            # then wikilink.target is slugified afterwards in the WikiPage
-            # clean_url function.
-
-            # remove `:` from target otherwise wikitexthtml sees that as a MW namespace
-            # after wikitexthtml parsed the link, we run clean_url and slugify it
-            # so we can point it to the correct HTML file on disk
-            wikilink.target = wikilink.target.replace(':', '')
-
-
-            wikilink.text = wikilink.text or wikilink.target
-
-
-    await asyncio.gather(*tasks)
-
-
-    for tag in article_wtp.get_tags():
-
-        # TODO: scan through all wiki articles
-        # and save in db all tags as tag.name + tag.contents
-        # then check which ones are often malformed / needs care;
-        #
-        # make sure syntax is "strict"
-        # eg image syntax starts with `File:<filepath>`
-        # note: if a filepath is malformed and we know
-        # it does not exists in the wiki, what to do?
-        # => must be updated in the wiki; we don't try to fix
-        #    wiki content on-the-fly
-
-        if tag.name == 'gallery':
-            gallery_files = tag.contents.split('\n')
-            gallery_files = [f.split('|')[0] for f in gallery_files]
-            gallery_files = [f.strip() for f in gallery_files if f]
-
-            gallery_contents = []
-            tasks = []
-            for gallery_f in gallery_files:
-                if not gallery_f.startswith('File:'):
-                    f = 'File:' + gallery_f
-                    gallery_contents.append(f)
-                    tag.contents = '\n'.join(gallery_contents)
-
-                    task = wiki_page.file_fetch(f)
-                    tasks.append(asyncio.ensure_future(task))
-
-
-            await asyncio.gather(*tasks)
-
-
-    # -- return article as string
-    return article_wtp.string
 
 
 def tool_convert_rel_uri_to_abs(items, attr, repo):
@@ -553,7 +434,6 @@ async def parser(article: dict[str, int],
                  metadata_only: bool,
                  redirect_target: str | None = None):
     """
-    - instantiate WikiPage class
     - if redirect is not None, make custom HTML page
     - else, get page body (HTML)
     - return either version
