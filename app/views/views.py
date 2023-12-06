@@ -116,8 +116,6 @@ async def make_event_index(
         articles,
         cat: str,
         cat_label: str,
-        save_to_disk: bool,
-        pagination,
         sorting: tuple[str, bool] | None = None,
 ):
 
@@ -148,16 +146,14 @@ async def make_event_index(
 
         if article:
 
-            print(f"make-event-index (func) => {article}")
-
             date = None
             time = None
 
-            if 'date' in article['metadata']:
-                date = extract_datetime(article['metadata']['date'])
+            if 'date' in article['metadata']['info']:
+                date = extract_datetime(article['metadata']['info']['date'])
 
             if 'time' in article['metadata']:
-                time = extract_datetime(article['metadata']['time'])
+                time = extract_datetime(article['metadata']['info']['time'])
 
             article_ts = {'start': None, 'end': None}
 
@@ -170,10 +166,10 @@ async def make_event_index(
                     tokens_end = time[1].split(':')
                     ts_end = ts_pad_hour(tokens_end)
 
-                    article['metadata']['time'] = f"{ts_start}-{ts_end}"
+                    article['metadata']['info']['time'] = f"{ts_start}-{ts_end}"
 
                 else:
-                    article['metadata']['time'] = f"{ts_start}"
+                    article['metadata']['info']['time'] = f"{ts_start}"
 
                 date_start = date[0]
 
@@ -279,17 +275,10 @@ async def make_event_index(
                 'nav': nav,
             }
 
-            document = template.render(article=article, pagination=pagination)
-            article['html']: document
+            document = template.render(article=article)
+            article['html'] = document
 
-            print(f"views article => {article}")
-
-            if save_to_disk:
-                sem = None
-                await write_to_disk(article['slug'], document, sem)
-
-            else:
-                return article
+            return article
 
 
 async def make_collaborators_index(articles, cat, cat_label):
@@ -315,17 +304,14 @@ async def make_collaborators_index(articles, cat, cat_label):
         'nav': nav
     }
 
-    return article
-
-    sem = None
     document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    article['html'] = document
+    return article
 
 
 async def make_publishing_index(articles,
                                 cat: str,
-                                cat_label: str,
-                                save_to_disk: bool):
+                                cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -343,17 +329,16 @@ async def make_publishing_index(articles,
         'nav': nav
     }
 
+    document = template.render(article=article)
+    article['html'] = document
+
     return article
 
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
 
 
 async def make_tool_index(articles,
                           cat: str,
                           cat_label: str,
-                          save_to_disk: bool,
                           sorting: tuple[str, bool] | None = None
                           ):
 
@@ -395,12 +380,13 @@ async def make_tool_index(articles,
         'nav': nav
     }
 
-    if save_to_disk:
-        sem = None
-        document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
-    else:
-        return article
+
+    sem = None
+    document = template.render(article=article)
+    article['html'] = document
+    # await write_to_disk(article['slug'], document, sem)
+
+    return article
 
 
 async def make_search_index(articles, query):

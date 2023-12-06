@@ -20,6 +20,7 @@ from app.build_article import (
     make_article,
     save_article,
 )
+from app.write_to_disk import main as write_to_disk
 
 
 ENV = os.getenv('ENV')
@@ -27,11 +28,9 @@ URL = os.getenv('BASE_URL')
 config = read_settings()
 
 
-async def make_category_index(cat: str, page: int | None = 0) -> str:
+async def make_category_index(cat: str, page: int | None = 0):
     """
     """
-
-    print(f"make-cat-index => {cat, page}")
 
     cat_key = None
     cat_label = None
@@ -76,40 +75,32 @@ async def make_category_index(cat: str, page: int | None = 0) -> str:
             else:
                 data.extend(response)
 
-        # -- make pagination
-        pagination = paginator(data, 50, page)
 
         metadata_only = True
         art_tasks = []
-        for article in pagination['data']:
+        for article in data:
             task = make_article(article['title'], client, metadata_only)
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
 
         article = None
-        save_to_disk = False
         sorting = None
 
         if cat_label == 'Events':
-            article = await make_event_index(prepared_articles,
-                                             cat_key,
-                                             cat_label,
-                                             save_to_disk,
-                                             pagination,
-                                             sorting)
+            article = await make_event_index(prepared_articles, cat_key, cat_label, sorting)
 
         elif cat_label == 'Collaborators':
-            article = await make_collaborators_index(prepared_articles, cat, cat_label)
+            article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Publishing':
-            article = await make_publishing_index(prepared_articles, cat, cat_label, save_to_disk)
+            article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Tools':
-            article = await make_tool_index(prepared_articles, cat, cat_label, save_to_disk, sorting)
+            article = await make_tool_index(prepared_articles, cat_key, cat_label, sorting)
 
         elif cat_label == 'Articles':
-            article = await make_article_index(prepared_articles, cat, cat_label)
+            article = await make_article_index(prepared_articles, cat_key, cat_label)
 
 
         if article:
@@ -133,7 +124,7 @@ async def update_categories(categories: list[str], template, sem):
     cat_tasks_html = []
     for cat_index in prepared_category_indexes:
         filepath = f"{cat_index['slug']}"
-        task = save_article(cat_index, filepath, template, sem)
+        task = write_to_disk(filepath, cat_index['html'], sem)
         cat_tasks_html.append(asyncio.ensure_future(task))
         
     await asyncio.gather(*cat_tasks_html)
