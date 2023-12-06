@@ -65,14 +65,6 @@ async def query_continue(client, url, params):
             await log('error', msg, sem)
 
 
-
-def article_exists(title) -> bool:
-    WIKI_DIR = os.getenv('WIKI_DIR')
-    file_path = f"{WIKI_DIR}/{slugify(title)}.html"
-
-    return Path(file_path).is_file()
-
-
 async def fetch_article(title: str, client):
     print(f"fetching article {title}...")
 
