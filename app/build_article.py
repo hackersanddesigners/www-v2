@@ -129,6 +129,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "nav": nav,
             "translations": article_translations,
             "parsed_metadata": metadata['info'],
+            "categories": metadata['categories'],
         }
 
         article_html = {
