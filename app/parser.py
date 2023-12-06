@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 import os
 from app.fetch import (
-    article_exists,
     fetch_file,
-    file_exists,
     create_context,
 )
 import httpx
