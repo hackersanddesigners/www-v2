@@ -5,15 +5,16 @@ from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
 from aiofiles import os as aos
-from app.write_to_disk import main as write_to_disk
-import tomli
 from app.views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
 from pathlib import Path
 from app.read_settings import main as read_settings
-from app.file_ops import file_lookup
+from app.file_ops import (
+    file_lookup,
+    write_to_disk,
+)
 
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))

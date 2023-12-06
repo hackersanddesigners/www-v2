@@ -20,7 +20,7 @@ from app.build_article import (
     make_article,
     save_article,
 )
-from app.write_to_disk import main as write_to_disk
+from app.file_ops import write_to_disk
 
 
 ENV = os.getenv('ENV')
