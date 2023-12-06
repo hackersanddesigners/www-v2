@@ -97,7 +97,7 @@ async def make_category_index(cat: str, page: int | None = 0):
             article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Tools':
-            article = await make_tool_index(prepared_articles, cat_key, cat_label, sorting)
+            article = await make_tool_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Articles':
             article = await make_article_index(prepared_articles, cat_key, cat_label)

@@ -247,7 +247,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     return article
 
 
-async def make_collaborators_index(articles, cat, cat_label):
+async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -267,17 +267,17 @@ async def make_collaborators_index(articles, cat, cat_label):
         'title': cat,
         'slug': slugify(cat_label),
         'collaborators': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
     document = template.render(article=article)
     article['html'] = document
+    
     return article
 
 
-async def make_publishing_index(articles,
-                                cat: str,
-                                cat_label: str):
+async def make_publishing_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -287,12 +287,16 @@ async def make_publishing_index(articles,
     template = get_template(f"{cat}-index", filters)
 
     nav = make_nav()
+    # print(f"make-publishing-article (0) => {articles[0]['metadata']}")
+
+    # sorted(articles, key=lambda d: d['metadata']['info']['date'], reverse=True)
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
     document = template.render(article=article)
@@ -301,12 +305,7 @@ async def make_publishing_index(articles,
     return article
 
 
-
-async def make_tool_index(articles,
-                          cat: str,
-                          cat_label: str,
-                          sorting: tuple[str, bool] | None = None
-                          ):
+async def make_tool_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -316,41 +315,21 @@ async def make_tool_index(articles,
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
 
-    if sorting:
-        if sorting[0] == 'title':
-            articles = sorted(articles,
-                              key=lambda d: d['title'],
-                              reverse=sorting[1])
-
-        elif sorting[0] == 'category':
-            articles = sorted(articles,
-                              key=lambda d: d['metadata']['category'],
-                              reverse=sorting[1])
-
-            # elif sort_by == 'repository':
-            #     articles = sorted(articles,
-            #                       key=lambda d: d['tool']['label'],
-            #                       reverse=True)
-
-    else:
-        print(f"tool-index => {articles}")
-        articles = sorted(articles,
-                          key=lambda d: d['title'],
-                          reverse=True)
+    # articles = sorted(articles,
+    #                   key=lambda d: d['title'],
+    #                   reverse=True)
 
 
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
-
-    sem = None
     document = template.render(article=article)
     article['html'] = document
-    # await write_to_disk(article['slug'], document, sem)
 
     return article
 
@@ -394,14 +373,14 @@ async def make_sitemap(articles):
         'title': "Sitemap",
         'slug': "sitemap",
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
-    return article
-
-    sem = None
     document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    article['html'] = document
+
+    return article
 
 
 async def make_article_index(articles, cat, cat_label):
@@ -420,11 +399,10 @@ async def make_article_index(articles, cat, cat_label):
         'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav,
+        'html': '',
     }
 
-    return article
-
-    sem = None
     document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    article['html'] = document
 
+    return article
