@@ -256,7 +256,7 @@ async def category(request: Request,
             sorting = None
             
             if cat_label == 'Events':
-                article = await make_event_index(prepared_articles, cat_key, cat_label, save_to_disk, sorting)
+                article = await make_event_index(prepared_articles, cat_key, cat_label)
                 
             elif cat_label == 'Collaborators':
                 article = await make_collaborators_index(prepared_articles, cat, cat_label)

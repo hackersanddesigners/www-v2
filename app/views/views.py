@@ -112,12 +112,7 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(
-        articles,
-        cat: str,
-        cat_label: str,
-        sorting: tuple[str, bool] | None = None,
-):
+async def make_event_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -465,7 +460,7 @@ async def make_article_index(articles, cat, cat_label):
 async def make_index_sections(articles_metadata, cat: str, cat_label: str):
 
     if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label, False)
+        await make_event_index(articles_metadata, cat, cat_label)
 
     if cat == 'Collaborators':
         await make_collaborators_index(articles_metadata, cat, cat_label)

@@ -88,7 +88,7 @@ async def make_category_index(cat: str, page: int | None = 0):
         sorting = None
 
         if cat_label == 'Events':
-            article = await make_event_index(prepared_articles, cat_key, cat_label, sorting)
+            article = await make_event_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Collaborators':
             article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
