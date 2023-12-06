@@ -116,8 +116,6 @@ async def make_event_index(
         articles,
         cat: str,
         cat_label: str,
-        save_to_disk: bool,
-        pagination,
         sorting: tuple[str, bool] | None = None,
 ):
 

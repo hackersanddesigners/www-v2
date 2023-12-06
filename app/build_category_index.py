@@ -76,40 +76,32 @@ async def make_category_index(cat: str, page: int | None = 0) -> str:
             else:
                 data.extend(response)
 
-        # -- make pagination
-        pagination = paginator(data, 50, page)
 
         metadata_only = True
         art_tasks = []
-        for article in pagination['data']:
+        for article in data:
             task = make_article(article['title'], client, metadata_only)
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
 
         article = None
-        save_to_disk = False
         sorting = None
 
         if cat_label == 'Events':
-            article = await make_event_index(prepared_articles,
-                                             cat_key,
-                                             cat_label,
-                                             save_to_disk,
-                                             pagination,
-                                             sorting)
+            article = await make_event_index(prepared_articles, cat_key, cat_label, sorting)
 
         elif cat_label == 'Collaborators':
-            article = await make_collaborators_index(prepared_articles, cat, cat_label)
+            article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Publishing':
-            article = await make_publishing_index(prepared_articles, cat, cat_label, save_to_disk)
+            article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Tools':
-            article = await make_tool_index(prepared_articles, cat, cat_label, save_to_disk, sorting)
+            article = await make_tool_index(prepared_articles, cat_key, cat_label, sorting)
 
         elif cat_label == 'Articles':
-            article = await make_article_index(prepared_articles, cat, cat_label)
+            article = await make_article_index(prepared_articles, cat_key, cat_label)
 
 
         if article:
