@@ -189,11 +189,30 @@ ul li:last-of-type:hover::before {
 #toc {
   border-top: 0.3rem double;
   border-right: 0.3rem double;
+  border-top-right-radius: 1rem;
   padding: 0.5rem;
   padding-left: 0;
   width: 100%;
   /* max-width:50%; */
   /* float: right; */
+}
+#toc::before,
+#toc::after  {
+  position: absolute;
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  border-bottom-left-radius: 100%;
+}
+#toc::before {
+  top: -1rem;
+  left: -1rem;
+  border-bottom: 0.3rem double;
+}
+#toc::after {
+  bottom: -1rem;
+  right: -1rem;
+  border-left: 0.3rem double;
 }
 #toctitle h2 {
   margin: 0;
