@@ -118,6 +118,18 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
         body_html, metadata, images = await parser(article, metadata_only, redirect_target)
 
+        article_metadata = {
+            "id": article['pageid'],
+            "title": article['title'],
+            "images": get_article_field('images', article),
+            "template": get_article_field('templates', article),
+            "last_modified": last_modified,
+            "backlinks": backlinks,
+            "nav": nav,
+            "translations": article_translations,
+            "parsed_metadata": metadata['info'],
+        }
+
         article_html = {
             "title": page_title,
             "html": body_html,
@@ -125,17 +137,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "nav": nav,
             "translations": article_translations,
             # "category": metadata['category']
-        }
-
-        article_metadata = {
-            "title": article['title'],
-            "images": get_article_field('images', article),
-            "template": get_article_field('templates', article),
-            "metadata": metadata,
-            "last_modified": last_modified,
-            "backlinks": backlinks,
-            "nav": nav,
-            "translations": article_translations,
+            "metadata": article_metadata,
         }
 
         return article_html, article_metadata

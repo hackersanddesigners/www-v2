@@ -510,8 +510,12 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     # and get the original full size
     thumbs = soup.select('.thumb img')
     for thumb in thumbs:
-        if thumb.has_attr('src'):
+        if 'src' in thumb.attrs:
             thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
+    # strip height and width from image attribute
+        for  attr in [ 'height', 'width' ]:
+            if attr in thumb.attrs:
+                del thumb.attrs[attr]
 
     # -- tool parser
     # naive regex to grab the <tool ... /> string
@@ -600,6 +604,7 @@ def get_data_from_HTML_table(article_html):
                             info[table_key.lower()] = None
                             info[table_key.lower()] = get_table_data_row(tr.td)
 
+        table.decompose()
 
     return info
 

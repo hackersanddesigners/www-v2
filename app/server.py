@@ -79,6 +79,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     # article is a tuple in the form: (article_html, article_metadata)
                     article = await make_article(msg['title'], client, metadata_only)
 
+                    # print( json.dumps( article, indent=2 ) )
+
                     if not article:
                         return
 

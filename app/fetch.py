@@ -79,7 +79,7 @@ async def fetch_article(title: str, client):
     # for HTML-parsed wiki article
     parse_params = {
         'action': 'parse',
-        'prop': 'text|langlinks|categories|templates|images|properties|revid',
+        'prop': 'text|langlinks|categories|templates|images',
         'page': title,
         'formatversion': '2',
         'format': 'json',
@@ -132,6 +132,12 @@ async def fetch_article(title: str, client):
             article['revisions'] = query_data['pages'][0]['revisions'][0]
 
         backlinks = query_data['backlinks']
+
+        for link in backlinks:
+            link['slug'] = slugify(link['title'])
+
+        print( json.dumps( backlinks, indent=2 ) )
+
 
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
