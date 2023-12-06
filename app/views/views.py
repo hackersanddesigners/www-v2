@@ -112,12 +112,7 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(
-        articles,
-        cat: str,
-        cat_label: str,
-        sorting: tuple[str, bool] | None = None,
-):
+async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -143,7 +138,6 @@ async def make_event_index(
 
 
     for article in articles:
-
         if article:
 
             date = None
@@ -170,17 +164,17 @@ async def make_event_index(
 
                 else:
                     article['metadata']['info']['time'] = f"{ts_start}"
-
-                date_start = date[0]
-
+                
                 # -- construct datetime start
+                date_start = date[0]
+                
                 dts_start = f"{date_start} {ts_start}"
                 article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
 
                 if len(date) > 1:
-                    date_end = date[1]
-
                     # -- construct datetime end
+                    date_end = date[1]
+                    
                     dts_end = f"{date_end} {ts_end}"
                     article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
 
@@ -230,55 +224,27 @@ async def make_event_index(
                 article['metadata']['times']['end'] = None
 
 
-            # -- sorting events
-            if sorting:
+    # -- sorting events by date desc
+            
+    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
-                # sort events by date desc
-                events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+                
+    nav = make_nav()
+            
+    article = {
+        'title': cat,
+        'slug': slugify(cat_label),
+        'events': events,
+        'nav': nav,
+        'html': '',
+    }
 
-                if sorting[0] == 'title':
-                    events['past'] = sorted(events['past'],
-                                            key=lambda d: d['title'],
-                                            reverse=sorting[1])
+    document = template.render(article=article)
+    article['html'] = document
 
-                elif sorting[0] == 'location':
-                    events['past'] = sorted(events['past'],
-                                            key=lambda d: normalize_data(d['metadata']['location']),
-                                            reverse=sorting[1])
-
-                elif sorting[0] == 'date':
-                    events['past'] = sorted(events['past'],
-                                            key=lambda d: d['metadata']['dates']['start'],
-                                            reverse=sorting[1])
-
-                elif sorting[0] == 'time':
-                    events['past'] = sorted(events['past'],
-                                            key=lambda d: d['metadata']['times']['start'],
-                                            reverse=sorting[1])
-
-                elif sorting[0] == 'type':
-                    events['past'] = sorted(events['past'],
-                                            key=lambda d: d['metadata']['type'],
-                                            reverse=sorting[1])
-
-            else:
-                events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-                events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-
-
-            nav = make_nav()
-
-            article = {
-                'title': cat,
-                'slug': slugify(cat_label),
-                'events': events,
-                'nav': nav,
-            }
-
-            document = template.render(article=article)
-            article['html'] = document
-
-            return article
+    return article
 
 
 async def make_collaborators_index(articles, cat, cat_label):
@@ -466,7 +432,7 @@ async def make_article_index(articles, cat, cat_label):
 async def make_index_sections(articles_metadata, cat: str, cat_label: str):
 
     if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label, False)
+        await make_event_index(articles_metadata, cat, cat_label)
 
     if cat == 'Collaborators':
         await make_collaborators_index(articles_metadata, cat, cat_label)

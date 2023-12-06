@@ -110,7 +110,11 @@
     </section>
   {% endif %}
 
-  {% include "pagination.html" %}
+    {% else %}
+    <p>No past event at the moment. (??)</p>
+    {% endif %}
+  </section>
+</main>
 
 </main>
 <script src="/static/scripts/tables.js"></script>
