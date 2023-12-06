@@ -390,22 +390,16 @@ async def get_images(HTML_MEDIA_DIR: str, images_list: list[str]):
     of the page. TODO => move to create static index pages?
     """
 
-    download_image = config['wiki']['media']
-
     images = []
     tasks = []
 
-    async def file_fetch(file: str, download: bool) -> bool:
-        if not download:
-            t = await fetch_file(file, download_image)
-            images.append(t[1])
-        else:
-            t = await fetch_file(file, download)
-            images.append(t[1])
+    async def file_fetch(filename: str) -> bool:
+        t = await fetch_file(filename)
+        images.append(t[1])
 
     for image in images_list:
         image = f"File:{image}"
-        task = file_fetch(image, download_image)
+        task = file_fetch(image)
         tasks.append(asyncio.ensure_future(task))
 
     await asyncio.gather(*tasks)

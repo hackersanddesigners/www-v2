@@ -1,9 +1,5 @@
 [wiki]
 
-# copy images and point src to MW instance
-# true | false
-media = false
-
 # set what's the article to use for the frontpage
 frontpage = "Hackers & Designers"
 
