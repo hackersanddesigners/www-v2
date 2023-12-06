@@ -11,7 +11,6 @@ from app.write_to_disk import main as write_to_disk
 from app.build_article import get_article, make_nav, make_article
 import arrow
 import json
-import wikitextparser as wtp
 from ..parser import (
     get_metadata,
     parser,
