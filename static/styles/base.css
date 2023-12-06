@@ -116,19 +116,23 @@ h6
 img,
 .image,
 iframe,
-p.iframe
+.iframe,
+hr
 {
-  width: unset !important;
   max-width: var(--expanded-width);
   margin-inline: auto;
 }
 .image {
   text-align: center;
+  width: unset !important;
 }
 img {
   height: auto;
 }
-
+hr {
+  border: unset;
+  border-top: 0.3rem double black;
+}
 main {
   /* min-height: 80%; */
   /* max-width: min(100%, 40rem); */
@@ -144,23 +148,29 @@ main aside {
   left: calc( (100% - var(--base-width))/2 + var(--base-width) );
   /* float: inline-end; */
   max-width: var(--side-width);
-  padding: 1rem;
+  margin-left: 1rem;
   z-index: 1;
 }
 
-main aside .metadata {
+main aside .info {
   padding: 0.5rem;
   width: 100%;
 }
 
-main aside .metadata tr td {
+footer #meta {
+  padding-block: 5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+footer #meta .metadata,
+footer #meta .backlinks {
+  padding: 0.5rem;
+  width: 50%;
+}
+footer #meta .metadata tr td {
   padding: 0;
   vertical-align: baseline;
-}
-
-main aside .backlinks {
-  padding: 0.5rem;
-  margin-top: 1rem;
 }
 
 div.mw-parser-output {

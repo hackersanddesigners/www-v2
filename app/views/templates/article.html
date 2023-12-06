@@ -3,7 +3,7 @@
   <main id="main-content" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
     <h1>{{ article['title'] }}</h1>
     <aside>
-      <table class="metadata fancy">
+      <table class="info fancy">
         {% if article.metadata.parsed_metadata %}
           {% if article.metadata.parsed_metadata.date %}
             <tr>
@@ -36,25 +36,7 @@
             </tr>
           {% endif %}
         {% endif %}
-        <tr>
-          <td>page id</td>
-          <td>{{ article.metadata.id | safe }}</td>
-        </tr>
-        <tr>
-          <td>updated</td>
-          <td>{{ article.metadata.last_modified | safe }}</td>
-        </tr>
       </table>
-      <section class="backlinks fancy">
-        <div>What links here:</div>
-        <ul>
-          {% for link in article.metadata.backlinks %}
-          <li>
-            <a title="{{ link.title }}" href="{{ link.slug }}">{{ link.title }}</a>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
     </aside>
     {{ article['html'] | safe }}
   </main>

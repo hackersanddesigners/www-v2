@@ -18,7 +18,7 @@ from app.file_ops import file_lookup
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()
-
+mw_url = config['domain']['mw_url']
 
 def make_nav():
     """
@@ -121,6 +121,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_metadata = {
             "id": article['pageid'],
             "title": article['title'],
+            "mw_url": mw_url + 'index.php?title=' + page_title,
             "images": get_article_field('images', article),
             "template": get_article_field('templates', article),
             "last_modified": last_modified,
