@@ -11,7 +11,6 @@ import asyncio
 import time
 from app.views.views import (
     get_template,
-    make_index_sections,
     make_front_index,
     make_sitemap
 )
