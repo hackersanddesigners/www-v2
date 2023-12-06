@@ -5,9 +5,7 @@ import arrow
 import httpx
 from pathlib import Path
 from slugify import slugify
-import aiofiles
 from app.log_to_file import main as log
-from urllib.parse import unquote
 load_dotenv()
 
 
@@ -168,40 +166,6 @@ async def query_wiki(ENV: str, URL: str, query: str):
 
     return results
 
-
-def file_exists(title: str) -> bool:
-
-    params = {
-        'action': 'query',
-        'prop': 'revisions|imageinfo',
-        'titles': title,
-        'rvprop': 'timestamp',
-        'rvslots': '*',
-        'formatversion': '2',
-        'format': 'json',
-        'redirects': '1'
-    }
-
-    context = create_context(ENV)
-    timeout = httpx.Timeout(10.0, connect=60.0)
-
-    with httpx.Client(verify=context, timeout=timeout) as client:
-        try:
-            response = client.get(URL, params=params)
-            data = response.json()
-
-            response.raise_for_status()
-
-            if 'missing' in data:
-                if data['missing']:
-                    return False
-            else:
-                return True
-
-        except httpx.HTTPError as exc:
-            print(f"file-exists err => {exc}")
-            return False
-
         
 async def fetch_file(title: str):
     """
@@ -249,41 +213,3 @@ async def fetch_file(title: str):
     file_last = data[0]['pages'][0]
 
     return (True, file_last['imageinfo'][0]['url'])
-
-
-def make_img_path(file_url):
-
-    f = Path(file_url)
-    filepath = f"{slugify(f.stem)}{f.suffix}"
-    img_path = os.path.abspath(MEDIA_DIR + '/' + filepath)
-
-    return img_path
-
-
-def check_file_revision(img_path, file_revs):
-
-    if os.path.exists(img_path):
-        mtime = os.path.getmtime(img_path)
-        file_ts = arrow.get(file_revs).to('local').timestamp()
-
-        if mtime < file_ts:
-            return True
-
-    return False
-
-
-async def write_blob_to_disk(file_path, file_url):
-
-    req_op = {
-        'verb': 'GET',
-        'url': file_url,
-        'params': None,
-        'stream': True
-    }
-
-    context = create_context(ENV)
-    async with httpx.AsyncClient(verify=context) as client:
-        async with client.stream('GET', file_url) as response:
-            async with aiofiles.open(file_path, mode='wb') as f:
-                async for chunk in response.aiter_bytes():
-                    await f.write(chunk)
