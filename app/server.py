@@ -109,12 +109,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     # -- update every category index page the article has
                     #    and write it to disk
 
-                    print( json.dumps( article[1], indent=2 ) )
 
-
-                    # await update_categories(article[1]['metadata']['categories'],
-                    #                         template,
-                    #                         sem)
+                    await update_categories(article[1]['categories'], template, sem)
 
                     # -- write article to disk
                     for article in article_list:
