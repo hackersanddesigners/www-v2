@@ -4,12 +4,24 @@
     <table class="metadata fancy" aria-label="Page metadata">
       <tbody>
         <tr>
-          <td>page id</td>
-          <td><a title="edit in wiki" href="{{ article.metadata.mw_url }}">{{ article.metadata.id | safe }}</a></td>
+          <td>id</td>
+          <td>{{ article.metadata.id | safe }}</td>
         </tr>
         <tr>
           <td>updated</td>
           <td>{{ article.metadata.last_modified }}</td>
+        </tr>
+        <tr>
+          <td>created</td>
+          <td>{{ article.metadata.creation }}</td>
+        </tr>
+        <tr>
+          <td>actions</td>
+          <td>
+            <a title="view in wiki" href="{{ article.metadata.mw_url }}">view</a>
+            • <a title="view history in wiki" href="{{ article.metadata.mw_history_url }}">history</a>
+            • <a title="edit in wiki" href="{{ article.metadata.mw_edit_url }}">edit</a>
+          </td>
         </tr>
       </tbody>
     </table>

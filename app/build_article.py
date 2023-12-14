@@ -7,6 +7,7 @@ import aiofiles
 from aiofiles import os as aos
 from app.views.template_utils import (
     make_url_slug,
+    make_mw_url_slug,
     make_timestamp,
 )
 from pathlib import Path
@@ -19,7 +20,7 @@ from app.file_ops import (
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()
-mw_url = config['domain']['mw_url']
+mw_host = config['domain']['mw_url']
 
 def make_nav():
     """
@@ -103,6 +104,10 @@ async def make_article(page_title: str, client, metadata_only: bool):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
+    mw_slug = make_mw_url_slug( page_title )
+    mw_url = mw_host + '/index.php?title=' + mw_slug
+
+
     if article is not None:
 
         if metadata_only:
@@ -126,7 +131,9 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_metadata = {
             "id": article['pageid'],
             "title": article['title'],
-            "mw_url": mw_url + 'index.php?title=' + page_title,
+            "mw_url": mw_url,
+            "mw_history_url": mw_url + '&action=history',
+            "mw_edit_url": mw_url + '&action=edit',
             "images": get_article_field('images', article),
             "template": get_article_field('templates', article),
             "creation": article['creation'],
