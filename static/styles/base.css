@@ -311,12 +311,14 @@ figure figcaption {
 /* galleries */
 
 ul.gallery {
-  max-width: 100%;
+  /* max-width: 100%; */
+  padding-inline: 1rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  align-content: flex-start;
   justify-content: flex-start;
-  /* flex-wrap: wrap; */
   overflow: scroll;
+  gap: 1rem;
 }
 
 ul.gallery li::before,
@@ -324,18 +326,22 @@ ul.gallery li:hover::before,
 ul.gallery li:focus-within::before {
   content: '';
 }
-
 ul.gallery li {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
 }
 ul.gallery li,
 ul.gallery li div {
   margin: 0 !important;
-  height: max-content;
   width: unset !important;
+  max-width: unset;
 }
 ul.gallery li div img {
   height: auto !important;
   width: unset;
+  max-height: 90vh;
+  max-width: 90vw;
 
 }
 
