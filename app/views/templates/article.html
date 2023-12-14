@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-  <main id="main-content" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
+  <main id="main-content" aria-label="Article contents" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
     <h1>{{ article['title'] }}</h1>
     <aside>
-      <table class="info fancy">
+      <table class="info fancy" aria-label="Practical information">
         {% if article.metadata.parsed_metadata %}
           {% if article.metadata.parsed_metadata.date %}
             <tr>

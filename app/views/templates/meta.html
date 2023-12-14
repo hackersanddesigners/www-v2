@@ -1,7 +1,7 @@
 {% if 'metadata' in article %}
-  <section id="meta">
+  <section id="meta" aria-label="Page information">
     {% if 'last_modified' in article.metadata %}
-    <table class="metadata fancy">
+    <table class="metadata fancy" aria-label="Page metadata">
       <tbody>
         <tr>
           <td>page id</td>
@@ -15,7 +15,7 @@
     </table>
     {% endif %}
     {% if article.metadata.backlinks | length > 0 %}
-    <section class="backlinks fancy">
+    <section class="backlinks fancy" aria-label="Page backlinks">
       <div>What links here:</div>
       <ul>
         {% for link in article.metadata.backlinks %}
