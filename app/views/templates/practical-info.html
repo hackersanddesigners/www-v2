@@ -1,0 +1,34 @@
+{% if article.metadata.parsed_metadata %}
+  <table class="info fancy" aria-label="Practical information">
+    {% if article.metadata.parsed_metadata.date %}
+      <tr>
+        <td>date</td>
+        <td>{{ article.metadata.parsed_metadata.date | safe }}</td>
+      </tr>
+    {% endif %}
+    {% if article.metadata.parsed_metadata.time %}
+      <tr>
+        <td>time</td>
+        <td>{{ article.metadata.parsed_metadata.time | safe }}</td>
+      </tr>
+    {% endif %}
+    {% if article.metadata.parsed_metadata.location %}
+      <tr>
+        <td>at</td>
+        <td>{{ article.metadata.parsed_metadata.location | safe }}</td>
+      </tr>
+    {% endif %}
+    {% if article.metadata.parsed_metadata.peopleorganisations %}
+      <tr>
+        <td>with</td>
+        <td>{{ article.metadata.parsed_metadata.peopleorganisations | safe }}</td>
+      </tr>
+    {% endif %}
+    {% if article.metadata.parsed_metadata.type %}
+      <tr>
+        <td>type</td>
+        <td>{{ article.metadata.parsed_metadata.type | safe }}</td>
+      </tr>
+    {% endif %}
+  </table>
+{% endif %}

@@ -1,5 +1,5 @@
 <footer id="footer" aria-label="Page and site information">
-  <!-- <hr> -->
+  <!-- page meta information -->
   {% include 'meta.html' %}
   <!-- sub nav with about, contact, access note and privacy policy -->
   {% if 'footer_nav' in article %}
@@ -11,4 +11,6 @@
       </uL>
     </nav>
   {% endif %}
-</footer>
+  <!-- html templates for later use -->
+  {% include 'gallery-template.html' %}
+  </footer>

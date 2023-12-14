@@ -102,6 +102,7 @@ p:not(.image, .iframe),
 div:not(.mw-parser-output, .image, .thumb),
 ul:not(.gallery),
 aside,
+menu,
 ol,
 h1,
 h2,
@@ -320,7 +321,6 @@ ul.gallery {
   overflow: scroll;
   gap: 1rem;
 }
-
 ul.gallery li::before,
 ul.gallery li:hover::before,
 ul.gallery li:focus-within::before {
@@ -340,8 +340,27 @@ ul.gallery li div {
 ul.gallery li div img {
   height: auto !important;
   width: unset;
-  max-height: 90vh;
+  max-height: 80vh;
   max-width: 90vw;
+}
+ul.gallery + menu ul {
+  left: -8rem;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+ul.gallery + menu ul li::before,
+ul.gallery + menu ul li:focus-within::before,
+ul.gallery + menu ul li:hover::before,
+ul.gallery + menu ul li:last-of-type::before,
+ul.gallery + menu ul li:last-of-type:focus-within::before,
+ul.gallery + menu ul li:last-of-type:hover::before {
+  content: '';
+}
+ul.gallery + menu ul li button {
+  height: 2rem; width: 2rem;
+  vertical-align: middle;
 
 }
 
