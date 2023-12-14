@@ -82,6 +82,8 @@ async def fetch_article(title: str, client):
         'action': 'query',
         'titles': title,
         'prop': 'revisions',
+        'rvdir': 'newer',
+        'rvprop': 'timestamp',
         'bltitle': title,
         'list': 'backlinks',
         'formatversion': '2',
@@ -118,15 +120,16 @@ async def fetch_article(title: str, client):
 
         if 'parse' in parse_data:
             article = parse_data['parse']
-            article['revisions'] = query_data['pages'][0]['revisions'][0]
+            
+            revs = query_data['pages'][0]['revisions']
+            article['creation'] = arrow.get(revs[0]['timestamp'])
+            article['last_modified'] = arrow.get(revs[len(revs) -1]['timestamp'])
+
 
         backlinks = query_data['backlinks']
 
         for link in backlinks:
             link['slug'] = slugify(link['title'])
-
-        print( json.dumps( backlinks, indent=2 ) )
-
 
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']

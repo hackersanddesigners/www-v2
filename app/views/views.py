@@ -287,11 +287,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     }
 
     template = get_template(f"{cat}-index", filters)
-
     nav = make_nav()
-    # print(f"make-publishing-article (0) => {articles[0]['metadata']}")
-
-    # sorted(articles, key=lambda d: d['metadata']['info']['date'], reverse=True)
+    
+    sorted(articles, key=lambda d: d['creation'], reverse=True)
 
     article = {
         'title': cat,
