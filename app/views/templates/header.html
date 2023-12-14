@@ -1,8 +1,8 @@
 <header>
-  <a title="Skip to main content" class="skip-link" href="#main-content">Skip to main content</a>
-  <a title="Skip to page and site information" class="skip-link" href="#footer">Skip to page and site information</a>
   <nav>
     <uL>
+      <li class="skip-link"><a title="Skip to main content" href="#main-content">Skip to main content</a></li>
+      <li class="skip-link"><a title="Skip to page and site information" href="#footer">Skip to page and site information</a></li>
       <li><a title="H&D" href="/">H&D</a></li>
       {% for link in article.nav %}
         <li><a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a></li>
