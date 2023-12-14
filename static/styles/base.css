@@ -103,6 +103,7 @@ div:not(.mw-parser-output, .image, .thumb),
 ul:not(.gallery),
 aside,
 menu,
+pre,
 ol,
 h1,
 h2,
@@ -460,3 +461,62 @@ article.article-item h3 {
   right: -1rem;
   border-left: 0.3rem double;
 } */
+
+/* tool styles */
+
+
+.tool {
+  margin: 1rem;
+  left: -5rem;
+  max-width: var(--base-width);
+  /* border-top: 0.3rem double black;
+  border-right: 0.3rem double black; */
+  border: 0.3rem double black;
+  border-left-color: var(--light-grey);
+  border-bottom-color: var(--light-grey);
+  background: linear-gradient(to bottom left, #e5f792dc, transparent, transparent);
+  transition: border-color 0.2s linear;
+}
+.tool::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+  background: linear-gradient(to top right, #a9ff81e7, transparent);
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.toolHeader {
+  text-align: center;
+  padding: 0.3rem;
+}
+.toolContent {
+  max-height: 80vh;
+  overflow: scroll;
+  padding: 1rem;
+  border-top:  0.3rem double black;
+}
+.toolFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.toolFooter a {
+  width: 100%;
+  padding: 0.3rem;
+  margin-left: 0.5rem;
+  border-top: 0.3rem double black;
+  border-right:  0.3rem double black;
+}
+.toolFooter a:last-of-type {
+  margin-right: 0;
+  border-right: none;
+}
+.tool:hover {
+  border-left-color: black;
+  border-bottom-color: black;
+}
+.tool:hover::before {
+  opacity: 1;
+}
