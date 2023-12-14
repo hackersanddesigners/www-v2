@@ -5,10 +5,7 @@ import arrow
 import httpx
 from pathlib import Path
 from slugify import slugify
-import aiofiles
 from app.log_to_file import main as log
-import filetype
-from urllib.parse import unquote
 load_dotenv()
 
 
@@ -65,14 +62,6 @@ async def query_continue(client, url, params):
             await log('error', msg, sem)
 
 
-
-def article_exists(title) -> bool:
-    WIKI_DIR = os.getenv('WIKI_DIR')
-    file_path = f"{WIKI_DIR}/{slugify(title)}.html"
-
-    return Path(file_path).is_file()
-
-
 async def fetch_article(title: str, client):
     print(f"fetching article {title}...")
 
@@ -93,6 +82,8 @@ async def fetch_article(title: str, client):
         'action': 'query',
         'titles': title,
         'prop': 'revisions',
+        'rvdir': 'newer',
+        'rvprop': 'timestamp',
         'bltitle': title,
         'list': 'backlinks',
         'formatversion': '2',
@@ -129,15 +120,16 @@ async def fetch_article(title: str, client):
 
         if 'parse' in parse_data:
             article = parse_data['parse']
-            article['revisions'] = query_data['pages'][0]['revisions'][0]
+            
+            revs = query_data['pages'][0]['revisions']
+            article['creation'] = arrow.get(revs[0]['timestamp'])
+            article['last_modified'] = arrow.get(revs[len(revs) -1]['timestamp'])
+
 
         backlinks = query_data['backlinks']
 
         for link in backlinks:
             link['slug'] = slugify(link['title'])
-
-        print( json.dumps( backlinks, indent=2 ) )
-
 
         if article and len(article['redirects']) > 0:
             redirect_target = article['redirects'][0]['to']
@@ -177,64 +169,9 @@ async def query_wiki(ENV: str, URL: str, query: str):
 
     return results
 
-
-def file_exists(title: str, download: bool) -> bool:
-
-    if not download:
-
-        params = {
-            'action': 'query',
-            'prop': 'revisions|imageinfo',
-            'titles': title,
-            'rvprop': 'timestamp',
-            'rvslots': '*',
-            'formatversion': '2',
-            'format': 'json',
-            'redirects': '1'
-        }
-
-        context = create_context(ENV)
-        timeout = httpx.Timeout(10.0, connect=60.0)
-
-        with httpx.Client(verify=context, timeout=timeout) as client:
-
-            try:
-                response = client.get(URL, params=params)
-                data = response.json()
-
-                response.raise_for_status()
-
-                if 'missing' in data:
-                    if data['missing']:
-                        return False
-                else:
-                    return True
-
-            except httpx.HTTPError as exc:
-                print(f"file-exists err => {exc}")
-                return False
-
-    else:
-
-        img_path = Path(MEDIA_DIR) / title
-
-        if Path(img_path).is_file():
-            kind = filetype.guess(img_path)
-            if kind is None:
-                print(f"{img_path} => file type cannot be guessed, broken file?",)
-                return False
-
-            else:
-                return True
-
-        else:
-            print(f"file-exists => {img_path}: {Path(img_path).is_file()}")
-            return False
-
-async def fetch_file(title: str, download: bool):
+        
+async def fetch_file(title: str):
     """
-    download means write file to disk, instead of pointing URL
-    to existing copy in MW images folder
     """
 
     params = {
@@ -253,7 +190,7 @@ async def fetch_file(title: str, download: bool):
     # to determine if the version we have on disk
     # has been updated meanwhile, by comparing timestamps
 
-    file_exists = {"upstream": False, "downloaded": False}
+    file_exists = False
 
     data = []
     context = create_context(ENV)
@@ -269,91 +206,13 @@ async def fetch_file(title: str, download: bool):
                 sem = None
                 await log('error', msg, sem)
 
-                if not download:
-                    return (False, "")
-                else:
-                    return False
+                return (False, "")
 
             else:
-                file_exists["upstream"] = True
+                file_exists = True
                 data.append(response)
 
 
     file_last = data[0]['pages'][0]
 
-    if not download:
-        return (True, file_last['imageinfo'][0]['url'])
-
-    else:
-        # -- read file from disk given file name
-        #    and diff between timestamps
-
-        # MW returns URI as percent-encoded, undo that
-        # w/ the unquote function
-        file_url = unquote(file_last['imageinfo'][0]['url'])
-        img_path = make_img_path(file_url)
-
-        if os.path.exists(img_path):
-            file_rev_ts = file_last['revisions'][0]['timestamp']
-            t = check_file_revision(img_path, file_rev_ts)
-
-            if t:
-                await write_blob_to_disk(img_path, file_url)
-                file_exists["downloaded"] = True
-
-        else:
-            await write_blob_to_disk(img_path, file_url)
-            file_exists["downloaded"] = True
-
-
-        # if file:
-        # - has been found on upstream wiki to exist
-        # - and has been downloaded (either by checking
-        #   if up-to-date local copy exists, or by fetching
-        #   a new copy of it)
-        # we return True
-
-        for k,v in file_exists.items():
-            if v == True:
-                return True
-
-            else:
-                return False
-
-
-def make_img_path(file_url):
-
-    f = Path(file_url)
-    filepath = f"{slugify(f.stem)}{f.suffix}"
-    img_path = os.path.abspath(MEDIA_DIR + '/' + filepath)
-
-    return img_path
-
-
-def check_file_revision(img_path, file_revs):
-
-    if os.path.exists(img_path):
-        mtime = os.path.getmtime(img_path)
-        file_ts = arrow.get(file_revs).to('local').timestamp()
-
-        if mtime < file_ts:
-            return True
-
-    return False
-
-
-async def write_blob_to_disk(file_path, file_url):
-
-    req_op = {
-        'verb': 'GET',
-        'url': file_url,
-        'params': None,
-        'stream': True
-    }
-
-    context = create_context(ENV)
-    async with httpx.AsyncClient(verify=context) as client:
-        async with client.stream('GET', file_url) as response:
-            async with aiofiles.open(file_path, mode='wb') as f:
-                async for chunk in response.aiter_bytes():
-                    await f.write(chunk)
+    return (True, file_last['imageinfo'][0]['url'])

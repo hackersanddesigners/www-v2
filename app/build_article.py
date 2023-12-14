@@ -5,15 +5,16 @@ from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
 from aiofiles import os as aos
-from app.write_to_disk import main as write_to_disk
-import tomli
 from app.views.template_utils import (
     make_url_slug,
     make_timestamp,
 )
 from pathlib import Path
 from app.read_settings import main as read_settings
-from app.file_ops import file_lookup
+from app.file_ops import (
+    file_lookup,
+    write_to_disk,
+)
 
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
@@ -43,18 +44,6 @@ def make_nav():
     }])
 
     return nav
-
-
-async def get_article(page_title: str, client):
-
-    article, backlinks, redirect_target = await fetch_article(page_title, client)
-
-    if article is not None:
-        return article
-
-    else:
-        print(f"{page_title} return empty")
-        return None
 
 
 def get_article_field(field: str, article: dict[str]):
@@ -99,8 +88,6 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     if article is not None:
 
-        last_modified = article['revisions']['timestamp']
-
         if metadata_only:
             metadata, images = await parser(article, metadata_only, redirect_target)
 
@@ -108,7 +95,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
                 "title": article['title'],
                 "images": images,
                 "metadata": metadata,
-                "last_modified": last_modified,
+                "creation": article['creation'],
+                "last_modified": article['last_modified'],
                 "backlinks": backlinks,
                 "translations": article_translations,
             }
@@ -124,7 +112,8 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "mw_url": mw_url + 'index.php?title=' + page_title,
             "images": get_article_field('images', article),
             "template": get_article_field('templates', article),
-            "last_modified": last_modified,
+            "creation": article['creation'],
+            "last_modified": article['last_modified'],
             "backlinks": backlinks,
             "nav": nav,
             "translations": article_translations,

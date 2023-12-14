@@ -7,12 +7,14 @@ from .template_utils import (
 )
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
-from app.write_to_disk import main as write_to_disk
-from app.build_article import get_article, make_nav, make_article
+from app.file_ops import write_to_disk
+from app.build_article import (
+    make_nav,
+    make_article,
+)
 import arrow
 import json
-import wikitextparser as wtp
-from ..parser import (
+from app.parser import (
     get_metadata,
     parser,
 )
@@ -247,7 +249,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     return article
 
 
-async def make_collaborators_index(articles, cat, cat_label):
+async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -267,17 +269,17 @@ async def make_collaborators_index(articles, cat, cat_label):
         'title': cat,
         'slug': slugify(cat_label),
         'collaborators': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
     document = template.render(article=article)
     article['html'] = document
+    
     return article
 
 
-async def make_publishing_index(articles,
-                                cat: str,
-                                cat_label: str):
+async def make_publishing_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -285,14 +287,16 @@ async def make_publishing_index(articles,
     }
 
     template = get_template(f"{cat}-index", filters)
-
     nav = make_nav()
+    
+    sorted(articles, key=lambda d: d['creation'], reverse=True)
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
     document = template.render(article=article)
@@ -301,12 +305,7 @@ async def make_publishing_index(articles,
     return article
 
 
-
-async def make_tool_index(articles,
-                          cat: str,
-                          cat_label: str,
-                          sorting: tuple[str, bool] | None = None
-                          ):
+async def make_tool_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -316,41 +315,21 @@ async def make_tool_index(articles,
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
 
-    if sorting:
-        if sorting[0] == 'title':
-            articles = sorted(articles,
-                              key=lambda d: d['title'],
-                              reverse=sorting[1])
-
-        elif sorting[0] == 'category':
-            articles = sorted(articles,
-                              key=lambda d: d['metadata']['category'],
-                              reverse=sorting[1])
-
-            # elif sort_by == 'repository':
-            #     articles = sorted(articles,
-            #                       key=lambda d: d['tool']['label'],
-            #                       reverse=True)
-
-    else:
-        print(f"tool-index => {articles}")
-        articles = sorted(articles,
-                          key=lambda d: d['title'],
-                          reverse=True)
+    # articles = sorted(articles,
+    #                   key=lambda d: d['title'],
+    #                   reverse=True)
 
 
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'html': '',
     }
 
-
-    sem = None
     document = template.render(article=article)
     article['html'] = document
-    # await write_to_disk(article['slug'], document, sem)
 
     return article
 
@@ -380,30 +359,6 @@ async def make_search_index(articles, query):
     return article
 
 
-async def make_sitemap(articles):
-
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"sitemap", filters)
-    nav = make_nav()
-
-    article = {
-        'title': "Sitemap",
-        'slug': "sitemap",
-        'articles': articles,
-        'nav': nav
-    }
-
-    return article
-
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
-
-
 async def make_article_index(articles, cat, cat_label):
 
     filters = {
@@ -420,28 +375,10 @@ async def make_article_index(articles, cat, cat_label):
         'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav,
+        'html': '',
     }
 
-    return article
-
-    sem = None
     document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    article['html'] = document
 
-
-async def make_index_sections(articles_metadata, cat: str, cat_label: str):
-
-    if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Collaborators':
-        await make_collaborators_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Publishing':
-        await make_publishing_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Tools':
-        await make_tool_index(articles_metadata, cat, cat_label, False)
-
-    if cat == 'Articles':
-        await make_article_index(articles_metadata, cat, cat_label)
+    return article

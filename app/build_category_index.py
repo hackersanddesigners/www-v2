@@ -20,7 +20,7 @@ from app.build_article import (
     make_article,
     save_article,
 )
-from app.write_to_disk import main as write_to_disk
+from app.file_ops import write_to_disk
 
 
 ENV = os.getenv('ENV')
@@ -83,6 +83,9 @@ async def make_category_index(cat: str, page: int | None = 0):
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
+        prepared_articles = [item for item
+                             in prepared_articles 
+                             if item is not None]
 
         article = None
         sorting = None
@@ -97,7 +100,7 @@ async def make_category_index(cat: str, page: int | None = 0):
             article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Tools':
-            article = await make_tool_index(prepared_articles, cat_key, cat_label, sorting)
+            article = await make_tool_index(prepared_articles, cat_key, cat_label)
 
         elif cat_label == 'Articles':
             article = await make_article_index(prepared_articles, cat_key, cat_label)
