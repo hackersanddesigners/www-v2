@@ -2,4 +2,9 @@
   <!-- <hr> -->
   {% include 'meta.html' %}
   <!-- sub nav with about, contact, access note and privacy policy -->
+  {% if 'footer_nav' in article %}
+    {% for link in article.footer_nav %}
+      <a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a>
+    {% endfor %}
+  {% endif %}
 </footer>

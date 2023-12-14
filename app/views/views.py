@@ -10,6 +10,7 @@ from slugify import slugify
 from app.file_ops import write_to_disk
 from app.build_article import (
     make_nav,
+    make_footer_nav,
     make_article,
 )
 import arrow
@@ -166,17 +167,17 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
                 else:
                     article['metadata']['info']['time'] = f"{ts_start}"
-                
+
                 # -- construct datetime start
                 date_start = date[0]
-                
+
                 dts_start = f"{date_start} {ts_start}"
                 article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
 
                 if len(date) > 1:
                     # -- construct datetime end
                     date_end = date[1]
-                    
+
                     dts_end = f"{date_end} {ts_end}"
                     article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
 
@@ -227,19 +228,21 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
 
     # -- sorting events by date desc
-            
+
     events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
-                
+
     nav = make_nav()
-            
+    footer_nav = make_footer_nav()
+
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'events': events,
         'nav': nav,
+        'footer_nav': footer_nav,
         'html': '',
     }
 
@@ -264,18 +267,20 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
     # {{Special:WhatLinksHere/<page title>}}
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'collaborators': articles,
         'nav': nav,
+        'footer_nav': footer_nav,
         'html': '',
     }
 
     document = template.render(article=article)
     article['html'] = document
-    
+
     return article
 
 
@@ -287,14 +292,17 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     }
 
     template = get_template(f"{cat}-index", filters)
+
     nav = make_nav()
-    
+    footer_nav = make_footer_nav()
+
     sorted(articles, key=lambda d: d['creation'], reverse=True)
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
+        'footer_nav': footer_nav,
         'nav': nav,
         'html': '',
     }
@@ -314,6 +322,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     # articles = sorted(articles,
     #                   key=lambda d: d['title'],
@@ -325,6 +334,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
         'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav,
+        'footer_nav': footer_nav,
         'html': '',
     }
 
@@ -343,6 +353,7 @@ async def make_search_index(articles, query):
 
     template = get_template(f"search-index", filters)
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     for result in articles:
         print(json.dumps(result, indent=2))
@@ -353,6 +364,7 @@ async def make_search_index(articles, query):
         'slug': "search",
         'query': query,
         'results': articles,
+        'footer_nav': footer_nav,
         'nav': nav
     }
 
@@ -369,12 +381,14 @@ async def make_article_index(articles, cat, cat_label):
     template = get_template(f"{cat}-index", filters)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
         'nav': nav,
+        'footer_nav': footer_nav,
         'html': '',
     }
 

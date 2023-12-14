@@ -46,6 +46,22 @@ def make_nav():
     return nav
 
 
+def make_footer_nav():
+    """
+    make a sub nav from settings.toml for footer links
+    """
+
+    links = config['wiki']['footer_links']
+
+    footer_nav = []
+    for k, v in links.items():
+        if v['nav']:
+            footer_nav.append({ "label": v['label'],
+                      "uri": f"/{slugify(v['label'])}" })
+
+    return footer_nav
+
+
 def get_article_field(field: str, article: dict[str]):
 
     if field in article:
@@ -85,6 +101,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
         article_translations = get_translations(page_title, backlinks)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     if article is not None:
 
@@ -116,6 +133,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "last_modified": article['last_modified'],
             "backlinks": backlinks,
             "nav": nav,
+            "footer_nav": footer_nav,
             "translations": article_translations,
             "parsed_metadata": metadata['info'],
             "categories": metadata['categories'],
@@ -126,6 +144,7 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "html": body_html,
             "slug": slugify(page_title),
             "nav": nav,
+            "footer_nav": footer_nav,
             "translations": article_translations,
             # "category": metadata['category']
             "metadata": article_metadata,
