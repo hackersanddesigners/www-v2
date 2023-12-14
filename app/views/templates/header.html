@@ -1,10 +1,13 @@
 <header>
-  <a title="Skip to main content" class="skip-to-main" href="#main-content">Skip to main content</a>
+  <a title="Skip to main content" class="skip-link" href="#main-content">Skip to main content</a>
+  <a title="Skip to page and site information" class="skip-link" href="#footer">Skip to page and site information</a>
   <nav>
-    <a title="H&D" href="/">H&D</a>
-    {% for link in article.nav %}
-    <a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a>
-    {% endfor %}
+    <uL>
+      <li><a title="H&D" href="/">H&D</a></li>
+      {% for link in article.nav %}
+        <li><a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a></li>
+      {% endfor %}
+    </uL>
   </nav>
   {% include 'search-form.html' %}
 </header>

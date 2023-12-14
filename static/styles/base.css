@@ -249,11 +249,23 @@ header {
   justify-content: space-between;
   gap: 0.5rem;
 }
-
-header nav a {
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+}
+nav ul li::before,
+nav ul li:focus-within::before,
+nav ul li:hover::before,
+nav ul li:last-of-type::before,
+nav ul li:last-of-type:focus-within::before,
+nav ul li:last-of-type:hover::before {
+  content: '';
+}
+nav ul li a {
   padding: 0 0.25rem;
 }
-header a.skip-to-main {
+a.skip-link {
   position: absolute;
   /* left: 1rem; */
   padding: 0 0.25rem;
@@ -262,7 +274,7 @@ header a.skip-to-main {
   transition: transform var(--fast) linear;
   z-index: 1;
 }
-header a.skip-to-main:focus {
+a.skip-link:focus {
   transform: translateY(0);
 }
 
