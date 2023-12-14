@@ -359,30 +359,6 @@ async def make_search_index(articles, query):
     return article
 
 
-async def make_sitemap(articles):
-
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"sitemap", filters)
-    nav = make_nav()
-
-    article = {
-        'title': "Sitemap",
-        'slug': "sitemap",
-        'articles': articles,
-        'nav': nav,
-        'html': '',
-    }
-
-    document = template.render(article=article)
-    article['html'] = document
-
-    return article
-
-
 async def make_article_index(articles, cat, cat_label):
 
     filters = {

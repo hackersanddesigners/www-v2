@@ -12,7 +12,6 @@ import time
 from app.views.views import (
     get_template,
     make_front_index,
-    make_sitemap
 )
 from app.views.template_utils import (
     make_url_slug,
@@ -174,9 +173,6 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
         # -- make front-page
         await make_front_index(config['wiki']['frontpage'])
-
-        # any useful?
-        await make_sitemap(articles_metadata_index)
 
         # -- ahah
         copy_assets()
