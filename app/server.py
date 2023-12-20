@@ -110,7 +110,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     #    and write it to disk
 
 
-                    await update_categories(article[1]['categories'], template, sem)
+                    # await update_categories(article[1]['categories'], template, sem)
 
                     # -- write article to disk
                     for article in article_list:
