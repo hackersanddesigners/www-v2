@@ -23,13 +23,13 @@ import httpx
 load_dotenv()
 
 
-def get_template(template: str, filters):
-    template = slugify(template)
-    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
+def get_template(template: str):
 
-    if filters is not None:
-        for k,v in filters.items():
-            env.filters[k] = v
+    template = slugify(template)
+
+    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
+    env.filters['slug'] = make_url_slug
+    env.filters['ts'] = make_timestamp
 
     try:
         t = env.get_template(f"{template}.html")
@@ -90,12 +90,7 @@ def normalize_data(item):
 
 async def make_front_index(article_title: str):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template("index", filters)
+    template = get_template("index")
 
     # - get Hackers_%26_Designers wiki page for latest news
     ENV = os.getenv('ENV')
@@ -116,12 +111,7 @@ async def make_front_index(article_title: str):
 
 async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp
-    }
-
-    template = get_template(f"{cat}-index", filters)
+    template = get_template(f"{cat}-index")
 
     # events
     # - upcoming
@@ -251,12 +241,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
 async def make_collaborators_index(articles, cat: str, cat_label: str):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"{cat}-index", filters)
+    template = get_template(f"{cat}-index")
 
     # collaborators
     # list of names w/ connected projects / articles?
@@ -281,12 +266,7 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
 
 async def make_publishing_index(articles, cat: str, cat_label: str):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"{cat}-index", filters)
+    template = get_template(f"{cat}-index")
     nav = make_nav()
     
     sorted(articles, key=lambda d: d['creation'], reverse=True)
@@ -307,12 +287,7 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
 
 async def make_tool_index(articles, cat: str, cat_label: str):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"{cat}-index", filters)
+    template = get_template(f"{cat}-index")
     nav = make_nav()
 
     # articles = sorted(articles,
@@ -336,12 +311,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 
 async def make_search_index(articles, query):
 
-    filters = {
-        # 'slug': make_url_slug,
-        # 'ts': make_timestamp,
-    }
-
-    template = get_template(f"search-index", filters)
+    template = get_template(f"search-index")
     nav = make_nav()
 
     for result in articles:
@@ -361,12 +331,7 @@ async def make_search_index(articles, query):
 
 async def make_article_index(articles, cat, cat_label):
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"{cat}-index", filters)
+    template = get_template(f"{cat}-index")
 
     nav = make_nav()
 

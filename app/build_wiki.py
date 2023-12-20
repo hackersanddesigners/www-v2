@@ -104,11 +104,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
             cat = list(category.keys())[0]
             cat_label = cats[cat]['label']
 
-            filters = {
-                'slug': make_url_slug,
-                'ts': make_timestamp,
-            }
-            template = get_template(cat, filters)
+            template = get_template(cat)
 
             # process single article
             art_tasks = []

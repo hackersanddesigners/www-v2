@@ -37,11 +37,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     print(f"UDP server has started and is ready to receive...",
           f"{SERVER_IP, SERVER_PORT}")
 
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-    template = get_template('article', filters)
+    template = get_template('article')
     sem = None
     context = create_context(ENV)
 

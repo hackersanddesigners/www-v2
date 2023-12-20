@@ -178,16 +178,12 @@ async def redirect_article(article_title: str, redirect_target: str):
 
         else:
             print(f"redirect-article: {article_title} not found, nothing done")
+            return None
 
 
 async def save_article(article: str | None, filepath: str, template: str, sem: int):
 
     if article is not None:
-        filters = {
-            'slug': make_url_slug,
-            'ts': make_timestamp,
-        }
-
         document = template.render(article=article)
         await write_to_disk(filepath, document, sem)
 
