@@ -394,7 +394,15 @@ def get_category(categories, cats) -> [str]:
     cat_fallback_label = cat_fallback['label']
 
     if len(categories) > 0:
-        return [cat['category'] for cat in categories]
+        # TODO fix this by changing the Article template in the
+        # MediaWiki with another more category-bounded template
+        # <2023-12-20> manually removing the 'Article' category
+        # part of every wiki entry created through the Create New Article Page
+        # button, as it add the category `Article` by default.
+        
+        return [cat['category'] for cat
+             in categories
+             if not cat['category'] == 'Article']
 
     else:
         return [cat_fallback_label]
