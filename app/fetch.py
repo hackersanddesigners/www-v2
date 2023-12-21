@@ -120,7 +120,7 @@ async def fetch_article(title: str, client):
 
         if 'parse' in parse_data:
             article = parse_data['parse']
-            
+
             revs = query_data['pages'][0]['revisions']
             article['creation'] = revs[0]['timestamp']
             article['last_modified'] = revs[len(revs) -1]['timestamp']
@@ -169,7 +169,7 @@ async def query_wiki(ENV: str, URL: str, query: str):
 
     return results
 
-        
+
 async def fetch_file(title: str):
     """
     """

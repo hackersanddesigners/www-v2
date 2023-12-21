@@ -99,9 +99,11 @@ footer {
 header,
 footer,
 p:not(.image, .iframe),
-div:not(.mw-parser-output),
+div:not(.mw-parser-output, .image, .thumb),
 ul:not(.gallery),
 aside,
+menu,
+pre,
 ol,
 h1,
 h2,
@@ -115,6 +117,7 @@ h6
 }
 img,
 .image,
+.thumb,
 iframe,
 .iframe,
 hr
@@ -158,7 +161,7 @@ main aside .info {
 }
 
 footer #meta {
-  padding-block: 5rem;
+  padding-block: 1rem;
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -248,11 +251,27 @@ header {
   justify-content: space-between;
   gap: 0.5rem;
 }
-
-header nav a {
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+nav ul li {
+  width: fit-content;
+}
+nav ul li::before,
+nav ul li:focus-within::before,
+nav ul li:hover::before,
+nav ul li:last-of-type::before,
+nav ul li:last-of-type:focus-within::before,
+nav ul li:last-of-type:hover::before {
+  content: '';
+}
+nav ul li a {
   padding: 0 0.25rem;
 }
-header a.skip-to-main {
+.skip-link {
   position: absolute;
   /* left: 1rem; */
   padding: 0 0.25rem;
@@ -261,7 +280,7 @@ header a.skip-to-main {
   transition: transform var(--fast) linear;
   z-index: 1;
 }
-header a.skip-to-main:focus {
+.skip-link:focus-within {
   transform: translateY(0);
 }
 
@@ -294,31 +313,55 @@ figure figcaption {
 /* galleries */
 
 ul.gallery {
-  max-width: 100%;
+  /* max-width: 100%; */
+  padding-inline: 1rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  align-content: flex-start;
   justify-content: flex-start;
-  /* flex-wrap: wrap; */
   overflow: scroll;
+  gap: 1rem;
 }
-
 ul.gallery li::before,
 ul.gallery li:hover::before,
 ul.gallery li:focus-within::before {
   content: '';
 }
-
 ul.gallery li {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
 }
 ul.gallery li,
 ul.gallery li div {
   margin: 0 !important;
-  height: max-content;
   width: unset !important;
+  max-width: unset;
 }
 ul.gallery li div img {
   height: auto !important;
   width: unset;
+  max-height: 80vh;
+  max-width: 90vw;
+}
+ul.gallery + menu ul {
+  left: -8rem;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+ul.gallery + menu ul li::before,
+ul.gallery + menu ul li:focus-within::before,
+ul.gallery + menu ul li:hover::before,
+ul.gallery + menu ul li:last-of-type::before,
+ul.gallery + menu ul li:last-of-type:focus-within::before,
+ul.gallery + menu ul li:last-of-type:hover::before {
+  content: '';
+}
+ul.gallery + menu ul li button {
+  height: 2rem; width: 2rem;
+  vertical-align: middle;
 
 }
 
@@ -418,3 +461,62 @@ article.article-item h3 {
   right: -1rem;
   border-left: 0.3rem double;
 } */
+
+/* tool styles */
+
+
+.tool {
+  margin: 1rem;
+  left: -5rem;
+  max-width: var(--base-width);
+  /* border-top: 0.3rem double black;
+  border-right: 0.3rem double black; */
+  border: 0.3rem double black;
+  border-left-color: var(--light-grey);
+  border-bottom-color: var(--light-grey);
+  background: linear-gradient(to bottom left, #e5f792dc, transparent, transparent);
+  transition: border-color 0.2s linear;
+}
+.tool::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+  background: linear-gradient(to top right, #a9ff81e7, transparent);
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.toolHeader {
+  text-align: center;
+  padding: 0.3rem;
+}
+.toolContent {
+  max-height: 80vh;
+  overflow: scroll;
+  padding: 1rem;
+  border-top:  0.3rem double black;
+}
+.toolFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.toolFooter a {
+  width: 100%;
+  padding: 0.3rem;
+  margin-left: 0.5rem;
+  border-top: 0.3rem double black;
+  border-right:  0.3rem double black;
+}
+.toolFooter a:last-of-type {
+  margin-right: 0;
+  border-right: none;
+}
+.tool:hover {
+  border-left-color: black;
+  border-bottom-color: black;
+}
+.tool:hover::before {
+  opacity: 1;
+}

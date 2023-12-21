@@ -10,7 +10,7 @@
       <h2>Happening now</h2>
       {% for event in article.events.happening %}
         <div>
-          <a href="/{{ event.title | slug }}.html">{{ event.title }}</a>
+          <a href="{{ event.title | slug }}.html">{{ event.title }}</a>
           <div>
             {{ event.metadata.location }}
             {{ event.metadata.date }}

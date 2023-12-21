@@ -7,6 +7,7 @@ import aiofiles
 from aiofiles import os as aos
 from app.views.template_utils import (
     make_url_slug,
+    make_mw_url_slug,
     make_timestamp,
 )
 from pathlib import Path
@@ -19,7 +20,7 @@ from app.file_ops import (
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()
-mw_url = config['domain']['mw_url']
+mw_host = config['domain']['mw_url']
 
 def make_nav():
     """
@@ -44,6 +45,22 @@ def make_nav():
     }])
 
     return nav
+
+
+def make_footer_nav():
+    """
+    make a sub nav from settings.toml for footer links
+    """
+
+    links = config['wiki']['footer_links']
+
+    footer_nav = []
+    for k, v in links.items():
+        if v['nav']:
+            footer_nav.append({ "label": v['label'],
+                      "uri": f"/{slugify(v['label'])}" })
+
+    return footer_nav
 
 
 def get_article_field(field: str, article: dict[str]):
@@ -85,6 +102,11 @@ async def make_article(page_title: str, client):
         article_translations = get_translations(page_title, backlinks)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
+
+    mw_slug = make_mw_url_slug( page_title )
+    mw_url = mw_host + '/index.php?title=' + mw_slug
+
 
     if article is not None:
 
@@ -93,13 +115,16 @@ async def make_article(page_title: str, client):
         metadata = {
             "id": article['pageid'],
             "title": article['title'],
-            "mw_url": mw_url + 'index.php?title=' + page_title,
+            "mw_url": mw_url,
+            "mw_history_url": mw_url + '&action=history',
+            "mw_edit_url": mw_url + '&action=edit',
             "images": images,
             "template": get_article_field('templates', article),
             "creation": article['creation'],
             "last_modified": article['last_modified'],
             "backlinks": backlinks,
             "nav": nav,
+            "footer_nav": footer_nav,
             "translations": article_translations,
             "parsed_metadata": metadata['info'],
             "categories": metadata['categories'],
@@ -110,6 +135,7 @@ async def make_article(page_title: str, client):
             "html": body_html,
             "slug": slugify(page_title),
             "nav": nav,
+            "footer_nav": footer_nav,
             "translations": article_translations,
             "metadata": metadata,
         }
