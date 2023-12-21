@@ -176,21 +176,14 @@ async def fetch_file(title: str):
 
     params = {
         'action': 'query',
-        'prop': 'revisions|imageinfo',
+        'prop': 'imageinfo',
         'iiprop': 'url|timestamp',
         'titles': title,
-        'rvprop': 'timestamp',
-        'rvslots': '*',
         'formatversion': '2',
         'format': 'json',
         'redirects': '1'
     }
 
-    # we fetch all existing file revisions
-    # to determine if the version we have on disk
-    # has been updated meanwhile, by comparing timestamps
-
-    file_exists = False
 
     data = []
     context = create_context(ENV)
@@ -209,7 +202,6 @@ async def fetch_file(title: str):
                 return (False, "")
 
             else:
-                file_exists = True
                 data.append(response)
 
 

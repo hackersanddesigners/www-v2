@@ -161,6 +161,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     - if non archive-mode: update img's src to point to MW image server
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs
+    - return list of images URLs
     """
 
     canonical_url = config['domain']['canonical_url']
@@ -290,15 +291,24 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
             tk.parent.decompose()
 
 
+    # -- extract list of image URLs
+    imageURLs = []
+    imgs = soup.find_all('img')
+
+    for img in imgs:
+        imageURLs.append(img.attrs['src'])
+
+
     # -- return article HTML
     # the wiki article can be empty
     # therefore soup.contents is an empty list
     if len(soup.contents) > 0:
         t = "".join(str(item) for item in soup.body.contents)
-        return t
+        
+        return t, imageURLs
 
     else:
-        return article
+        return article, imageURLs
 
 
 def get_table_data_row(td):
@@ -380,30 +390,6 @@ def get_metadata(article):
     return metadata
 
 
-async def get_images(HTML_MEDIA_DIR: str, images_list: list[str]):
-    """
-    Prepare list of images for given Index page.
-    If not copying images locally, we need to fetch them
-    from the wiki one by one and it slows down the loading
-    of the page. TODO => move to create static index pages?
-    """
-
-    images = []
-    tasks = []
-
-    async def file_fetch(filename: str) -> bool:
-        t = await fetch_file(filename)
-        images.append(t[1])
-
-    for image in images_list:
-        image = f"File:{image}"
-        task = file_fetch(image)
-        tasks.append(asyncio.ensure_future(task))
-
-    await asyncio.gather(*tasks)
-    return images
-
-
 def get_category(categories, cats) -> [str]:
 
     cat_fallback = None
@@ -434,17 +420,12 @@ async def parser(article: dict[str, int], redirect_target: str | None = None):
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
     metadata = get_metadata(article)
-    images = await get_images(HTML_MEDIA_DIR, article['images'])
 
-    if metadata_only:
-        return metadata, images
-
-
-    body_html = post_process(article['text'],
-                             article['images'],
-                             HTML_MEDIA_DIR,
-                             redirect_target)
+    body_html, imageURLs = post_process(article['text'],
+                                        article['images'],
+                                        HTML_MEDIA_DIR,
+                                        redirect_target)
 
     print(f"parsed {article['title']}!")
 
-    return body_html, metadata, images
+    return body_html, metadata, imageURLs
