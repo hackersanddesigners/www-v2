@@ -25,7 +25,8 @@ load_dotenv()
 
 def get_template(template: str):
 
-    template = slugify(template)
+    # template = slugify(template)
+    template = template.lower()
 
     env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
     env.filters['slug'] = make_url_slug
@@ -35,6 +36,7 @@ def get_template(template: str):
         t = env.get_template(f"{template}.html")
 
     except TemplateNotFound:
+        print(f"template-not-found! => {template}")
         t = env.get_template("article.html")
 
     return t
