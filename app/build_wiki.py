@@ -25,7 +25,9 @@ import json
 from slugify import slugify
 from app.copy_assets import main as copy_assets
 from app.read_settings import main as read_settings
-from app.build_category_index import update_categories
+from app.build_category_index import (
+    build_categories,
+)
 load_dotenv()
 
 

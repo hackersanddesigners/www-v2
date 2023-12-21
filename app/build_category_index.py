@@ -25,14 +25,18 @@ from app.build_article import (
     save_article,
 )
 from app.file_ops import write_to_disk
+from bs4 import (
+    BeautifulSoup,
+)
 
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
+WIKI_DIR = os.getenv('WIKI_DIR')
 config = read_settings()
 
 
-async def make_category_index(cat: str, page: int | None = 0):
+async def make_category_index(cat: str):
     """
     """
 
@@ -112,9 +116,10 @@ async def make_category_index(cat: str, page: int | None = 0):
         if article:
             return (article)
 
-
-async def update_categories(categories: list[str], template, sem):
+        
+async def build_categories(categories: list[str], template, sem):
     """
+    Build all category index pages.
     """
 
     cat_tasks = []
@@ -133,4 +138,65 @@ async def update_categories(categories: list[str], template, sem):
         task = write_to_disk(filepath, cat_index['html'], sem)
         cat_tasks_html.append(asyncio.ensure_future(task))
         
+    await asyncio.gather(*cat_tasks_html)
+
+
+async def update_categories(article, template, sem):
+    """
+    Update Index page for each value part of `categories`.
+    We don't rebuild the whole Index page from scratch by parsing every
+    article part it. Rather, we just update the article's info
+    in the Index page that has triggered the update_categories function.
+    """
+
+    # - select index-template by `cat`
+    # - build updated article item HTML snippet for category index
+    # - use bs4 to search and replace previous article-item with new one
+    # - check if article item list needs to be re-sorted?
+
+    cat_tasks_html = []
+    
+    for cat in article['metadata']['categories']:
+
+        # make new snippet for updated article 
+        template = get_template(f'partials/{cat}-item')
+        snippet_new = template.render(article=article)
+
+        # make bs4 object out of the HTML string
+        snippet_new = BeautifulSoup(snippet_new)
+
+        # -- get cat_label
+        cat_label = None
+
+        cats = config['wiki']['categories']
+        for k, v in cats.items():
+            if k.lower() == cat:
+                cat_label = cats[k]['label']
+
+        if cat_label is None:
+            return
+        # --
+
+        index_doc = cat_label.lower()
+
+        # get existing cat-index HTML
+        index_old = Path(f"./{WIKI_DIR}/{index_doc}.html").read_text()
+        
+        # find cat index's list item (article snippet) matching
+        # against given article's slug
+        soup = BeautifulSoup(index_old, 'lxml')
+        snippets_old = soup.select(f"#{article['slug']}")
+
+        # replace matched article snippet with newer one
+        article_snippet = soup.select(f"#{article['slug']}")
+        if len(article_snippet) > 0:
+            for item in article_snippet:
+                item.replace_with(snippet_new)
+
+            # write updated cat-index HTML back to disk
+            cat_html = str(soup.prettify())
+            task = write_to_disk(index_doc, cat_html, sem)
+            cat_tasks_html.append(asyncio.ensure_future(task))
+        
+
     await asyncio.gather(*cat_tasks_html)

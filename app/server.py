@@ -19,7 +19,9 @@ from app.build_article import (
     save_article,
     delete_article,
 )
-from app.build_category_index import update_categories
+from app.build_category_index import (
+    update_categories,
+)
 import asyncio
 load_dotenv()
 
@@ -80,7 +82,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # TODO if we remove below code for translations,
                     # we don't need to append article to the list and
-                    # loop over it. update_categories hadles its own
+                    # loop over it. update_categories handles its own
                     # async iterator to write HTML to disk (unless we
                     # find a better way to run just one async iterator)
                     # thing is we need to `await make_article()` above
