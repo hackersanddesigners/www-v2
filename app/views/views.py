@@ -277,9 +277,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
     
-    sorted(articles, key=lambda d: d['metadata']['creation'], reverse=True)
-
-    print(f"make-publishing-index => {articles[0]}")
+    sorted(articles,
+           key=lambda d: d['metadata']['creation'],
+           reverse=True)
 
     article = {
         'title': cat,

@@ -1,5 +1,5 @@
 {% if article.metadata.images | length > 0 %}
-<div id="{{ article.title | slug }}" class="swap-item pb1">
+<div id="{{ article.title | slug }}" class="pb1">
   <img src="{{ article.metadata.images[0] }}">
   <div>
     <h3><a href="/{{ category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
