@@ -256,6 +256,10 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
+    sorted(articles,
+           key=lambda d: d['metadata']['creation'],
+           reverse=True)
+
     article = {
         'title': cat,
         'slug': slugify(cat_label),

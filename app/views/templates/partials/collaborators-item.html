@@ -1,0 +1,10 @@
+<article id="{{ article.title | slug }}">
+  <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
+  {% if item.backlinks | length > 0 %}
+  <section>See also:
+    {% for backlink in item.backlinks %}
+    <a href="/{{ backlink.title | slug }}">{{ backlink.title }}</a>
+    {% endfor %}
+  </section>
+  {% endif %}
+</article>
