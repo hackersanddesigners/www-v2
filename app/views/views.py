@@ -302,9 +302,9 @@ async def make_tool_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    # articles = sorted(articles,
-    #                   key=lambda d: d['title'],
-    #                   reverse=True)
+    articles = sorted(articles,
+                      key=lambda d: d['metadata']['creation'],
+                      reverse=True)
 
 
     article = {

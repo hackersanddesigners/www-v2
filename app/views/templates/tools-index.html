@@ -15,26 +15,7 @@
       </thead>
       <tbody>
         {% for article in article.articles %}
-        <tr>
-          <td>
-            <h3><a href="/{{ article.metadata.categories[0] }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
-          </td>
-          <td>
-            {{ article.metadata.categories[0] }}
-          </td>
-          <td>
-            {% if article.tool %}
-            <a href="{{ article.tool.uri }}">{{ article.tool.label }}</a> 
-            {% else %}
-            <p>No repository available</p>
-            {% endif %}
-          </td>
-          <td>
-            {% for backlink in article.backlinks %}
-            <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
-            {% endfor %}
-          </td>
-        </tr>
+	{% include "partials/tool-item.html" %}
         {% endfor %}
       </tbody>
     </table>
