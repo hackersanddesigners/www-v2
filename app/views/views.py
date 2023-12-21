@@ -137,11 +137,11 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
             date = None
             time = None
 
-            if 'date' in article['metadata']['info']:
-                date = extract_datetime(article['metadata']['info']['date'])
+            if 'date' in article['metadata']['parsed_metadata']:
+                date = extract_datetime(article['metadata']['parsed_metadata']['date'])
 
             if 'time' in article['metadata']:
-                time = extract_datetime(article['metadata']['info']['time'])
+                time = extract_datetime(article['metadata']['parsed_metadata']['time'])
 
             article_ts = {'start': None, 'end': None}
 
@@ -154,10 +154,10 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
                     tokens_end = time[1].split(':')
                     ts_end = ts_pad_hour(tokens_end)
 
-                    article['metadata']['info']['time'] = f"{ts_start}-{ts_end}"
+                    article['metadata']['parsed_metadata']['time'] = f"{ts_start}-{ts_end}"
 
                 else:
-                    article['metadata']['info']['time'] = f"{ts_start}"
+                    article['metadata']['parsed_metadata']['time'] = f"{ts_start}"
                 
                 # -- construct datetime start
                 date_start = date[0]
@@ -271,7 +271,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     template = get_template(f"{cat}-index")
     nav = make_nav()
     
-    sorted(articles, key=lambda d: d['creation'], reverse=True)
+    sorted(articles, key=lambda d: d['metadata']['creation'], reverse=True)
+
+    print(f"make-publishing-index => {articles[0]}")
 
     article = {
         'title': cat,

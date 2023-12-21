@@ -122,8 +122,8 @@ async def fetch_article(title: str, client):
             article = parse_data['parse']
             
             revs = query_data['pages'][0]['revisions']
-            article['creation'] = arrow.get(revs[0]['timestamp'])
-            article['last_modified'] = arrow.get(revs[len(revs) -1]['timestamp'])
+            article['creation'] = revs[0]['timestamp']
+            article['last_modified'] = revs[len(revs) -1]['timestamp']
 
 
         backlinks = query_data['backlinks']

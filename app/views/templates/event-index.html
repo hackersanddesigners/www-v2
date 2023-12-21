@@ -27,14 +27,14 @@
   <section class="upcoming">
     <h2>Upcoming</h2>
     {% for event in article.events.upcoming %}
-      <article class="event">
-        <img
-          src="{{ event.images[0] }}"
-          alt=""
-        >
+    <article class="event">
+      <img
+        src="{{ event.metadata.images[0] }}"
+        alt=""
+      >
         <!-- TODO add alt text -->
         <div>
-          <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+          <p><a href="/{{ event.metadata.categories[0] }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
           <p>
             {% if event.metadata.location %}
               {{ event.metadata.location }}
@@ -74,12 +74,12 @@
       {% for event in article.events.past %}
       <article class="event">
         <img
-          src="{{ event.images[0] }}"
+          src="{{ event.metadata.images[0] }}"
           alt=""
         >
         <!-- TODO add alt text -->
         <div>
-          <p><a href="/{{ event.metadata.category }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
+          <p><a href="/{{ event.metadata.categories[0] }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
           <p>
             {% if event.metadata.location %}
               {{ event.metadata.location }}

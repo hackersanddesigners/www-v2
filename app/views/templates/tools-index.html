@@ -17,10 +17,10 @@
         {% for article in article.articles %}
         <tr>
           <td>
-            <h3><a href="/{{ article.metadata.category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
+            <h3><a href="/{{ article.metadata.categories[0] }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
           </td>
           <td>
-            {{ article.metadata.category }}
+            {{ article.metadata.categories[0] }}
           </td>
           <td>
             {% if article.tool %}
