@@ -1,6 +1,6 @@
 import arrow
 from slugify import slugify
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import parse_qs, urlencode, quote_plus
 from html import unescape
 
 
@@ -18,15 +18,15 @@ def query_check(url: str,
 
         new_url = ""
         query_params = parse_qs(url.query)
-        
+
         # sort_icon = sorting(query_params,
         #                     query_key,
         #                     ['sort_by', 'sort_dir'],
         #                     query_value)
-        
+
         # if query_key == 'sort_dir':
         #     return sort_icon
-        
+
         if query_key in query_params:
 
             # if new query matches existing query key
@@ -40,7 +40,7 @@ def query_check(url: str,
             else:
                 new_url = f"{url.path}?{query_key}={query_value}"
 
-        else:            
+        else:
             if append:
                 new_url = f"{url.path}?{url.query}&{query_key}={query_value}"
             else:
@@ -48,10 +48,10 @@ def query_check(url: str,
 
 
         return new_url
-     
+
     else:
         return f"{url.path}?{query_key}={query_value}"
-    
+
 
 def sorting(query_params, query_key: str, sort_params: list[str], query_value: str) -> str:
     """
@@ -69,7 +69,7 @@ def sorting(query_params, query_key: str, sort_params: list[str], query_value: s
             if query_params[sort_params[1]][0] == 'asc':
                 query_params[sort_params[1]][0] = 'desc'
                 sort_icon = unescape("&#x25B2;")
-            
+
             elif query_params[sort_params[1]][0] == 'desc':
                 query_params[sort_params[1]][0] = 'asc'
                 sort_icon = unescape("&#x25BC;")
@@ -81,7 +81,7 @@ def sorting(query_params, query_key: str, sort_params: list[str], query_value: s
 
     return sort_icon
 
-        
+
 def make_url_slug(url: str):
 
     if url:
@@ -89,6 +89,11 @@ def make_url_slug(url: str):
 
     return url
 
+def make_mw_url_slug(url: str):
+    if url:
+        return quote_plus( url.replace( " ", "_") )
+
+    return url
 
 def make_timestamp(t: str):
 
@@ -126,7 +131,7 @@ def ts_pad_hour(tokens):
     hour = tokens[0]
 
     if len(hour) == 1:
-        ts = f"0{hour}:{tokens[1]}" 
+        ts = f"0{hour}:{tokens[1]}"
         return ts
 
     else:
@@ -139,7 +144,7 @@ def paginator(items: list[dict], list_size: int, cursor: int):
     pagination = []
     cur_prev = None
     cur_next = None
-    
+
     if len(items) == 0:
             return {
                 "pages": pagination,
@@ -151,7 +156,7 @@ def paginator(items: list[dict], list_size: int, cursor: int):
                 }
             }
 
-    
+
     for i in range(len(items)):
         pagenum, offset = divmod(i, list_size)
         if offset == 0:
@@ -163,12 +168,12 @@ def paginator(items: list[dict], list_size: int, cursor: int):
 
     for idx, page in enumerate(cursors):
         pagination.append(idx)
-        
+
     data = items[cursors[cursor] : (cursors[cursor] + list_size)]
 
     if cursor > 0:
         cur_prev = cursor - 1
-    
+
     if cursor < len(cursors) - 1:
         cur_next = cursor + 1
 

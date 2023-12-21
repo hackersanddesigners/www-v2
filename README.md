@@ -147,7 +147,6 @@ after this you can use https also in the dev environment while using this codeba
 
 this file mainly set website preferences, eg general wiki options:
 
-- `wiki.media`: if make a local copy of MediaWiki images, or point images to the MW instance
 - `wiki.frontpage`: which wiki article to we want to use for the website frontpage?
 - `wiki.categories.<cat>`: sets a list of categories to define which wiki articles we want to display on the website. the `<cat>` is the actual MediaWiki category we want to use. then, each category has some more options:
   - `parse`: should we parse it (eg download every article of that category) or not; useful when working on the codebase to speed up parsing process if using `python cli.py build-wiki`, for instance

@@ -11,9 +11,7 @@ import asyncio
 import time
 from app.views.views import (
     get_template,
-    make_index_sections,
     make_front_index,
-    make_sitemap
 )
 from app.views.template_utils import (
     make_url_slug,
@@ -27,6 +25,7 @@ import json
 from slugify import slugify
 from app.copy_assets import main as copy_assets
 from app.read_settings import main as read_settings
+from app.build_category_index import update_categories
 load_dotenv()
 
 
@@ -54,7 +53,7 @@ async def get_category(ENV: str, URL: str, cat: str):
                 title = response[0]['title']
                 print(f"the page could not be found => {title}")
                 return False
-            
+
             else:
                 data[cat].extend(response)
 
@@ -97,7 +96,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
-        frontpage = {"news": None, "upcoming_events": []} 
+        frontpage = {"news": None, "upcoming_events": []}
 
         articles_metadata_index = []
 
@@ -127,54 +126,56 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
             else:
 
+                # --
+                # TODO we can probably remove this custom article-translations check
+                # now that the use MW parse instead of query?
+
                 # check for any article translation present as backlink in prepared_articles,
                 # fetch it and add it to the list of articles to write to disk (article_list)
 
                 # do we really need to do a second pass like this to fetch any translated
                 # article and add it to the prepated_articles list, and then loop
                 # over that list again and again?
-                for item in prepared_articles:
-                    if item is not None:
-                        trans_tasks = []
-                        if len(item[1]['translations']) > 0:
-                            for translation in item[1]['translations']:
-                                trans_task = make_article(translation, client, metadata_only)
-                                trans_tasks.append(asyncio.ensure_future(trans_task))
+                # for item in prepared_articles:
+                #     if item is not None:
+                #         trans_tasks = []
+                #         if len(item[1]['translations']) > 0:
+                #             for translation in item[1]['translations']:
+                #                 trans_task = make_article(translation, client, metadata_only)
+                #                 trans_tasks.append(asyncio.ensure_future(trans_task))
 
-                            t_articles = await asyncio.gather(*trans_tasks)
-                            article_list.extend(prepared_articles)
+                #             t_articles = await asyncio.gather(*trans_tasks)
+                #             article_list.extend(prepared_articles)
+                # --
 
-                        
                 articles_metadata = [item[1] for item in prepared_articles if item is not None]
                 articles_metadata_index.extend(articles_metadata)
 
+                # -- save single article
                 articles_html = [item[0] for item in prepared_articles if item is not None]
 
-                # save single article
                 save_tasks = []
                 for idx, article in enumerate(articles_html):
                     article_metadata = articles_metadata[idx]
-                    article_category = article_metadata['metadata']['category']
-                    filepath = f"{article_category}/{article['slug']}"
+                    filepath = f"{article['slug']}"
 
                     task = save_article(article, filepath, template, sem)
                     save_tasks.append(asyncio.ensure_future(task))
 
-                    await asyncio.gather(*save_tasks)
+
+                # write all articles to disk
+                await asyncio.gather(*save_tasks)
 
 
-            # -- create index sections
-            # TODO how does this fit with the web-server routing setup?
-            await make_index_sections(articles_metadata, cat, cat_label)
-            
+        # -- update category index
+        categories = [k.lower() for k,v in cats.items()]
+        await update_categories(categories, template, sem)
+
         # -- make front-page
         await make_front_index(config['wiki']['frontpage'])
 
-        # any useful?
-        await make_sitemap(articles_metadata_index)
-
         # -- ahah
-        copy_assets()            
+        copy_assets()
 
 
 if __name__ == '__main__':
@@ -193,4 +194,3 @@ if __name__ == '__main__':
     # -- run everything
     asyncio.run(main(ENV, URL, metadata_only))
     print("--- %s seconds ---" % (time.time() - start_time))
-        

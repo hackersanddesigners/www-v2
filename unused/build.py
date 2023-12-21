@@ -1,7 +1,6 @@
 import sys
 import traceback
 import json
-import wikitextparser as wtp
 from jinja2 import Environment, FileSystemLoader
 from fetch import fetch_article
 from parser import parser

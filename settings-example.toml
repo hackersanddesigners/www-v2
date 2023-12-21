@@ -1,9 +1,5 @@
 [wiki]
 
-# copy images and point src to MW instance
-# true | false
-media = false
-
 # set what's the article to use for the frontpage
 frontpage = "Hackers & Designers"
 
@@ -35,6 +31,25 @@ parse = true
 nav = true
 fallback = false
 label = "Tools"
+
+
+# footer links
+
+[wiki.footer_links.About]
+nav = true
+label = "About"
+[wiki.footer_links.Contact]
+nav = true
+label = "Contact"
+[wiki.footer_links.Accessibility]
+nav = true
+label = "Accessibility"
+[wiki.footer_links.Conduct]
+nav = true
+label = "H&D Code of Conduct"
+[wiki.footer_links.Privacy]
+nav = true
+label = "Privacy Policy"
 
 [tool-plugin]
 host_default = 'github'

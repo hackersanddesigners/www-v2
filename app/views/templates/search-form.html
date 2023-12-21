@@ -1,47 +1,50 @@
-<form
-  id="search"
-  action="/search"
-  method="get"
->
+<search aria-label="Full site search">
+  <form
+    id="search"
+    action="/search"
+    method="get"
+  >
 
 
-  <!-- todo: change placeholder on every refresh -->
+    <!-- todo: change placeholder on every refresh -->
 
-  <input
-    name="query"
-    type="search"
-    list="article_list"
-    placeholder="Search query..."
-    value="{{ article.query }}"
-    required
-  />
-
-
-  <!-- todo: populate with list of exisitng pages -->
-
-  <datalist id="article_list">
-    {% for cat in site_index %}
-      <optgroup label="{{ cat.label }}">
-        {% for item in cat.articles %}
-          <option
-            value="{{ item.name }}"
-            data-slug="{{ item.slug }}"
-          ></option>
-        {% endfor %}
-      </optgroup>
-    {% endfor %}
-  </datalist>
+    <input
+      name="query"
+      type="search"
+      list="article_list"
+      placeholder="Search query..."
+      value="{{ article.query }}"
+      required
+    />
 
 
-  <!-- todo: other search options -->
+    <!-- todo: populate with list of exisitng pages -->
+
+    <datalist id="article_list">
+      {% for cat in site_index %}
+        <optgroup label="{{ cat.label }}">
+          {% for item in cat.articles %}
+            <option
+              value="{{ item.name }}"
+              data-slug="{{ item.slug }}"
+            ></option>
+          {% endfor %}
+        </optgroup>
+      {% endfor %}
+    </datalist>
+
+
+    <!-- todo: other search options -->
 
 
 
-  <!-- submit query -->
+    <!-- submit query -->
 
-  <input
-    type="submit"
-    value="search"
-  />
+    <input
+      type="submit"
+      value="search"
+    />
 
-</form>
+  </form>
+
+</search>

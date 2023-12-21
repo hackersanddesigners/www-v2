@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-  <main id="main-content" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
+  <main id="main-content" aria-label="Article contents" class="article {{ article['slug'] }} cat_{{ article['category'] }}">
     <h1>{{ article['title'] }}</h1>
+    <aside>
+      {% include 'practical-info.html' %}
+    </aside>
     {{ article['html'] | safe }}
   </main>
 {% endblock %}

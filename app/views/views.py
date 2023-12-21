@@ -7,12 +7,15 @@ from .template_utils import (
 )
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
-from app.write_to_disk import main as write_to_disk
-from app.build_article import get_article, make_nav, make_article
+from app.file_ops import write_to_disk
+from app.build_article import (
+    make_nav,
+    make_footer_nav,
+    make_article,
+)
 import arrow
 import json
-import wikitextparser as wtp
-from ..parser import (
+from app.parser import (
     get_metadata,
     parser,
 )
@@ -79,12 +82,12 @@ def normalize_data(item):
     Convert None to "" (empty string) if value
     is missing, else make value uppercase.
     """
-    
+
     if item:
         return item.upper()
     else:
         return ''
-    
+
 
 async def make_front_index(article_title: str):
 
@@ -112,13 +115,7 @@ async def make_front_index(article_title: str):
         await write_to_disk(article['slug'], document, sem)
 
 
-async def make_event_index(
-        articles,
-        cat: str,
-        cat_label: str,
-        save_to_disk: bool,
-        sorting: tuple[str, bool] | None = None,
-):
+async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -142,143 +139,120 @@ async def make_event_index(
 
     date_now = arrow.now()
 
+
     for article in articles:
+        if article:
 
-        date = extract_datetime(article['metadata']['date'])
-        time = extract_datetime(article['metadata']['time'])
+            date = None
+            time = None
 
-        article_ts = {'start': None, 'end': None}
+            if 'date' in article['metadata']['info']:
+                date = extract_datetime(article['metadata']['info']['date'])
 
-        if date is not None and time is not None:
+            if 'time' in article['metadata']:
+                time = extract_datetime(article['metadata']['info']['time'])
 
-            tokens_start = time[0].split(':')
-            ts_start = ts_pad_hour(tokens_start)
+            article_ts = {'start': None, 'end': None}
 
-            if len(time) > 1:
-                tokens_end = time[1].split(':')
-                ts_end = ts_pad_hour(tokens_end)
+            if date is not None and time is not None:
 
-                article['metadata']['time'] = f"{ts_start}-{ts_end}"
+                tokens_start = time[0].split(':')
+                ts_start = ts_pad_hour(tokens_start)
 
+                if len(time) > 1:
+                    tokens_end = time[1].split(':')
+                    ts_end = ts_pad_hour(tokens_end)
+
+                    article['metadata']['info']['time'] = f"{ts_start}-{ts_end}"
+
+                else:
+                    article['metadata']['info']['time'] = f"{ts_start}"
+
+                # -- construct datetime start
+                date_start = date[0]
+
+                dts_start = f"{date_start} {ts_start}"
+                article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
+
+                if len(date) > 1:
+                    # -- construct datetime end
+                    date_end = date[1]
+
+                    dts_end = f"{date_end} {ts_end}"
+                    article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
+
+            elif date is not None:
+                date_start = date[0]
+
+                dts_start = f"{date_start}"
+                article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD')
+
+                if len(date) > 1:
+                    date_end = date[1]
+
+                    dts_end = f"{date_end}"
+                    article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD')
+
+            if article_ts['start'] is not None and article_ts['end'] is not None:
+
+                if date_now > article_ts['start'] and date_now < article_ts['end']:
+                    events['happening'].append(article)
+
+            if article_ts['start']:
+
+                if date_now < article_ts['start']:
+                    events['upcoming'].append(article)
+
+                else:
+                    events['past'].append(article)
+
+
+            # -- prepare article dates for template
+
+            article['metadata']['dates'] = {'start': None, 'end': None}
+            article['metadata']['times'] = {'start': None, 'end': None}
+
+            if article_ts['start'] is not None:
+                article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
+                article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
             else:
-                article['metadata']['time'] = f"{ts_start}"
+                article['metadata']['dates']['start'] = None
+                article['metadata']['times']['start'] = None
 
-            date_start = date[0]
-
-            # -- construct datetime start
-            dts_start = f"{date_start} {ts_start}"
-            article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
-
-            if len(date) > 1:
-                date_end = date[1]
-
-                # -- construct datetime end
-                dts_end = f"{date_end} {ts_end}"
-                article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
-
-
-        elif date is not None:
-            date_start = date[0]
-
-            dts_start = f"{date_start}"
-            article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD')
-
-            if len(date) > 1:
-                date_end = date[1]
-
-                dts_end = f"{date_end}"
-                article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD')
-
-        if article_ts['start'] is not None and article_ts['end'] is not None:
-
-            if date_now > article_ts['start'] and date_now < article_ts['end']:
-                events['happening'].append(article)
-
-        if article_ts['start']:
-
-            if date_now < article_ts['start']:
-                events['upcoming'].append(article)
-
+            if article_ts['end'] is not None:
+                article['metadata']['dates']['end'] = arrow.get(article_ts['end']).format('YYYY-MM-DD')
+                article['metadata']['times']['end'] = arrow.get(article_ts['end']).format('HH:mm')
             else:
-                events['past'].append(article)
+                article['metadata']['dates']['end'] = None
+                article['metadata']['times']['end'] = None
 
 
-        # -- prepare article dates for template
+    # -- sorting events by date desc
 
-        article['metadata']['dates'] = {'start': None, 'end': None}
-        article['metadata']['times'] = {'start': None, 'end': None}
-
-        if article_ts['start'] is not None:
-            article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
-            article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
-        else:
-            article['metadata']['dates']['start'] = None
-            article['metadata']['times']['start'] = None
-
-        if article_ts['end'] is not None:
-            article['metadata']['dates']['end'] = arrow.get(article_ts['end']).format('YYYY-MM-DD')
-            article['metadata']['times']['end'] = arrow.get(article_ts['end']).format('HH:mm')
-        else:
-            article['metadata']['dates']['end'] = None
-            article['metadata']['times']['end'] = None
-
-
-    # -- sorting events
-    if sorting:
-    
-        # sort events by date desc
-        events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-
-        if sorting[0] == 'title':
-            events['past'] = sorted(events['past'],
-                                    key=lambda d: d['title'],
-                                    reverse=sorting[1])
-            
-        elif sorting[0] == 'location':                
-            events['past'] = sorted(events['past'],
-                                    key=lambda d: normalize_data(d['metadata']['location']),
-                                    reverse=sorting[1])
-
-        elif sorting[0] == 'date':
-            events['past'] = sorted(events['past'],
-                                    key=lambda d: d['metadata']['dates']['start'],
-                                    reverse=sorting[1])
-
-        elif sorting[0] == 'time':
-            events['past'] = sorted(events['past'],
-                                    key=lambda d: d['metadata']['times']['start'],
-                                    reverse=sorting[1])
-
-        elif sorting[0] == 'type':
-            events['past'] = sorted(events['past'],
-                                    key=lambda d: d['metadata']['type'],
-                                    reverse=sorting[1])
-        
-    else:
-        events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-        
-    
+    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
     events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
+
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'events': events,
-        'nav': nav
+        'nav': nav,
+        'footer_nav': footer_nav,
+        'html': '',
     }
 
-    if save_to_disk:
-        sem = None
-        document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
+    document = template.render(article=article)
+    article['html'] = document
 
-    else:
-        return article
+    return article
 
 
-async def make_collaborators_index(articles, cat, cat_label):
+async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -293,25 +267,24 @@ async def make_collaborators_index(articles, cat, cat_label):
     # {{Special:WhatLinksHere/<page title>}}
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'collaborators': articles,
-        'nav': nav
+        'nav': nav,
+        'footer_nav': footer_nav,
+        'html': '',
     }
+
+    document = template.render(article=article)
+    article['html'] = document
 
     return article
 
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
 
-
-async def make_publishing_index(articles,
-                                cat: str,
-                                cat_label: str,
-                                save_to_disk: bool):
+async def make_publishing_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -321,27 +294,26 @@ async def make_publishing_index(articles,
     template = get_template(f"{cat}-index", filters)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
+
+    sorted(articles, key=lambda d: d['creation'], reverse=True)
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'footer_nav': footer_nav,
+        'nav': nav,
+        'html': '',
     }
+
+    document = template.render(article=article)
+    article['html'] = document
 
     return article
 
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
 
-
-async def make_tool_index(articles,
-                          cat: str,
-                          cat_label: str,
-                          save_to_disk: bool,
-                          sorting: tuple[str, bool] | None = None
-                          ):
+async def make_tool_index(articles, cat: str, cat_label: str):
 
     filters = {
         'slug': make_url_slug,
@@ -350,42 +322,26 @@ async def make_tool_index(articles,
 
     template = get_template(f"{cat}-index", filters)
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
-    if sorting:
-        if sorting[0] == 'title':
-            articles = sorted(articles,
-                              key=lambda d: d['title'],
-                              reverse=sorting[1])
-        
-        elif sorting[0] == 'category':
-            articles = sorted(articles,
-                              key=lambda d: d['metadata']['category'],
-                              reverse=sorting[1])
+    # articles = sorted(articles,
+    #                   key=lambda d: d['title'],
+    #                   reverse=True)
 
-            # elif sort_by == 'repository':
-            #     articles = sorted(articles,
-            #                       key=lambda d: d['tool']['label'],
-            #                       reverse=True)
-        
-    else:
-        articles = sorted(articles,
-                          key=lambda d: d['title'],
-                          reverse=True)
-        
 
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'footer_nav': footer_nav,
+        'html': '',
     }
 
-    if save_to_disk:
-        sem = None
-        document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
-    else:
-        return article
+    document = template.render(article=article)
+    article['html'] = document
+
+    return article
 
 
 async def make_search_index(articles, query):
@@ -397,6 +353,7 @@ async def make_search_index(articles, query):
 
     template = get_template(f"search-index", filters)
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     for result in articles:
         print(json.dumps(result, indent=2))
@@ -407,34 +364,11 @@ async def make_search_index(articles, query):
         'slug': "search",
         'query': query,
         'results': articles,
+        'footer_nav': footer_nav,
         'nav': nav
     }
 
     return article
-
-
-async def make_sitemap(articles):
-
-    filters = {
-        'slug': make_url_slug,
-        'ts': make_timestamp,
-    }
-
-    template = get_template(f"sitemap", filters)
-    nav = make_nav()
-
-    article = {
-        'title': "Sitemap",
-        'slug': "sitemap",
-        'articles': articles,
-        'nav': nav
-    }
-
-    return article
-
-    sem = None
-    document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
 
 
 async def make_article_index(articles, cat, cat_label):
@@ -447,34 +381,18 @@ async def make_article_index(articles, cat, cat_label):
     template = get_template(f"{cat}-index", filters)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
 
     article = {
         'title': cat,
         'slug': slugify(cat_label),
         'articles': articles,
-        'nav': nav
+        'nav': nav,
+        'footer_nav': footer_nav,
+        'html': '',
     }
 
-    return article
-
-    sem = None
     document = template.render(article=article)
-    await write_to_disk(article['slug'], document, sem)
+    article['html'] = document
 
-
-async def make_index_sections(articles_metadata, cat: str, cat_label: str):
-
-    if cat == 'Event':
-        await make_event_index(articles_metadata, cat, cat_label, False)
-
-    if cat == 'Collaborators':
-        await make_collaborators_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Publishing':
-        await make_publishing_index(articles_metadata, cat, cat_label)
-
-    if cat == 'Tools':
-        await make_tool_index(articles_metadata, cat, cat_label, False)
-
-    if cat == 'Articles':
-        await make_article_index(articles_metadata, cat, cat_label)
+    return article

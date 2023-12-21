@@ -5,20 +5,22 @@ from bs4 import BeautifulSoup
 from slugify import slugify
 import aiofiles
 from aiofiles import os as aos
-from app.write_to_disk import main as write_to_disk
-import tomli
 from app.views.template_utils import (
     make_url_slug,
+    make_mw_url_slug,
     make_timestamp,
 )
 from pathlib import Path
 from app.read_settings import main as read_settings
-from app.file_ops import file_lookup
+from app.file_ops import (
+    file_lookup,
+    write_to_disk,
+)
 
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()
-
+mw_host = config['domain']['mw_url']
 
 def make_nav():
     """
@@ -34,25 +36,44 @@ def make_nav():
             nav.append({ "label": v['label'],
                       "uri": f"/{slugify(v['label'])}" })
 
+    nav.extend([{
+        "label": "About",
+        "uri": "About.html"
+    },{
+    "label": "Contact",
+        "uri": "Contact.html"
+    }])
+
     return nav
 
 
-async def get_article(page_title: str, client):
+def make_footer_nav():
+    """
+    make a sub nav from settings.toml for footer links
+    """
 
-    article, backlinks, redirect_target = await fetch_article(page_title, client)
+    links = config['wiki']['footer_links']
 
-    if article is not None:
-        return article
+    footer_nav = []
+    for k, v in links.items():
+        if v['nav']:
+            footer_nav.append({ "label": v['label'],
+                      "uri": f"/{slugify(v['label'])}" })
 
-    else:
-        print(f"{page_title} return empty")
-        return None
+    return footer_nav
 
 
-def get_article_field(field: str, article):
+def get_article_field(field: str, article: dict[str]):
 
     if field in article:
-        return article[field]
+        article_field = article[field]
+
+        if field == 'templates':
+            if len(article_field) > 0:
+                template = article_field[0]['title'].split(':')[-1]
+                return template
+        else:
+            return article_field
 
     else:
         return None
@@ -74,52 +95,66 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
+    # TODO we wouldn't need this get_translations func anymore,
+    # since the HTML article contains alreasy links to available translations (?)
     article_translations = []
     if backlinks:
         article_translations = get_translations(page_title, backlinks)
 
     nav = make_nav()
+    footer_nav = make_footer_nav()
+
+    mw_slug = make_mw_url_slug( page_title )
+    mw_url = mw_host + '/index.php?title=' + mw_slug
+
 
     if article is not None:
 
-        last_modified = article['revisions'][0]['timestamp']
-
         if metadata_only:
-            metadata, images, tool_metadata = await parser(article, metadata_only, redirect_target)
+            metadata, images = await parser(article, metadata_only, redirect_target)
 
             article_metadata = {
                 "title": article['title'],
                 "images": images,
                 "metadata": metadata,
-                "last_modified": last_modified,
+                "creation": article['creation'],
+                "last_modified": article['last_modified'],
                 "backlinks": backlinks,
-                "tool": tool_metadata,
                 "translations": article_translations,
             }
 
             return article_metadata
 
 
-        body_html, metadata = await parser(article, metadata_only, redirect_target)
+        body_html, metadata, images = await parser(article, metadata_only, redirect_target)
+
+        article_metadata = {
+            "id": article['pageid'],
+            "title": article['title'],
+            "mw_url": mw_url,
+            "mw_history_url": mw_url + '&action=history',
+            "mw_edit_url": mw_url + '&action=edit',
+            "images": get_article_field('images', article),
+            "template": get_article_field('templates', article),
+            "creation": article['creation'],
+            "last_modified": article['last_modified'],
+            "backlinks": backlinks,
+            "nav": nav,
+            "footer_nav": footer_nav,
+            "translations": article_translations,
+            "parsed_metadata": metadata['info'],
+            "categories": metadata['categories'],
+        }
 
         article_html = {
             "title": page_title,
             "html": body_html,
             "slug": slugify(page_title),
             "nav": nav,
+            "footer_nav": footer_nav,
             "translations": article_translations,
-            "category": metadata['category']
-        }
-
-        article_metadata = {
-            "title": article['title'],
-            "images": get_article_field('images', article),
-            "template": get_article_field('template', article),
-            "metadata": metadata,
-            "last_modified": last_modified,
-            "backlinks": backlinks,
-            "nav": nav,
-            "translations": article_translations,
+            # "category": metadata['category']
+            "metadata": article_metadata,
         }
 
         return article_html, article_metadata
@@ -171,7 +206,7 @@ async def redirect_article(article_title: str, redirect_target: str):
             print(f"redirect-article: {article_title} not found, nothing done")
 
 
-async def save_article(article: str | None, filepath: str, template, sem):
+async def save_article(article: str | None, filepath: str, template: str, sem: int):
 
     if article is not None:
         filters = {
@@ -218,34 +253,3 @@ async def delete_article(article_title: str, cat: str | None = None):
 
     else:
         print(f"delete-article: {article_title} not found, nothing done")
-
-
-async def has_duplicates(article_filename: str, matching_cat: str):
-    """
-    after an article update, check if the embedded category has changed and if true,
-    scan across all category subfolders except the new category to check if
-    a previous version of the article has been left behind.
-    """
-
-    # build list of paths under each subdir except the one matching cat_key
-    # and filter out any path matching <cat>/article_filepath, where cat
-    # is not matching_cat
-
-    print(f"check if article has duplicates... => {article_filename, matching_cat}")
-
-    pattern = "**/*.html"
-    paths = [p for p
-             in WIKI_DIR.glob(pattern)
-             if article_filename in str(p) and not p.parent.stem == matching_cat]
-
-    if len(paths) > 0:
-        print(f"remove these filepaths {paths}!")
-
-        for p in paths:
-            cat = str(p.parent.stem)
-            fn = str(p.stem)
-            await delete_article(fn, cat)
-
-    else:
-        print(f"no duplicates...")
-        return

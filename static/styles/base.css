@@ -6,7 +6,7 @@
   --black          : hsl(   0,   0%,   0% );
   --white          : hsl(   0,   0%, 100% );
   --blue           : hsl( 240, 100%,  50% );
-  --yellow         : hsl( 60, 100%,  50% );
+  --yellow         : hsl(  60, 100%,  50% );
   --orange-red     : hsl( 352, 100%,  69% );
   --light-grey     : hsl(   0,   0%,  88% );
   --mid-grey       : hsl(   0,   0%,  39% );
@@ -43,7 +43,17 @@
   --very-slow      : 1s;
 
 
+  /* sizing */
+
+  --base-width     : min( 100%, 40rem );
+  --expanded-width : min( 100%, 70rem );
+  --side-width     : min( 100%, 20rem );
+
+
 }
+
+
+/* basic reset */
 
 *,
 *::before,
@@ -52,10 +62,26 @@
   position         : relative;
 }
 
+
+/* intentionally setting outlines */
+
 *:focus {
   outline          : var(--focus);
 }
 
+
+/* accessibility */
+
+@media (prefers-reduced-motion) {
+  * {
+    animation      : none !important;
+    transform      : none !important;
+    opacity        : unset !important;
+  }
+}
+
+
+/* document strucutre */
 
 html,
 body {
@@ -66,6 +92,95 @@ body {
   scroll-behavior  : smooth;
   background-color : var(--light-grey);
 }
+header,
+footer {
+  padding-block: 1rem;
+}
+header,
+footer,
+p:not(.image, .iframe),
+div:not(.mw-parser-output, .image, .thumb),
+ul:not(.gallery),
+aside,
+menu,
+pre,
+ol,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6
+{
+  max-width : var(--base-width);
+  margin-inline: auto;
+}
+img,
+.image,
+.thumb,
+iframe,
+.iframe,
+hr
+{
+  max-width: var(--expanded-width);
+  margin-inline: auto;
+}
+.image {
+  text-align: center;
+  width: unset !important;
+}
+img {
+  height: auto;
+}
+hr {
+  border: unset;
+  border-top: 0.3rem double black;
+}
+main {
+  /* min-height: 80%; */
+  /* max-width: min(100%, 40rem); */
+  /* margin: 0 auto; */
+  /* display:flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+*/
+}
+
+main aside {
+  position: absolute;
+  left: calc( (100% - var(--base-width))/2 + var(--base-width) );
+  /* float: inline-end; */
+  max-width: var(--side-width);
+  margin-left: 1rem;
+  z-index: 1;
+}
+
+main aside .info {
+  padding: 0.5rem;
+  width: 100%;
+}
+
+footer #meta {
+  padding-block: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+footer #meta .metadata,
+footer #meta .backlinks {
+  padding: 0.5rem;
+  width: 50%;
+}
+footer #meta .metadata tr td {
+  padding: 0;
+  vertical-align: baseline;
+}
+
+div.mw-parser-output {
+}
+
+
+/* anchors */
 
 a,
 a:active,
@@ -77,11 +192,10 @@ a:focus {
 }
 
 
-
-/* https://tangible-cloud.be/en/open-call/ */
+/* lists */
 
 ul {
-  margin: 0;
+  margin-block: 0;
   padding-left: 1rem;
 }
 ul li {
@@ -89,36 +203,30 @@ ul li {
   list-style: none;
 }
 ul li::before {
-  content: '├─ ';
   content: '╠═ ';
 }
-ul li:focus::before,
 ul li:focus-within::before,
 ul li:hover::before {
-  content: '├── ';
   content: '╠══ ';
 }
 ul li:last-of-type::before {
-  content: '└─ ';
   content: '╚═ ';
 }
-ul li:last-of-type:focus::before,
 ul li:last-of-type:focus-within::before,
 ul li:last-of-type:hover::before {
-  content: '└── ';
   content: '╚══ ';
 }
 
+
+/* table of contents */
+
 #toc {
-  border-top: 0.3rem double;
-  border-right: 0.3rem double;
   padding: 0.5rem;
   padding-left: 0;
   width: 100%;
   /* max-width:50%; */
   /* float: right; */
 }
-
 
 #toctitle h2 {
   margin: 0;
@@ -130,65 +238,55 @@ ul li:last-of-type:hover::before {
 .tocnumber {
   display: none;
 }
-
-
-
-header,
-footer,
-main {
-  padding: 1rem;
-}
-
-h1 {
-}
-
-
-
-header nav ul {
-  list-style: none;
+#mw-toc-heading {
   margin: 0;
+}
+
+
+
+/* navigation */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+nav ul {
+  list-style: none;
   padding: 0;
   display: flex;
+  align-items: flex-start;
 }
-
-header nav ul li {
-  /* margin-right: 0.5rem; */
-  margin: 0.2rem 0.3rem;
+nav ul li {
+  width: fit-content;
 }
-header nav ul li::before {
-  content: unset !important;
+nav ul li::before,
+nav ul li:focus-within::before,
+nav ul li:hover::before,
+nav ul li:last-of-type::before,
+nav ul li:last-of-type:focus-within::before,
+nav ul li:last-of-type:hover::before {
+  content: '';
 }
-header nav ul li a {
-  padding: 0.2rem 0;
-  border-bottom: 0.3rem double black;
+nav ul li a {
+  padding: 0 0.25rem;
 }
-header nav ul li a:hover {
-  padding: 0.4rem 0;
-  border-bottom: 0.1rem solid black;
-}
-
-header a.skip-to-main {
+.skip-link {
   position: absolute;
   /* left: 1rem; */
-  padding: 0.2rem 0.3rem;
+  padding: 0 0.25rem;
   background-color: var(--light-grey);
   transform: translateY(-200%);
   transition: transform var(--fast) linear;
   z-index: 1;
 }
-header a.skip-to-main:focus {
+.skip-link:focus-within {
   transform: translateY(0);
 }
 
 
-main {
-  min-height: 80%;
-  max-width: min(100%, 40rem);
-  /* margin: 0 auto; */
-}
+/* images */
 
-main section {
-}
 figure {
   border: var(--thin);
   background-color: var(--white);
@@ -199,39 +297,226 @@ figure {
 figure:focus-within {
   outline: var(--focus);
 }
-
 img,
 figure img {
-  max-width: 100%;
 }
-
 figure audio,
 figure video {
   width: 100%;
 }
-
 figure figcaption {
   font-style: italic;
   text-align: center;
 }
 
 
+/* galleries */
 
-#grid {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-collapse: collapse;
+ul.gallery {
+  /* max-width: 100%; */
+  padding-inline: 1rem;
+  display: flex;
+  align-items: center;
+  align-content: flex-start;
+  justify-content: flex-start;
+  overflow: scroll;
+  gap: 1rem;
 }
-#grid td {
-  height : calc( 10 * 1rem);
-  min-width  : calc( 10 * 1rem);
-  border : var(--very-thin);
+ul.gallery li::before,
+ul.gallery li:hover::before,
+ul.gallery li:focus-within::before {
+  content: '';
 }
+ul.gallery li {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+ul.gallery li,
+ul.gallery li div {
+  margin: 0 !important;
+  width: unset !important;
+  max-width: unset;
+}
+ul.gallery li div img {
+  height: auto !important;
+  width: unset;
+  max-height: 80vh;
+  max-width: 90vw;
+}
+ul.gallery + menu ul {
+  left: -8rem;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+ul.gallery + menu ul li::before,
+ul.gallery + menu ul li:focus-within::before,
+ul.gallery + menu ul li:hover::before,
+ul.gallery + menu ul li:last-of-type::before,
+ul.gallery + menu ul li:last-of-type:focus-within::before,
+ul.gallery + menu ul li:last-of-type:hover::before {
+  content: '';
+}
+ul.gallery + menu ul li button {
+  height: 2rem; width: 2rem;
+  vertical-align: middle;
+
+}
+
 
 /* forms */
 
 input[type=submit] {
   cursor: pointer;
+}
+
+
+/* articles */
+
+.mw-parser-output > table:first-of-type {
+  display: none;
+}
+
+
+/* pages: search  */
+
+.searchmatch {
+  background-color: var(--yellow);
+}
+
+
+/* pages: events */
+
+section.current,
+section.upcoming,
+section.past {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  overflow: scroll;
+}
+section.current h2,
+section.upcoming h2,
+section.past h2 {
+  width: 100%;
+  max-width: unset;
+}
+section.current article.event,
+section.upcoming article.event,
+section.past article.event  {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-style: italic;
+  padding: 1rem;
+  background-color: var(--white);
+  border: var(--solid);
+  max-width: 30rem;
+}
+section.current article.event img {
+  max-height: 40rem;
+}
+section.upcoming article.event img {
+  max-height: 20rem;
+}
+section.past article.event img {
+  max-height: 10rem;
+}
+
+/* pages: articles */
+
+article.article-item h3 {
+  margin-bottom: 0;
+}
+
+#toc,
+.fancy {
+  border-top: 0.3rem double;
+  border-right: 0.3rem double;
+  /* border-top-right-radius: 1rem; */
+}
+/* #toc::before,
+#toc::after,
+.fancy::before,
+.fancy::after  {
+  position: absolute;
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  border-bottom-left-radius: 100%;
+}
+#toc::before,
+.fancy::before {
+  top: -1rem;
+  left: -1rem;
+  border-bottom: 0.3rem double;
+}
+#toc::after,
+.fancy::after {
+  bottom: -1rem;
+  right: -1rem;
+  border-left: 0.3rem double;
+} */
+
+/* tool styles */
+
+
+.tool {
+  margin: 1rem;
+  left: -5rem;
+  max-width: var(--base-width);
+  /* border-top: 0.3rem double black;
+  border-right: 0.3rem double black; */
+  border: 0.3rem double black;
+  border-left-color: var(--light-grey);
+  border-bottom-color: var(--light-grey);
+  background: linear-gradient(to bottom left, #e5f792dc, transparent, transparent);
+  transition: border-color 0.2s linear;
+}
+.tool::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+  background: linear-gradient(to top right, #a9ff81e7, transparent);
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.toolHeader {
+  text-align: center;
+  padding: 0.3rem;
+}
+.toolContent {
+  max-height: 80vh;
+  overflow: scroll;
+  padding: 1rem;
+  border-top:  0.3rem double black;
+}
+.toolFooter {
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.toolFooter a {
+  width: 100%;
+  padding: 0.3rem;
+  margin-left: 0.5rem;
+  border-top: 0.3rem double black;
+  border-right:  0.3rem double black;
+}
+.toolFooter a:last-of-type {
+  margin-right: 0;
+  border-right: none;
+}
+.tool:hover {
+  border-left-color: black;
+  border-bottom-color: black;
+}
+.tool:hover::before {
+  opacity: 1;
 }

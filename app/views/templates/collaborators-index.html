@@ -1,23 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 
-<main class="pt1 pr1 pb2 pl1">
+<main id="main-content">
   <h1>{{ article.title }}</h1>
   {% for item in article.collaborators %}
-  <div class="pb1">
-    <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
-    {% if item.backlinks | length > 0 %}
-    <div>See also:
-      {% for backlink in item.backlinks %}
-      <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
-      {% endfor %}
-    </div>
-    {% else %}
-    {% endif %}
-  </div>
+    <article>
+      <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
+      {% if item.backlinks | length > 0 %}
+        <section>See also:
+          {% for backlink in item.backlinks %}
+          <a href="/{{ backlink.title | slug }}">{{ backlink.title }}</a>
+          {% endfor %}
+        </section>
+      {% endif %}
+    </article>
   {% endfor %}
-
-  {% include "pagination.html" %}
 </main>
 
 {% endblock %}
