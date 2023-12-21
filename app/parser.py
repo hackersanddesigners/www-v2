@@ -169,14 +169,6 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     soup = BeautifulSoup(article, 'lxml')
 
-    # TODO we don't need this, since MW should give us back a redirected page in case?
-    # we insert some custom HTML to add a reference
-    # that the current article has been moved to another URL
-    # if redirect_target is not None:
-    #     redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
-
-    #     soup.body.insert(0, redirect)
-
     links = soup.find_all('a')
     for link in links:
         if 'title' in link.attrs:
