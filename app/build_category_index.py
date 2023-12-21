@@ -76,10 +76,9 @@ async def make_category_index(cat: str, page: int | None = 0):
                 data.extend(response)
 
 
-        metadata_only = True
         art_tasks = []
         for article in data:
-            task = make_article(article['title'], client, metadata_only)
+            task = make_article(article['title'], client)
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)

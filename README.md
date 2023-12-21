@@ -168,7 +168,6 @@ there is a CLI program at `cli.py` to run common operations. currently available
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance; whenever a new message comes in, it runs the `app/build_article.py` functions to parse and save a new version of the received article to disk
 
 - `build-wiki`: rebuilds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`; it runs `app/build-article.py` to do so
-  - `build-wiki --index-only`: rebuild only index pages, eg the one set in `settings.toml`; this is a faster way to build these pages as it does not parse each article
 
 - `make-article`: helper function to trigger a change in the MediaWiki instance, instead of manually loggin in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does not exist yet.
 

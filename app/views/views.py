@@ -98,12 +98,12 @@ async def make_front_index(article_title: str):
     sem = None
 
     async with httpx.AsyncClient(verify=context) as client:
-        metadata_only = False
-        article, metadata = await make_article(article_title, client, metadata_only)
+
+        article = await make_article(article_title, client)
 
         article['slug'] = 'index'
-        article['last_modified'] = metadata['last_modified']
-        article['backlinks'] = metadata['backlinks']
+        article['last_modified'] = article['metadata']['last_modified']
+        article['backlinks'] = article['metadata']['backlinks']
 
         document = template.render(article=article)
         await write_to_disk(article['slug'], document, sem)

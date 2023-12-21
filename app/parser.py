@@ -422,14 +422,11 @@ def get_category(categories, cats) -> [str]:
         return [cat_fallback_label]
 
 
-async def parser(article: dict[str, int],
-                 metadata_only: bool,
-                 redirect_target: str | None = None):
+async def parser(article: dict[str, int], redirect_target: str | None = None):
     """
-    - if redirect is not None, make custom HTML page
-    - else, get page body (HTML)
-    - return either version
-    - return dict with article metadata to build index pages
+    - get page body (HTML)
+    - get article's metadata
+    - get article images' URL
     """
 
     print(f"parsing article {article['title']}...")

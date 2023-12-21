@@ -103,12 +103,11 @@ async def root(request: Request):
 
         frontpage = {"news": None, "upcoming_events": []}
 
-        metadata_only = False
-        article, metadata = await make_article("Hackers & Designers", client, metadata_only)
+        article = await make_article("Hackers & Designers", client)
 
         article['slug'] = 'index'
-        article['last_modified'] = metadata['last_modified']
-        article['backlinks'] = metadata['backlinks']
+        article['last_modified'] = article['metadata']['last_modified']
+        article['backlinks'] = article['metadata']['backlinks']
 
         return templates.TemplateResponse("index.html",
                                           {"request": request,

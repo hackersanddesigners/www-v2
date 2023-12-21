@@ -74,7 +74,7 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
             if page['title'] in matches]
 
 
-async def make_article(page_title: str, client, metadata_only: bool):
+async def make_article(page_title: str, client):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
@@ -88,29 +88,13 @@ async def make_article(page_title: str, client, metadata_only: bool):
 
     if article is not None:
 
-        if metadata_only:
-            metadata, images = await parser(article, metadata_only, redirect_target)
+        body_html, metadata, images = await parser(article, redirect_target)
 
-            article_metadata = {
-                "title": article['title'],
-                "images": images,
-                "metadata": metadata,
-                "creation": article['creation'],
-                "last_modified": article['last_modified'],
-                "backlinks": backlinks,
-                "translations": article_translations,
-            }
-
-            return article_metadata
-
-
-        body_html, metadata, images = await parser(article, metadata_only, redirect_target)
-
-        article_metadata = {
+        metadata = {
             "id": article['pageid'],
             "title": article['title'],
             "mw_url": mw_url + 'index.php?title=' + page_title,
-            "images": get_article_field('images', article),
+            "images": images,
             "template": get_article_field('templates', article),
             "creation": article['creation'],
             "last_modified": article['last_modified'],
@@ -121,17 +105,16 @@ async def make_article(page_title: str, client, metadata_only: bool):
             "categories": metadata['categories'],
         }
 
-        article_html = {
+        article = {
             "title": page_title,
             "html": body_html,
             "slug": slugify(page_title),
             "nav": nav,
             "translations": article_translations,
-            # "category": metadata['category']
-            "metadata": article_metadata,
+            "metadata": metadata,
         }
 
-        return article_html, article_metadata
+        return article
 
     else:
         print('article not found! it could have been deleted meanwhile\n and we got notified about it')

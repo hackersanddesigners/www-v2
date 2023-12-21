@@ -60,7 +60,7 @@ async def get_category(ENV: str, URL: str, cat: str):
         return data
 
 
-async def main(ENV: str, URL: str, metadata_only: bool):
+async def main(ENV: str, URL: str):
     """
     this function (re-)build the entire wiki by fetching a set of specific
     pages from the MediaWiki instance
@@ -98,7 +98,7 @@ async def main(ENV: str, URL: str, metadata_only: bool):
 
         frontpage = {"news": None, "upcoming_events": []}
 
-        articles_metadata_index = []
+        articles_index = []
 
         for category in articles:
             cat = list(category.keys())[0]
@@ -110,62 +110,33 @@ async def main(ENV: str, URL: str, metadata_only: bool):
             art_tasks = []
             for k, v in category.items():
                 for article in v:
-                    task = make_article(article['title'], client, metadata_only)
+                    task = make_article(article['title'], client)
                     art_tasks.append(asyncio.ensure_future(task))
 
             prepared_articles = await asyncio.gather(*art_tasks)
             print(f"articles: {len(prepared_articles)}")
 
-            if metadata_only:
-                articles_metadata = prepared_articles
-                articles_metadata_index.extend(articles_metadata)
+            articles = [item for item
+                        in prepared_articles
+                        if item is not None]
+            
+            articles_index.extend(articles)
 
-            else:
+            save_tasks = []
+            for article in articles:
+                filepath = f"{article['slug']}"
 
-                # --
-                # TODO we can probably remove this custom article-translations check
-                # now that the use MW parse instead of query?
-
-                # check for any article translation present as backlink in prepared_articles,
-                # fetch it and add it to the list of articles to write to disk (article_list)
-
-                # do we really need to do a second pass like this to fetch any translated
-                # article and add it to the prepated_articles list, and then loop
-                # over that list again and again?
-                # for item in prepared_articles:
-                #     if item is not None:
-                #         trans_tasks = []
-                #         if len(item[1]['translations']) > 0:
-                #             for translation in item[1]['translations']:
-                #                 trans_task = make_article(translation, client, metadata_only)
-                #                 trans_tasks.append(asyncio.ensure_future(trans_task))
-
-                #             t_articles = await asyncio.gather(*trans_tasks)
-                #             article_list.extend(prepared_articles)
-                # --
-
-                articles_metadata = [item[1] for item in prepared_articles if item is not None]
-                articles_metadata_index.extend(articles_metadata)
-
-                # -- save single article
-                articles_html = [item[0] for item in prepared_articles if item is not None]
-
-                save_tasks = []
-                for idx, article in enumerate(articles_html):
-                    article_metadata = articles_metadata[idx]
-                    filepath = f"{article['slug']}"
-
-                    task = save_article(article, filepath, template, sem)
-                    save_tasks.append(asyncio.ensure_future(task))
+                task = save_article(article, filepath, template, sem)
+                save_tasks.append(asyncio.ensure_future(task))
 
 
-                # write all articles to disk
-                await asyncio.gather(*save_tasks)
+            # write all articles to disk
+            await asyncio.gather(*save_tasks)
 
 
         # -- update category index
         categories = [k.lower() for k,v in cats.items()]
-        await update_categories(categories, template, sem)
+        await build_categories(categories, template, sem)
 
         # -- make front-page
         await make_front_index(config['wiki']['frontpage'])
@@ -179,14 +150,9 @@ if __name__ == '__main__':
     ENV = os.getenv('ENV')
     URL = os.getenv('BASE_URL')
 
-    if len(argv) < 2:
-        metadata_only = False
-    elif argv[1].lower() == 'true':
-        metadata_only = True
-
 
     start_time = time.time()
 
     # -- run everything
-    asyncio.run(main(ENV, URL, metadata_only))
+    asyncio.run(main(ENV, URL))
     print("--- %s seconds ---" % (time.time() - start_time))

@@ -51,8 +51,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # -- we have the UPD message, let's read the operation
             #    type (new, edit, delete) and run appropriate function
 
-            metadata_only = False
-
             # namespace: -1 is part of Special Pages, we don't parse those
             if msg['namespace'] == -1:
                 return
@@ -73,7 +71,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     article_list = []
 
                     # article is a tuple in the form: (article_html, article_metadata)
-                    article = await make_article(msg['title'], client, metadata_only)
+                    article = await make_article(msg['title'], client)
 
                     # print( json.dumps( article, indent=2 ) )
 
@@ -104,12 +102,12 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # -- update every category index page the article has
                     #    and write it to disk
-                    await update_categories(article[1]['categories'], template, sem)
+                    await update_categories(article, template, sem)
 
                     # -- write article to disk
                     for article in article_list:
-                        filepath = f"{article[0]['slug']}"
-                        await save_article(article[0], filepath, template, sem)
+                        filepath = f"{article['slug']}"
+                        await save_article(article, filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
@@ -144,17 +142,16 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             if 'noredir' in redirect and redirect['noredir'] == '0':
                                 make_redirect = True
 
-                            target_html, target_metadata = await make_article(redirect['target'], client, metadata_only)
-                            target_category = target_metadata['metadata']['category']
-                            target_filepath = f"{target_category}/{target_html['slug']}"
+                            target = await make_article(redirect['target'], client)
 
                             if make_redirect:
-                                source_article, source_metadata = await make_article(msg['title'], client, metadata_only)
+                                source = await make_article(msg['title'], client)
                                 source_filepath = await redirect_article(msg['title'], redirect['target'])
-                                await save_article(source_article, source_filepath, template, sem)
+                                await save_article(source, source_filepath, template, sem)
 
-                            await save_article(target_html, target_filepath, template, sem)
+                            await save_article(target, target['slug'], template, sem)
 
+                            await update_categories(target, template, sem)
 
                         except Exception as e:
                             print(f"move article err => {e}")

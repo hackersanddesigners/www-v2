@@ -50,10 +50,9 @@ def server():
     
 
 @app.command()
-def build_wiki(index_only: Annotated[bool, typer.Option(help="build only Index pages")] = False):
+def build_wiki():
     """
     Rebuild entire wiki from scratch.
-    Pass --index-only to re-create only index pages (faster).
     """
 
     URL = os.getenv('BASE_URL')
@@ -61,7 +60,7 @@ def build_wiki(index_only: Annotated[bool, typer.Option(help="build only Index p
 
     start_time = time.time()
     # -- run everything
-    asyncio.run(bw(ENV, URL, index_only))
+    asyncio.run(bw(ENV, URL))
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
