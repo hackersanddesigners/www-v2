@@ -3,9 +3,13 @@
 
 <main id="main-content" aria-label="H&D's publishing practice.">
   <h1>{{ article.title }}</h1>
-  {% for article in article.articles %}
-  {% include "partials/publishing-item.html" %}
-  {% endfor %}
+  {% if article.articles | length > 0 %}
+    <ul class="publishing">
+      {% for article in article.articles %}
+      {% include "partials/publishing-item.html" %}
+      {% endfor %}
+    </ul>
+  {% endif %}
 </main>
 
 {% endblock %}

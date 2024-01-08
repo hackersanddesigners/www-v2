@@ -274,7 +274,7 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    sorted(articles,
+    articles = sorted(articles,
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
@@ -299,7 +299,7 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    sorted(articles,
+    articles = sorted(articles,
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
@@ -311,6 +311,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
         'nav': nav,
         'html': '',
     }
+
+    print( json.dumps( article, indent=2 ) )
+
 
     document = template.render(article=article)
     article['html'] = document

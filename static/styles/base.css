@@ -408,7 +408,8 @@ menu.types {
   padding: 0;
 }
 
-ul.events {
+ul.events,
+ul.publishing {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
