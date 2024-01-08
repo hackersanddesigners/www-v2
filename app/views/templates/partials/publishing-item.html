@@ -1,7 +1,7 @@
 <div id="{{ article.title | slug }}" class="pb1">
   {% if article.metadata.images | length > 0 %}
   <img
-    src="{{ article.metadata.images[0].src }}"
+    src="{{ article.metadata.images[0].thumb }}"
     alt="{{ article.metadata.images[0].alt }}"
     loading="lazy"
   >

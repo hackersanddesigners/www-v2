@@ -288,10 +288,12 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     imgs = soup.find_all('img')
 
     for img in imgs:
-        imageURLs.append({
-            'src': img.attrs['src'],
-            'alt': img.attrs['alt']
-        })
+        src = img.attrs['src']
+        img_name = src.split('/')[-1]
+        # thumb = src.replace( '/images/', '/images/thumb/' ) + '/250px-' + img_name
+        thumb = mw_url + '/thumb.php?f=' + img_name + '&w=180'
+        alt = img.attrs['alt']
+        imageURLs.append({ 'src': src, 'thumb': thumb, 'alt': alt })
 
 
     # -- return article HTML
