@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<main class="pt1 pr1 pb2 pl1">
+<main id="main-content" aria-label="H&D's publishing practice.">
   <h1>{{ article.title }}</h1>
   {% for article in article.articles %}
   {% include "partials/publishing-item.html" %}
