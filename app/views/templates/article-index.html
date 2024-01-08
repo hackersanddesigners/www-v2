@@ -7,9 +7,9 @@
   <article class="article-item">
     {% if article.image %}
     <img
-      src="{{ article.metadata.images[0] }}"
+      src="{{ article.metadata.images[0].src }}"
+      alt="{{ article.metadata.images[0].alt }}"
       lazy="true"
-      alt=""
     >
     <!-- TODO: alt-text -->
     {% endif %}

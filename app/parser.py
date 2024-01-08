@@ -288,7 +288,10 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     imgs = soup.find_all('img')
 
     for img in imgs:
-        imageURLs.append(img.attrs['src'])
+        imageURLs.append({
+            src: img.attrs['src'],
+            alt: img.attrs['alt']
+        })
 
 
     # -- return article HTML
@@ -296,7 +299,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     # therefore soup.contents is an empty list
     if len(soup.contents) > 0:
         t = "".join(str(item) for item in soup.body.contents)
-        
+
         return t, imageURLs
 
     else:
@@ -399,7 +402,7 @@ def get_category(categories, cats) -> [str]:
         # <2023-12-20> manually removing the 'Article' category
         # part of every wiki entry created through the Create New Article Page
         # button, as it add the category `Article` by default.
-        
+
         return [cat['category'] for cat
              in categories
              if not cat['category'] == 'Article']

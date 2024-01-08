@@ -9,10 +9,10 @@
   data-start="{{ event.metadata.dates.start }}"
 >
   <img
-    src="{{ event.metadata.images[0] }}"
-    alt=""
+    src="{{ event.metadata.images[0].src }}"
+    alt="{{ event.metadata.images[0].alt }}"
+    lazy="true"
   >
-  <!-- TODO add alt text -->
   <div>
     <p><a href="{{ event.title | slug }}.html">{{ event.title }}</a></p>
     <p>

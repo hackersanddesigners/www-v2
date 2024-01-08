@@ -1,6 +1,10 @@
 {% if article.metadata.images | length > 0 %}
 <div id="{{ article.title | slug }}" class="pb1">
-  <img src="{{ article.metadata.images[0] }}">
+  <img
+    src="{{ article.metadata.images[0].src }}"
+    alt="{{ article.metadata.images[0].alt }}"
+    lazy="true"
+  >
   <div>
     <h3><a href="/{{ category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
     {% if article.metadata.backlinks | length > 0 %}
