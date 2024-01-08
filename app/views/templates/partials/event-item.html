@@ -8,11 +8,13 @@
   data-type="{{ event.metadata.parsed_metadata.type | slug }}"
   data-start="{{ event.metadata.dates.start }}"
 >
+  {% if event.metadata.images[0] %}
   <img
     src="{{ event.metadata.images[0].src }}"
     alt="{{ event.metadata.images[0].alt }}"
     lazy="true"
   >
+  {% endif %}
   <div>
     <p><a href="{{ event.title | slug }}.html">{{ event.title }}</a></p>
     <p>

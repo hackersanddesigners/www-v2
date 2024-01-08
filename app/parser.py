@@ -289,8 +289,8 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     for img in imgs:
         imageURLs.append({
-            src: img.attrs['src'],
-            alt: img.attrs['alt']
+            'src': img.attrs['src'],
+            'alt': img.attrs['alt']
         })
 
 
