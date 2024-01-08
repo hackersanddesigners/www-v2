@@ -147,17 +147,23 @@ main {
 }
 
 main aside {
-  position: absolute;
-  left: calc( (100% - var(--base-width))/2 + var(--base-width) );
-  /* float: inline-end; */
-  max-width: var(--side-width);
+  float: right;
+  margin-right: calc( (100% - var(--base-width))/2 );
+  /* margin-bottom: 1rem; */
   margin-left: 1rem;
+  /* position: absolute; */
+  /* left: calc( (100% - var(--base-width))/2 + var(--base-width) ); */
+  max-width: var(--side-width);
   z-index: 1;
 }
 
 main aside .info {
   padding: 0.5rem;
   width: 100%;
+}
+
+main aside .info td {
+  vertical-align: baseline;
 }
 
 footer #meta {
@@ -221,11 +227,20 @@ ul li:last-of-type:hover::before {
 /* table of contents */
 
 #toc {
+
   padding: 0.5rem;
   padding-left: 0;
-  width: 100%;
+  /* width: 100%; */
   /* max-width:50%; */
   /* float: right; */
+
+  /* float: left;
+  margin-left: calc( (100% - var(--base-width))/2 ); */
+
+  /* position: absolute;
+  right: calc( (100% - var(--base-width))/2 + var(--base-width) );
+  margin-right: 1rem; */
+
 }
 
 #toctitle h2 {
