@@ -100,7 +100,7 @@ header,
 footer,
 p:not(.image, .iframe),
 div:not(.mw-parser-output, .image, .thumb),
-ul:not(.gallery, .events),
+ul:not(.gallery, .events, .publishing),
 aside,
 menu,
 pre,
@@ -120,7 +120,9 @@ img,
 .thumb,
 iframe,
 .iframe,
-hr
+hr,
+table,
+ul.publishing
 {
   max-width: var(--expanded-width);
   margin-inline: auto;
@@ -473,6 +475,25 @@ article.article-item h3 {
 } */
 
 /* tool styles */
+table.tools {
+}
+
+table.tools th  {
+  text-align: left;
+}
+table.tools tr td {
+  padding: 0.5rem;
+  box-sizing: content-box;
+}
+table.tools tr td.icon {
+  max-width: 4rem;
+  max-height: 4rem;
+
+}
+table.tools tr td.icon img {
+  max-height: 4rem;
+  max-width: 4rem;
+}
 
 
 .tool {

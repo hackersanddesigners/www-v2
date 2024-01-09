@@ -312,9 +312,6 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
         'html': '',
     }
 
-    print( json.dumps( article, indent=2 ) )
-
-
     document = template.render(article=article)
     article['html'] = document
 
@@ -331,7 +328,6 @@ async def make_tool_index(articles, cat: str, cat_label: str):
                       key=lambda d: d['metadata']['creation'],
                       reverse=True)
 
-
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
@@ -340,6 +336,8 @@ async def make_tool_index(articles, cat: str, cat_label: str):
         'footer_nav': footer_nav,
         'html': '',
     }
+
+    # print( json.dumps( article, indent=2 ) )
 
     document = template.render(article=article)
     article['html'] = document

@@ -261,26 +261,26 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     # -- tool parser
     # naive regex to grab the <tool ... /> string
-    tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
+    # tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
 
-    for tk in tool_keywords:
-        tool_key = tk.strip()
-        tool_HTML, repo = parse_tool_tag(tool_key)
+    # for tk in tool_keywords:
+    #     tool_key = tk.strip()
+    #     tool_HTML, repo = parse_tool_tag(tool_key)
 
-        if tool_HTML is not False and repo is not False:
-            tool_soup = BeautifulSoup(tool_HTML, 'lxml')
+    #     if tool_HTML is not False and repo is not False:
+    #         tool_soup = BeautifulSoup(tool_HTML, 'lxml')
 
-            # change all relative URIs to absolute
-            links = tool_soup.find_all('a')
-            tool_convert_rel_uri_to_abs(links, 'href', repo)
+    #         # change all relative URIs to absolute
+    #         links = tool_soup.find_all('a')
+    #         tool_convert_rel_uri_to_abs(links, 'href', repo)
 
-            imgs = tool_soup.find_all('img')
-            tool_convert_rel_uri_to_abs(imgs, 'src', repo)
+    #         imgs = tool_soup.find_all('img')
+    #         tool_convert_rel_uri_to_abs(imgs, 'src', repo)
 
-            # append updated tool_soup to the article's <body>
-            tk.parent.parent.extend(tool_soup.body.contents)
-            # remove <p> with inside the string `<tool .../>`
-            tk.parent.decompose()
+    #         # append updated tool_soup to the article's <body>
+    #         tk.parent.parent.extend(tool_soup.body.contents)
+    #         # remove <p> with inside the string `<tool .../>`
+    #         tk.parent.decompose()
 
 
     # -- extract list of image URLs
