@@ -7,11 +7,10 @@
   <article class="article-item">
     {% if article.image %}
     <img
-      src="{{ article.metadata.images[0] }}"
-      lazy="true"
-      alt=""
+      src="{{ article.metadata.images[0].thumb }}"
+      alt="{{ article.metadata.images[0].alt }}"
+      loading="lazy"
     >
-    <!-- TODO: alt-text -->
     {% endif %}
     <div>
       <h3><a href="/{{ category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>

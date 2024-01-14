@@ -261,26 +261,26 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     # -- tool parser
     # naive regex to grab the <tool ... /> string
-    tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
+    # tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
 
-    for tk in tool_keywords:
-        tool_key = tk.strip()
-        tool_HTML, repo = parse_tool_tag(tool_key)
+    # for tk in tool_keywords:
+    #     tool_key = tk.strip()
+    #     tool_HTML, repo = parse_tool_tag(tool_key)
 
-        if tool_HTML is not False and repo is not False:
-            tool_soup = BeautifulSoup(tool_HTML, 'lxml')
+    #     if tool_HTML is not False and repo is not False:
+    #         tool_soup = BeautifulSoup(tool_HTML, 'lxml')
 
-            # change all relative URIs to absolute
-            links = tool_soup.find_all('a')
-            tool_convert_rel_uri_to_abs(links, 'href', repo)
+    #         # change all relative URIs to absolute
+    #         links = tool_soup.find_all('a')
+    #         tool_convert_rel_uri_to_abs(links, 'href', repo)
 
-            imgs = tool_soup.find_all('img')
-            tool_convert_rel_uri_to_abs(imgs, 'src', repo)
+    #         imgs = tool_soup.find_all('img')
+    #         tool_convert_rel_uri_to_abs(imgs, 'src', repo)
 
-            # append updated tool_soup to the article's <body>
-            tk.parent.parent.extend(tool_soup.body.contents)
-            # remove <p> with inside the string `<tool .../>`
-            tk.parent.decompose()
+    #         # append updated tool_soup to the article's <body>
+    #         tk.parent.parent.extend(tool_soup.body.contents)
+    #         # remove <p> with inside the string `<tool .../>`
+    #         tk.parent.decompose()
 
 
     # -- extract list of image URLs
@@ -288,7 +288,12 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     imgs = soup.find_all('img')
 
     for img in imgs:
-        imageURLs.append(img.attrs['src'])
+        src = img.attrs['src']
+        img_name = src.split('/')[-1]
+        # thumb = src.replace( '/images/', '/images/thumb/' ) + '/250px-' + img_name
+        thumb = mw_url + '/thumb.php?f=' + img_name + '&w=180'
+        alt = img.attrs['alt']
+        imageURLs.append({ 'src': src, 'thumb': thumb, 'alt': alt })
 
 
     # -- return article HTML
@@ -296,7 +301,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     # therefore soup.contents is an empty list
     if len(soup.contents) > 0:
         t = "".join(str(item) for item in soup.body.contents)
-        
+
         return t, imageURLs
 
     else:
@@ -399,7 +404,7 @@ def get_category(categories, cats) -> [str]:
         # <2023-12-20> manually removing the 'Article' category
         # part of every wiki entry created through the Create New Article Page
         # button, as it add the category `Article` by default.
-        
+
         return [cat['category'] for cat
              in categories
              if not cat['category'] == 'Article']

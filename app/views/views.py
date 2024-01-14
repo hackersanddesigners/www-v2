@@ -123,11 +123,14 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     #
     # order articles by date desc
 
-    events = {
-        'upcoming': [],
-        'happening': [],
-        'past': [],
-    }
+    # events = {
+    #     'upcoming': [],
+    #     'happening': [],
+    #     'past': [],
+    # }
+
+    events = []
+    types = []
 
     date_now = arrow.now()
 
@@ -159,7 +162,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
                 else:
                     article['metadata']['parsed_metadata']['time'] = f"{ts_start}"
-                
+
                 # -- construct datetime start
                 date_start = date[0]
 
@@ -188,16 +191,18 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
             if article_ts['start'] is not None and article_ts['end'] is not None:
 
                 if date_now > article_ts['start'] and date_now < article_ts['end']:
-                    events['happening'].append(article)
+                    article['metadata']['when'] = 'happening'
+                    # events['happening'].append(article)
 
             if article_ts['start']:
 
                 if date_now < article_ts['start']:
-                    events['upcoming'].append(article)
+                    article['metadata']['when'] = 'upcoming'
+                    # events['upcoming'].append(article)
 
                 else:
-                    events['past'].append(article)
-
+                    article['metadata']['when'] = 'past'
+                    # events['past'].append(article)
 
             # -- prepare article dates for template
 
@@ -219,12 +224,24 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
                 article['metadata']['times']['end'] = None
 
 
+            print( json.dumps( article, indent=2 ) )
+
+            if ( article['metadata'] and article['metadata']['parsed_metadata'] and article['metadata']['parsed_metadata']['type'] ):
+                event_type = article['metadata']['parsed_metadata']['type']
+                if event_type and event_type not in types:
+                    types.append(event_type)
+
+            events.append(article)
+
+
     # -- sorting events by date desc
 
-    events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    # events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    # events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
+    # events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
+    events = sorted( events, key=lambda d: d['metadata']['dates']['start'] or "" , reverse=True)
+    types = sorted( types, key=str.lower )
 
     nav = make_nav()
     footer_nav = make_footer_nav()
@@ -233,6 +250,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
         'title': cat,
         'slug': slugify(cat_label),
         'events': events,
+        'types': types,
         'nav': nav,
         'footer_nav': footer_nav,
         'html': '',
@@ -256,7 +274,7 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    sorted(articles,
+    articles = sorted(articles,
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
@@ -280,8 +298,8 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
     template = get_template(f"{cat}-index")
     nav = make_nav()
     footer_nav = make_footer_nav()
-    
-    sorted(articles,
+
+    articles = sorted(articles,
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
@@ -310,7 +328,6 @@ async def make_tool_index(articles, cat: str, cat_label: str):
                       key=lambda d: d['metadata']['creation'],
                       reverse=True)
 
-
     article = {
         'title': cat_label,
         'slug': slugify(cat_label),
@@ -319,6 +336,8 @@ async def make_tool_index(articles, cat: str, cat_label: str):
         'footer_nav': footer_nav,
         'html': '',
     }
+
+    # print( json.dumps( article, indent=2 ) )
 
     document = template.render(article=article)
     article['html'] = document

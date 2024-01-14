@@ -100,7 +100,7 @@ header,
 footer,
 p:not(.image, .iframe),
 div:not(.mw-parser-output, .image, .thumb),
-ul:not(.gallery),
+ul:not(.gallery, .events, .publishing),
 aside,
 menu,
 pre,
@@ -120,7 +120,9 @@ img,
 .thumb,
 iframe,
 .iframe,
-hr
+hr,
+table,
+ul.publishing
 {
   max-width: var(--expanded-width);
   margin-inline: auto;
@@ -147,17 +149,23 @@ main {
 }
 
 main aside {
-  position: absolute;
-  left: calc( (100% - var(--base-width))/2 + var(--base-width) );
-  /* float: inline-end; */
-  max-width: var(--side-width);
+  float: right;
+  margin-right: calc( (100% - var(--base-width))/2 );
+  /* margin-bottom: 1rem; */
   margin-left: 1rem;
+  /* position: absolute; */
+  /* left: calc( (100% - var(--base-width))/2 + var(--base-width) ); */
+  max-width: var(--side-width);
   z-index: 1;
 }
 
 main aside .info {
   padding: 0.5rem;
   width: 100%;
+}
+
+main aside .info td {
+  vertical-align: baseline;
 }
 
 footer #meta {
@@ -221,11 +229,20 @@ ul li:last-of-type:hover::before {
 /* table of contents */
 
 #toc {
+
   padding: 0.5rem;
   padding-left: 0;
-  width: 100%;
+  /* width: 100%; */
   /* max-width:50%; */
   /* float: right; */
+
+  /* float: left;
+  margin-left: calc( (100% - var(--base-width))/2 ); */
+
+  /* position: absolute;
+  right: calc( (100% - var(--base-width))/2 + var(--base-width) );
+  margin-right: 1rem; */
+
 }
 
 #toctitle h2 {
@@ -389,24 +406,19 @@ input[type=submit] {
 
 /* pages: events */
 
-section.current,
-section.upcoming,
-section.past {
+menu.types {
+  padding: 0;
+}
+
+ul.events,
+ul.publishing {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 1rem;
   overflow: scroll;
 }
-section.current h2,
-section.upcoming h2,
-section.past h2 {
-  width: 100%;
-  max-width: unset;
-}
-section.current article.event,
-section.upcoming article.event,
-section.past article.event  {
+article.event  {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -417,13 +429,13 @@ section.past article.event  {
   border: var(--solid);
   max-width: 30rem;
 }
-section.current article.event img {
+article.event.when-upcoming img {
   max-height: 40rem;
 }
-section.upcoming article.event img {
+article.event.when-current img {
   max-height: 20rem;
 }
-section.past article.event img {
+article.event.when-past img {
   max-height: 10rem;
 }
 
@@ -463,6 +475,25 @@ article.article-item h3 {
 } */
 
 /* tool styles */
+table.tools {
+}
+
+table.tools th  {
+  text-align: left;
+}
+table.tools tr td {
+  padding: 0.5rem;
+  box-sizing: content-box;
+}
+table.tools tr td.icon {
+  max-width: 4rem;
+  max-height: 4rem;
+
+}
+table.tools tr td.icon img {
+  max-height: 4rem;
+  max-width: 4rem;
+}
 
 
 .tool {

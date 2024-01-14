@@ -1,116 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<main id="main-content">
-
-
-  <!-- CURRENTLY HAPPENING -->
-
-  {% if article.events.happening | length > 0 %}
-    <section class="current">
-      <h2>Happening now</h2>
-      {% for event in article.events.happening %}
-        <div>
-          <a href="{{ event.title | slug }}.html">{{ event.title }}</a>
-          <div>
-            {{ event.metadata.location }}
-            {{ event.metadata.date }}
-            {{ event.metadata.time }}
-          </div>
-        </div>
+<main id="main-content" aria-label="All H&D's activities.">
+  <h1>Activities</h1>
+  {% if article.types | length > 0 %}
+    <menu class="types">
+      {% for type in article.types %}
+        <label>
+          <input
+            type="radio"
+            name="type"
+            value="{{ type | slug }}"
+          >
+          {{ type }}
+        </label>
       {% endfor %}
-    </section>
+    </menu>
   {% endif %}
-
-  <!-- UPCOMING -->
-
-  {% if article.events.upcoming | length > 0 %}
-  <section class="upcoming">
-    <h2>Upcoming</h2>
-    {% for event in article.events.upcoming %}
-    <article class="event">
-      <img
-        src="{{ event.metadata.images[0] }}"
-        alt=""
-      >
-        <!-- TODO add alt text -->
-        <div>
-          <p><a href="/{{ event.metadata.categories[0] }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
-          <p>
-            {% if event.metadata.location %}
-              {{ event.metadata.location }}
-              <br>
-            {% endif %}
-            <time datetime="{{ event.metadata.dates.start }}">
-              {{ event.metadata.dates.start }}
-            </time>
-            {% if event.metadata.dates.end %} –
-              <time datetime="{{ event.metadata.dates.end }}">
-                {{ event.metadata.dates.end }}
-              </time>
-            {% endif %}
-            {% if event.metadata.time %}
-              <time datetime="{{ event.metadata.times.start }}">
-                {{ event.metadata.times.start }}
-              </time>
-              {% if event.metadata.times.end %}–
-                <time datetime="{{ event.metadata.times.end }}">
-                  {{ event.metadata.times.end }}
-                </time>
-              {% endif %}
-            </p>
-          {% endif %}
-        </div>
-      </article>
-    {% endfor %}
-    </section>
-  {% endif %}
-
-  <!-- PAST -->
-  <!-- TODO: are we sticking to table view? what about in mobile? -->
-
-  {% if article.events.past | length > 0 %}
-    <section class="past">
-      <h2>Past</h2>
-      {% for event in article.events.past %}
-      <article class="event">
-        <img
-          src="{{ event.metadata.images[0] }}"
-          alt=""
-        >
-        <!-- TODO add alt text -->
-        <div>
-          <p><a href="/{{ event.metadata.categories[0] }}/{{ event.title | slug }}.html">{{ event.title }}</a></p>
-          <p>
-            {% if event.metadata.location %}
-              {{ event.metadata.location }}
-              <br>
-            {% endif %}
-            <time datetime="{{ event.metadata.dates.start }}">
-              {{ event.metadata.dates.start }}
-            </time>
-            {% if event.metadata.dates.end %} –
-              <time datetime="{{ event.metadata.dates.end }}">
-                {{ event.metadata.dates.end }}
-              </time>
-            {% endif %}
-            {% if event.metadata.time %}
-              <time datetime="{{ event.metadata.times.start }}">
-                {{ event.metadata.times.start }}
-              </time>
-              {% if event.metadata.times.end %}–
-                <time datetime="{{ event.metadata.times.end }}">
-                  {{ event.metadata.times.end }}
-                </time>
-              {% endif %}
-            </p>
-          {% endif %}
-        </div>
-      </article>
-    {% endfor %}
-    </section>
+  {% if article.events | length > 0 %}
+    <ul class="events">
+      {% for event in article.events %}
+      {% include "partials/event-item.html" %}
+      {% endfor %}
+    </ul>
   {% endif %}
 </main>
-
-</main>
-<script src="/static/scripts/tables.js"></script>
+<script src="/static/scripts/events.js"></script>
 {% endblock %}

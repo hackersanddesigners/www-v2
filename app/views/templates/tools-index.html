@@ -1,25 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 
-<main class="pt1 pr1 pb2 pl1">
+<main id="main-content" aria-label="All H&D's tools.">
   <h1>{{ article.title }}</h1>
-  <div class="table-container">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-            <th scope="col">Category</th>
-            <th scope="col">Repository</th>
-            <th scope="col">See also</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for article in article.articles %}
-	{% include "partials/tool-item.html" %}
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <table class="tools">
+    <thead>
+      <tr>
+        <th scope="col" class="icon">Icon</th>
+        <th scope="col" class="title">Title</th>
+        <th scope="col" class="repo">Repository</th>
+        <th scope="col" class="inuse">In Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for article in article.articles %}
+      {% include "partials/tool-item.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
 </main>
 
 {% endblock %}

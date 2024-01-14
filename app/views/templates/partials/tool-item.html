@@ -1,20 +1,24 @@
 <tr id="{{ article.title | slug }}">
-  <td>
-    <h3><a href="/{{ article.metadata.categories[0] }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
-  </td>
-  <td>
-    {{ article.metadata.categories[0] }}
-  </td>
-  <td>
-    {% if article.tool %}
-    <a href="{{ article.tool.uri }}">{{ article.tool.label }}</a> 
-    {% else %}
-    <p>No repository available</p>
+  <td class="icon">
+    {% if article.metadata.images | length > 0 %}
+    <img
+      src="{{ article.metadata.images[0].thumb }}"
+      alt="{{ article.metadata.images[0].alt }}"
+      loading="lazy"
+    >
     {% endif %}
   </td>
-  <td>
-    {% for backlink in article.backlinks %}
-    <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
+  <td class="title">
+    <h3><a href="{{ article.title | slug }}">{{ article.title }}</a></h3>
+  </td>
+  <td class="repo">
+    {% if article.metadata.tool %}
+    <a href="{{ article.tool.uri }}">{{ article.tool.label }}</a>
+    {% endif %}
+  </td>
+  <td class="inuse">
+    {% for backlink in article.metadata.backlinks %}
+    <a href="{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
     {% endfor %}
   </td>
 </tr>

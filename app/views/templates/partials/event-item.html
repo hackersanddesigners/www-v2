@@ -1,0 +1,45 @@
+<article
+  class="
+    event
+    when-{{ event.metadata.when }}
+    type-{{ event.metadata.parsed_metadata.type | slug }}
+  "
+  data-when="{{ event.metadata.when }}"
+  data-type="{{ event.metadata.parsed_metadata.type | slug }}"
+  data-start="{{ event.metadata.dates.start }}"
+>
+  {% if event.metadata.images[0] %}
+  <img
+    src="{{ event.metadata.images[0].thumb }}"
+    alt="{{ event.metadata.images[0].alt }}"
+    loading="lazy"
+  >
+  {% endif %}
+  <div>
+    <p><a href="{{ event.title | slug }}.html">{{ event.title }}</a></p>
+    <p>
+      {% if event.metadata.location %}
+        {{ event.metadata.location }}
+        <br>
+      {% endif %}
+      <time datetime="{{ event.metadata.dates.start }}">
+        {{ event.metadata.dates.start }}
+      </time>
+      {% if event.metadata.dates.end %} –
+        <time datetime="{{ event.metadata.dates.end }}">
+          {{ event.metadata.dates.end }}
+        </time>
+      {% endif %}
+      {% if event.metadata.time %}
+        <time datetime="{{ event.metadata.times.start }}">
+          {{ event.metadata.times.start }}
+        </time>
+        {% if event.metadata.times.end %}–
+          <time datetime="{{ event.metadata.times.end }}">
+            {{ event.metadata.times.end }}
+          </time>
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+</article>
