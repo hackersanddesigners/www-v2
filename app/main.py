@@ -36,11 +36,15 @@ from app.fetch import (
     query_wiki,
     fetch_category,
 )
-from app.file_ops import file_lookup
+from app.file_ops import (
+    file_lookup,
+    search_file_content,
+)
 from app.build_article import make_article
 from app.build_wiki import get_category
 from slugify import slugify
 from app.read_settings import main as read_settings
+import arrow
 load_dotenv()
 
 
@@ -125,6 +129,32 @@ async def root(request: Request):
         article['last_modified'] = article['metadata']['last_modified']
         article['backlinks'] = article['metadata']['backlinks']
 
+        # list of upcoming events
+
+        # every new article created and updated (and deleted) will be written to disk.
+        # that's our rudimentary DB that we should query more against.
+        # instead of going around and against MW APIs limitations
+        # (eg. we can query by event start and end date w/o re-installing SMW)
+        # we grep through the files for a specific pattern match:
+        # `OnDate::<YYYY/MM/DD>`
+        # `$ rg "OnDate::<current-year+month>|<next-year>" ./wiki/ --type html --files-with-matches`
+
+        current_timestamp = arrow.now()
+
+        # we do `<current-year>/<current-month>` to cut through the current's year possible
+        # result (for eg if the current time is towards the end of the year. this should
+        # make things slightly faster.
+        current_year_month = f"{current_timestamp.year}/{current_timestamp.month}"
+        next_year = current_timestamp.shift(years=+1).year
+
+        pattern = f"OnDate::{current_year_month}|{next_year}/"
+        filepaths = search_file_content(pattern)
+        print(f"filepath => {filepaths}")
+
+        # TODO: for Karl: i don't know how the design of the frontpage should be
+        # when using the matching articles, so for now i didn't do any BeautifoulSoup
+        # HTML extraction to fetch data from the HTML wiki articles.
+        
         return templates.TemplateResponse("index.html",
                                           {"request": request,
                                            "article": article})

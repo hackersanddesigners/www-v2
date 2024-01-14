@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+import sys
+import subprocess
 import os
 import glob
 from pathlib import Path
@@ -19,6 +21,45 @@ def file_lookup(filename: str) -> list[str]:
              in Path(WIKI_DIR).glob(pattern)]
 
     return paths
+
+
+def search_file_content(pattern: str) -> list[str]:
+    """
+    Run a ripgrep search with the given pattern
+    inside WIKI_DIR and return a list of filepaths.
+    """
+
+    try:
+        RG_PATH = subprocess.check_output(['/usr/bin/which', 'rg'],
+                                          text=True, cwd=WIKI_DIR).strip()
+        
+    except subprocess.CalledProcessError as e:
+        # no ripgrep (rg) found in the system.
+        # stop everything and exit. print a user-facing
+        # message asking to install ripgrep.
+        print(f"search_file_content error =>  ripgrep is not installed\n",
+              f"in the system. please install it, see README.md")
+        sys.exit(1)
+
+    print(f"RG_PATH => {RG_PATH}")
+
+    try:
+        # we're `cd`-ing into WIKI_DIR by passing the option
+        # `cwd=WIKI_DIR, so we don't pass to `rg` a base-dir path
+        # at it's assumed to default to CWD
+        matches = subprocess.check_output([RG_PATH,
+                                           '--type', 'html',
+                                           '--files-with-matches',
+                                           pattern],
+                                          text=True, cwd=WIKI_DIR)
+
+        matches = matches.splitlines()
+        return matches
+    except subprocess.CalledProcessError as e:
+        # no rg match. return empty list.
+        print(f"search-file-content => no match for {pattern}")
+        
+        return []
 
 
 async def write_to_disk(page_slug: str, document: str, sem):

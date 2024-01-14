@@ -4,6 +4,8 @@
 
 we're using python 3.10 at the time of writing (check `.python-version`). we're also using a nix-based program (devenv) to create a complete dev environment for the project. you don't have to use it. we provide a classic `requirements.txt` to install packages with `pip`.
 
+we also use [rigprep](https://github.com/BurntSushi/ripgrep) (`rg`) to search across the `WIKI_DIR` (the folder with the static HTML articles fetched from the MediaWiki). please install ripgrep if it's missing from your system.
+
 ### devenv
 
 if you're using `devenv`, do the following:
