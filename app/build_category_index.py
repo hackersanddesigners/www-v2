@@ -163,7 +163,7 @@ async def update_categories(article, template, sem):
         snippet_new = template.render(article=article)
 
         # make bs4 object out of the HTML string
-        snippet_new = BeautifulSoup(snippet_new)
+        snippet_new = BeautifulSoup(snippet_new, 'lxml')
 
         # -- get cat_label
         cat_label = None
