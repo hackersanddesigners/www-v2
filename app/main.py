@@ -119,6 +119,8 @@ async def root(request: Request):
 
         print(f"prepared-articles => {prepared_articles}")        
 
+        # `Hackers & Designers` article
+        article = await make_article(home_art, client)
         article['slug'] = 'index'
         article['last_modified'] = article['metadata']['last_modified']
         article['backlinks'] = article['metadata']['backlinks']
