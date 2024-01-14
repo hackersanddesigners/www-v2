@@ -144,7 +144,7 @@ async def root(request: Request):
         # we do `<current-year>/<current-month>` to cut through the current's year possible
         # result (for eg if the current time is towards the end of the year. this should
         # make things slightly faster.
-        current_year_month = f"{current_timestamp.year}/{current_timestamp.month}"
+        current_year_month = f"{current_timestamp.year}/{current_timestamp.format('MM')}/"
         next_year = current_timestamp.shift(years=+1).year
 
         pattern = f"OnDate::{current_year_month}|{next_year}/"
