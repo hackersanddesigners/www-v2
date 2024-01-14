@@ -34,6 +34,7 @@ from app.fetch import (
     create_context,
     query_continue,
     query_wiki,
+    fetch_category,
 )
 from app.file_ops import file_lookup
 from app.build_article import make_article
@@ -97,13 +98,26 @@ async def root(request: Request):
     fetch and return Hackers & Designers article
     """
 
-    sem = None
+    home_art = config['wiki']['frontpage']['article']
+    home_cat = config['wiki']['frontpage']['category']
+      
     context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0)
     async with httpx.AsyncClient(verify=context) as client:
 
-        frontpage = {"news": None, "upcoming_events": []}
+        # list of articles w/ `highlight` cat
+        data = await fetch_category(home_cat, client)
+        art_tasks = []
+        for article in data:
+            task = make_article(article['title'], client)
+            art_tasks.append(asyncio.ensure_future(task))
 
-        article = await make_article("Hackers & Designers", client)
+        prepared_articles = await asyncio.gather(*art_tasks)
+        prepared_articles = [item for item
+                             in prepared_articles 
+                             if item is not None]
+
+        print(f"prepared-articles => {prepared_articles}")        
 
         article['slug'] = 'index'
         article['last_modified'] = article['metadata']['last_modified']

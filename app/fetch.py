@@ -142,6 +142,36 @@ async def fetch_article(title: str, client):
         return article, backlinks, redirect_target
 
 
+async def fetch_category(cat, client):
+    print(f"fetching category data...")
+
+    params = {
+        'action': 'query',
+        'list': 'categorymembers',
+        'cmtitle': f"Category:{cat}",
+        'cmlimit': '50',
+        'cmprop': 'ids|title|timestamp',
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1',
+    }
+
+    # -- get full list of entries from category
+    data = []
+    async for response in query_continue(client, URL, params):
+
+        response = response['categorymembers']
+        if len(response) > 0 and 'missing' in response[0]:
+            title = response[0]['title']
+            print(f"the page could not be found => {title}")
+
+        else:
+            data.extend(response)
+
+
+    return data
+
+
 async def query_wiki(ENV: str, URL: str, query: str):
     print(f"Querying mediawiki for { query } ...")
 

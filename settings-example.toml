@@ -1,11 +1,16 @@
 [wiki]
 
-# set what's the article to use for the frontpage
-frontpage = "Hackers & Designers"
+# list of translated languages
+translation_langs = ["nl"]
+default = "en"
+
+# article title and cat used to fetch articles for the frontpage
+[wiki.frontpage]
+article = "Hackers & Designers"
+category = "Highlight"
 
 # as a TOML illiterate this seemed the most reasonable setup: apologies if not!
 # please fill out all fields, including "label" even if you set `nav: false`
-
 [wiki.categories.Article]
 parse = true
 nav = false
@@ -32,9 +37,7 @@ nav = true
 fallback = false
 label = "Tools"
 
-
 # footer links
-
 [wiki.footer_links.About]
 nav = true
 label = "About"
@@ -55,3 +58,7 @@ label = "Privacy Policy"
 host_default = 'github'
 host = { github = ['https://raw.githubusercontent.com', 'https://github.com'] }
 branch_default = ['main', 'master']
+
+[domain]
+canonical_url = "https://hackersanddesigners.nl"
+mw_url = "http://localhost:8001"
