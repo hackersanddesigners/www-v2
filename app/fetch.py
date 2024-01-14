@@ -113,9 +113,15 @@ async def fetch_article(title: str, client):
         if query_data['pages'][0]['ns'] == -1:
             article = None
 
-        # -- filter out `Concept:<title>` articles
-        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
-            article = None
+        if 'parse' in parse_data:
+            # -- filter out `Concept:<title>` articles
+            if parse_data['parse']['title'].startswith("Concept:"):
+                return
+
+            # -- filter out `Special:<title>` articles
+            if parse_data['parse']['title'].startswith("Special:"):
+                return
+
             # -- filter out `<title>/<num-version>/<lang> (eg article snippet translation)
 
             translation_langs = config['wiki']['translation_langs']
@@ -129,11 +135,7 @@ async def fetch_article(title: str, client):
                 if lang_stem in translation_langs:
                     return
 
-        # -- filter out `Special:<title>` articles
-        if 'parse' in parse_data and parse_data['parse']['title'].startswith("Special:"):
-            article = None
 
-        if 'parse' in parse_data:
             article = parse_data['parse']
 
             revs = query_data['pages'][0]['revisions']
@@ -141,13 +143,13 @@ async def fetch_article(title: str, client):
             article['last_modified'] = revs[len(revs) -1]['timestamp']
 
 
-        backlinks = query_data['backlinks']
+            backlinks = query_data['backlinks']
 
-        for link in backlinks:
-            link['slug'] = slugify(link['title'])
+            for link in backlinks:
+                link['slug'] = slugify(link['title'])
 
-        if article and len(article['redirects']) > 0:
-            redirect_target = article['redirects'][0]['to']
+            if article and len(article['redirects']) > 0:
+                redirect_target = article['redirects'][0]['to']
 
         return article, backlinks, redirect_target
 
