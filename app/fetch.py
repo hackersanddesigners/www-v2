@@ -6,12 +6,15 @@ import httpx
 from pathlib import Path
 from slugify import slugify
 from app.log_to_file import main as log
+from app.read_settings import main as read_settings
 load_dotenv()
 
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')
 MEDIA_DIR = os.getenv('MEDIA_DIR')
+
+config = read_settings()
 
 
 def create_context(ENV):
@@ -113,6 +116,14 @@ async def fetch_article(title: str, client):
         # -- filter out `Concept:<title>` articles
         if 'parse' in parse_data and parse_data['parse']['title'].startswith("Concept:"):
             article = None
+            # -- filter out `<title>/<num-version>/<lang> (eg article snippet translation)
+            translation_langs = config['wiki']['translation_langs']
+            lang_stem = parse_data['parse']['title'].split('/')[-1]
+
+            # we check if article's title ending is matching any of the lang set in
+            # the settings.toml variable `translation_langs`
+            if lang_stem in translation_langs:
+                return
 
         # -- filter out `Special:<title>` articles
         if 'parse' in parse_data and parse_data['parse']['title'].startswith("Special:"):
