@@ -124,16 +124,16 @@ async def fetch_article(title: str, client):
 
             # -- filter out `<title>/<num-version>/<lang> (eg article snippet translation)
 
-            translation_langs = config['wiki']['translation_langs']
-            lang_stem = parse_data['parse']['title'].split('/')[-1]
+            # translation_langs = config['wiki']['translation_langs']
+            # lang_stem = parse_data['parse']['title'].split('/')[-1]
 
-            # check if value before lang is a number
-            if parse_data['parse']['title'].split('/')[-2].isdigit():
-                
-                # check if article's title ending is matching any of the lang set in
-                # the settings.toml variable `translation_langs`
-                if lang_stem in translation_langs:
-                    return
+            # # check if value before lang is a number
+            # if parse_data['parse']['title'].split('/')[-2].isdigit():
+
+            #     # check if article's title ending is matching any of the lang set in
+            #     # the settings.toml variable `translation_langs`
+            #     if lang_stem in translation_langs:
+            #         return
 
 
             article = parse_data['parse']
