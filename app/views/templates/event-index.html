@@ -18,7 +18,7 @@
   {% endif %}
   {% if article.events | length > 0 %}
     <ul class="events">
-      {% for event in article.events %}
+      {% for article in article.events %}
       {% include "partials/event-item.html" %}
       {% endfor %}
     </ul>
