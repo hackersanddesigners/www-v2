@@ -16,6 +16,7 @@
         {{ article.metadata.dates.start }}
       </time>
       {% if article.metadata.dates.end %} –
+        <br>
         <time datetime="{{ article.metadata.dates.end }}">
           {{ article.metadata.dates.end }}
         </time>
@@ -25,8 +26,9 @@
           {{ article.metadata.times.start }}
         </time>
         {% if article.metadata.times.end %}–
+          <br>
           <time datetime="{{ article.metadata.times.end }}">
-            {{ article.metadata.times.end }}
+           {{ article.metadata.times.end }}
           </time>
         {% endif %}
       </p>
