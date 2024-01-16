@@ -602,12 +602,14 @@ article.event p {
 }
 article.event time {
   /* font-family: 'Courier New', Courier, monospace; */
+  max-width: 15rem;
   font-family: notcourier;
   font-size: 1.3rem;
 }
 
 article.event img {
-  max-height: 10rem;
+  max-height: 12rem;
+  /* width: 100%; */
   /* filter:
   drop-shadow( 0px 0px 5px rgb(255, 0, 0))
   drop-shadow( 0px 0px 10px rgb(0, 119, 255)); */
