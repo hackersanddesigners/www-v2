@@ -9,20 +9,9 @@
   data-start="{{ article.metadata.dates.start }}"
   id="{{ article.title | slug }}"
 >
-  {% if article.metadata.images[0] %}
-  <img
-    src="{{ article.metadata.images[0].thumb }}"
-    alt="{{ article.metadata.images[0].alt }}"
-    loading="lazy"
-  >
-  {% endif %}
-  <div>
-    <p><a href="{{ article.title | slug }}.html">{{ article.title }}</a></p>
+<!-- <a href="{{ article.title | slug }}.html"> -->
+  <!-- <div> -->
     <p>
-      {% if article.metadata.location %}
-        {{ article.metadata.location }}
-        <br>
-      {% endif %}
       <time datetime="{{ article.metadata.dates.start }}">
         {{ article.metadata.dates.start }}
       </time>
@@ -41,6 +30,15 @@
           </time>
         {% endif %}
       </p>
-    {% endif %}
-  </div>
+      {% endif %}
+    <p class="title"><a href="{{ article.title | slug }}.html">{{ article.title }}</a></p>
+  <!-- </div> -->
+  {% if article.metadata.images[0] %}
+  <img
+    src="{{ article.metadata.images[0].thumb }}"
+    alt="{{ article.metadata.images[0].alt }}"
+    loading="lazy"
+  >
+  {% endif %}
+<!-- </a> -->
 </article>
