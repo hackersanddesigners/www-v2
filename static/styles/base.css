@@ -580,6 +580,9 @@ article.event div {
 
 }
 
+article.event a {
+  text-decoration: none;
+}
 article.event .title {
   max-width: 15rem;
   /* font-family: Arial, Helvetica, sans-serif; */
@@ -587,13 +590,12 @@ article.event .title {
   font-size: 1.3rem;
   margin-bottom: 0.65rem;
   line-height: 1.1;
-}
-article.event .title a {
   color: var(--black);
   /* text-decoration: none; */
   /* text-decoration-style: wavy;
   text-decoration-thickness: 0.25rem;
   text-decoration-color: rgba(65, 97, 29, 0.349); */
+  text-decoration: underline;
   text-decoration-thickness: 0.5;
   text-decoration-color: var(--brown);
 }
@@ -605,7 +607,6 @@ article.event time {
   max-width: 15rem;
   font-family: notcourier;
   font-size: 1.3rem;
-  text-decoration: none;
 }
 
 article.event img {
