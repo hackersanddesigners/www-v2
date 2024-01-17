@@ -108,6 +108,13 @@ def make_timestamp(t: str):
         return ts
 
 
+def make_timestamp_full(t: str):
+
+    if t:
+        ts = arrow.get(t).to('local').format('YYYY-MM-DD hh:mm:ss')
+        return ts
+
+
 def date_split(date: str):
 
     dates = date.split('-')
