@@ -329,8 +329,8 @@ ul li:last-of-type:hover::before {
   top: 4.5rem;
   /* top: 4rem; */
   z-index: 10000;
-  left: calc( (100% - var(--expanded-width))/2 ) ;
-  max-width: calc((var(--expanded-width) - var(--base-width))/2 - 1rem);
+  left: calc( (100% - var(--expanded-width))/2 - 1rem);
+  width: calc((var(--expanded-width) - var(--base-width))/2);
   /* left: 0; */
   background-color: var(--beige);
   font-family: 'authentic';

@@ -45,6 +45,10 @@ from app.build_wiki import get_category
 from slugify import slugify
 from app.read_settings import main as read_settings
 import arrow
+from bs4 import BeautifulSoup
+import aiofiles
+from aiofiles import os as aos
+
 load_dotenv()
 
 
@@ -71,11 +75,11 @@ URL = os.getenv('BASE_URL')
 
 
 config = read_settings()
-    
+
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
-    
+
     if exc.status_code == 404:
         message = "Nothing was found here."
     elif exc.status_code == 500:
@@ -104,7 +108,7 @@ async def root(request: Request):
 
     home_art = config['wiki']['frontpage']['article']
     home_cat = config['wiki']['frontpage']['category']
-      
+
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0)
     async with httpx.AsyncClient(verify=context) as client:
@@ -118,10 +122,9 @@ async def root(request: Request):
 
         prepared_articles = await asyncio.gather(*art_tasks)
         prepared_articles = [item for item
-                             in prepared_articles 
+                             in prepared_articles
                              if item is not None]
 
-        print(f"prepared-articles => {prepared_articles}")        
 
         # `Hackers & Designers` article
         article = await make_article(home_art, client)
@@ -129,32 +132,55 @@ async def root(request: Request):
         article['last_modified'] = article['metadata']['last_modified']
         article['backlinks'] = article['metadata']['backlinks']
 
+
+        article['highlights'] = prepared_articles
+
+
+
         # list of upcoming events
 
         # every new article created and updated (and deleted) will be written to disk.
-        # that's our rudimentary DB that we should query more against.
-        # instead of going around and against MW APIs limitations
-        # (eg. we can query by event start and end date w/o re-installing SMW)
-        # we grep through the files for a specific pattern match:
-        # `OnDate::<YYYY/MM/DD>`
-        # `$ rg "OnDate::<current-year+month>|<next-year>" ./wiki/ --type html --files-with-matches`
+        # # that's our rudimentary DB that we should query more against.
+        # # instead of going around and against MW APIs limitations
+        # # (eg. we can query by event start and end date w/o re-installing SMW)
+        # # we grep through the files for a specific pattern match:
+        # # `OnDate::<YYYY/MM/DD>`
+        # # `$ rg "OnDate::<current-year+month>|<next-year>" ./wiki/ --type html --files-with-matches`
 
-        current_timestamp = arrow.now()
+        # current_timestamp = arrow.now()
 
-        # we do `<current-year>/<current-month>` to cut through the current's year possible
-        # result (for eg if the current time is towards the end of the year. this should
-        # make things slightly faster.
-        current_year_month = f"{current_timestamp.year}/{current_timestamp.format('MM')}/"
-        next_year = current_timestamp.shift(years=+1).year
+        # # we do `<current-year>/<current-month>` to cut through the current's year possible
+        # # result (for eg if the current time is towards the end of the year. this should
+        # # make things slightly faster.
+        # current_year_month = f"{current_timestamp.year}/{current_timestamp.format('MM')}/"
+        # next_year = current_timestamp.shift(years=+1).year
 
-        pattern = f"OnDate::{current_year_month}|{next_year}/"
-        filepaths = search_file_content(pattern)
-        print(f"filepath => {filepaths}")
+        # pattern = f"OnDate::{current_year_month}|{next_year}/"
+        # filepaths = search_file_content(pattern)
+        # print(f"filepath => {filepaths}")
 
         # TODO: for Karl: i don't know how the design of the frontpage should be
         # when using the matching articles, so for now i didn't do any BeautifoulSoup
         # HTML extraction to fetch data from the HTML wiki articles.
-        
+
+
+        upcoming_events = []
+        events_path = file_lookup("events")
+
+        if (events_path[0]):
+            if await aos.path.exists(events_path[0]):
+                async with aiofiles.open(events_path[0], mode='r') as f:
+                    tree = await f.read()
+                    soup = BeautifulSoup(tree, 'lxml')
+                    upcoming_events = soup.find_all("article", {"class": "when-upcoming" })
+                    upcoming_events_str = []
+                    for x in upcoming_events:
+                        upcoming_events_str.append(str(x))
+
+        article['upcoming'] = upcoming_events_str
+
+        print( json.dumps( article, indent=2 ) )
+
         return templates.TemplateResponse("index.html",
                                           {"request": request,
                                            "article": article})
@@ -184,7 +210,7 @@ async def root(request: Request):
 #     cats = config['wiki']['categories']
 #     uri_list = [cat['label'].lower() for cat in cats.values()]
 #     uri_list.append('static')
-    
+
 #     if uri_first not in uri_list:
 #         matches = file_lookup(uri)
 
@@ -193,7 +219,7 @@ async def root(request: Request):
 #             new_url = "/".join(filename.split('/')[1:])
 #             redirect_url = f"/{new_url}"
 #             return RedirectResponse(url=redirect_url)
-        
+
 
 #     response = await call_next(request)
 #     return response
@@ -213,7 +239,7 @@ async def search(request: Request,
 
     # -- make pagination
     pagination = paginator(results, 5, page)
-    
+
     article = await make_search_index(pagination['data'], query)
 
     return templates.TemplateResponse("search-index.html",
