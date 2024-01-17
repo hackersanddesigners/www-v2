@@ -605,6 +605,7 @@ article.event time {
   max-width: 15rem;
   font-family: notcourier;
   font-size: 1.3rem;
+  text-decoration: none;
 }
 
 article.event img {
