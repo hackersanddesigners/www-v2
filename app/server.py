@@ -71,11 +71,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                 try:
                     article_list = []
-
-                    # article is a tuple in the form: (article_html, article_metadata)
                     article = await make_article(msg['title'], client)
-
-                    # print( json.dumps( article, indent=2 ) )
 
                     if not article:
                         return
@@ -91,16 +87,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     # since if article returns None, we stop everything
                     # right there.
                     article_list.append(article)
-
-                    # -- make article translations articles
-                    # if len(article[1]['translations']) > 0:
-                    #     art_tasks = []
-                    #     for translation in article[1]['translations']:
-                    #         trans_task = make_article(translation, client, metadata_only)
-                    #         art_tasks.append(asyncio.ensure_future(trans_task))
-
-                    #     prepared_articles = await asyncio.gather(*art_tasks)
-                    #     article_list.extend(prepared_articles)
 
                     # -- update every category index page the article has
                     #    and write it to disk
