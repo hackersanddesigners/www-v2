@@ -128,7 +128,8 @@ async def fetch_article(title: str, client):
             lang_stem = parse_data['parse']['title'].split('/')[-1]
 
             # check if value before lang is a number
-            if parse_data['parse']['title'].split('/')[-2].isdigit():
+            tokens = parse_data['parse']['title'].split('/')
+            if len(tokens) >= 2 and tokens[-2].isdigit():
                 
                 # check if article's title ending is matching any of the lang set in
                 # the settings.toml variable `translation_langs`
