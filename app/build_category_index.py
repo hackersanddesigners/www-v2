@@ -140,7 +140,7 @@ async def build_categories(categories: list[str], template, sem):
     await asyncio.gather(*cat_tasks_html)
 
 
-async def update_categories(article, template, sem):
+async def update_categories(article, sem):
     """
     Update Index page for each value part of `categories`.
     We don't rebuild the whole Index page from scratch by parsing every
@@ -177,6 +177,7 @@ async def update_categories(article, template, sem):
                 cat_label = cats[k]['label']
 
         if cat_label is None:
+            print(f"update-categories err => no cat_label set for {cat}")
             return
         # --
 

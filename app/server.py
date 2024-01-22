@@ -90,7 +90,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     # -- update every category index page the article has
                     #    and write it to disk
-                    await update_categories(article, template, sem)
+                    await update_categories(article, sem)
 
                     # -- write article to disk
                     for article in article_list:
@@ -139,7 +139,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                             await save_article(target, target['slug'], template, sem)
 
-                            await update_categories(target, template, sem)
+                            await update_categories(target, sem)
 
                         except Exception as e:
                             print(f"move article err => {e}")
