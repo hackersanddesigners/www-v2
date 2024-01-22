@@ -13,11 +13,11 @@
     >
     {% endif %}
     <div>
-      <h3><a href="/{{ category }}/{{ article.title | slug }}">{{ article.title }}</a></h3>
+      <h3><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h3>
       {% if article.backlinks | length > 0 %}
       <div>See also:
         {% for backlink in article.backlinks %}
-        <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
+        <a href="/{{ backlink.title | slug }}.html" class="pr0-5">{{ backlink.title }}</a>
         {% endfor %}
       </div>
       {% endif %}

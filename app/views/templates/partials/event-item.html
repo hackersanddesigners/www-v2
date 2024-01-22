@@ -9,7 +9,7 @@
   data-start="{{ article.metadata.dates.start }}"
   id="{{ article.title | slug }}"
 >
-  <a href="{{ article.title | slug }}.html">
+  <a href="/{{ article.title | slug }}.html">
     <p>
       <time datetime="{{ article.metadata.dates.start }}">
         {{ article.metadata.dates.start }}

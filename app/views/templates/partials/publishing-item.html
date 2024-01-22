@@ -2,7 +2,7 @@
   id="{{ article.title | slug }}"
   class="publishing-item"
 >
-  <a href="{{ article.title | slug }}.html">
+  <a href="/{{ article.title | slug }}.html">
     <p class="title">{{ article.title }}</p>
     {% if article.metadata.images | length > 0 %}
       <img
@@ -19,7 +19,7 @@
     {% if article.metadata.backlinks | length > 0 %}
       <div>See also:
         {% for backlink in article.metadata.backlinks %}
-          <a href="/{{ backlink.title | slug }}" class="related-item">{{ backlink.title }}</a>
+        <a href="/{{ backlink.title | slug }}.html" class="related-item">{{ backlink.title }}</a>
         {% endfor %}
       </div>
     {% endif %}

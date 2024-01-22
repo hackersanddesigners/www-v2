@@ -9,7 +9,7 @@
     {% endif %}
   </td>
   <td class="title">
-    <h3><a href="{{ article.title | slug }}">{{ article.title }}</a></h3>
+    <h3><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h3>
   </td>
   <td class="repo">
     {% if article.metadata.tool %}
@@ -18,7 +18,7 @@
   </td>
   <td class="inuse">
     {% for backlink in article.metadata.backlinks %}
-    <a href="{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
+    <a href="/{{ backlink.title | slug }}.html" class="pr0-5">{{ backlink.title }}</a>
     {% endfor %}
   </td>
 </tr>

@@ -3,7 +3,7 @@
   {% if article.metadata.backlinks | length > 0 %}
   <section>See also:
     {% for backlink in article.metadata.backlinks %}
-    <a href="/{{ backlink.title | slug }}">{{ backlink.title }}</a>
+    <a href="/{{ backlink.title | slug }}.html">{{ backlink.title }}</a>
     {% endfor %}
   </section>
   {% endif %}
