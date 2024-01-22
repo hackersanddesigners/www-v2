@@ -8,16 +8,15 @@ from app.fetch import (
 import httpx
 from app.views.views import (
     get_template,
-)
-from app.views.template_utils import (
-    paginator,
-)
-from .views.views import (
+    make_article_event,
     make_event_index,
     make_collaborators_index,
     make_publishing_index,
     make_tool_index,
     make_article_index,
+)
+from app.views.template_utils import (
+    paginator,
 )
 from app.read_settings import main as read_settings
 from app.build_article import (
@@ -158,9 +157,13 @@ async def update_categories(article, template, sem):
     
     for cat in article['metadata']['categories']:
 
+        prepared_article = article
+        if cat == 'event':
+            prepared_article = make_article_event(article)
+
         # make new snippet for updated article 
         template = get_template(f'partials/{cat}-item')
-        snippet_new = template.render(article=article)
+        snippet_new = template.render(article=prepared_article)
 
         # make bs4 object out of the HTML string
         snippet_new = BeautifulSoup(snippet_new, 'lxml')

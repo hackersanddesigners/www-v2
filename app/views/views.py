@@ -91,6 +91,7 @@ def normalize_data(item):
     else:
         return ''
 
+# -- front-page
 
 async def make_front_index(article_title: str):
 
@@ -112,6 +113,104 @@ async def make_front_index(article_title: str):
         document = template.render(article=article)
         await write_to_disk(article['slug'], document, sem)
 
+
+# -- events
+
+def make_article_event(article):
+    """
+    Extend data for single Event article.
+    """
+    
+    date = None
+    time = None
+
+    date_now = arrow.now()
+
+    if 'date' in article['metadata']['parsed_metadata']:
+        date = extract_datetime(article['metadata']['parsed_metadata']['date'])
+
+    if 'time' in article['metadata']:
+        time = extract_datetime(article['metadata']['parsed_metadata']['time'])
+
+    article_ts = {'start': None, 'end': None}
+
+    if date is not None and time is not None:
+
+        tokens_start = time[0].split(':')
+        ts_start = ts_pad_hour(tokens_start)
+
+        if len(time) > 1:
+            tokens_end = time[1].split(':')
+            ts_end = ts_pad_hour(tokens_end)
+
+            article['metadata']['parsed_metadata']['time'] = f"{ts_start}-{ts_end}"
+
+        else:
+            article['metadata']['parsed_metadata']['time'] = f"{ts_start}"
+
+        # -- construct datetime start
+        date_start = date[0]
+
+        dts_start = f"{date_start} {ts_start}"
+        article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
+
+        if len(date) > 1:
+            # -- construct datetime end
+            date_end = date[1]
+
+            dts_end = f"{date_end} {ts_end}"
+            article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
+
+    elif date is not None:
+        date_start = date[0]
+
+        dts_start = f"{date_start}"
+        article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD')
+
+        if len(date) > 1:
+            date_end = date[1]
+
+            dts_end = f"{date_end}"
+            article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD')
+
+    if article_ts['start'] is not None and article_ts['end'] is not None:
+
+        if date_now > article_ts['start'] and date_now < article_ts['end']:
+            article['metadata']['when'] = 'happening'
+            # events['happening'].append(article)
+
+    if article_ts['start']:
+
+        if date_now < article_ts['start']:
+            article['metadata']['when'] = 'upcoming'
+            # events['upcoming'].append(article)
+
+        else:
+            article['metadata']['when'] = 'past'
+            # events['past'].append(article)
+
+    # -- prepare article dates for template
+
+    article['metadata']['dates'] = {'start': None, 'end': None}
+    article['metadata']['times'] = {'start': None, 'end': None}
+
+    if article_ts['start'] is not None:
+        article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
+        article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
+    else:
+        article['metadata']['dates']['start'] = None
+        article['metadata']['times']['start'] = None
+
+    if article_ts['end'] is not None:
+        article['metadata']['dates']['end'] = arrow.get(article_ts['end']).format('YYYY-MM-DD')
+        article['metadata']['times']['end'] = arrow.get(article_ts['end']).format('HH:mm')
+    else:
+        article['metadata']['dates']['end'] = None
+        article['metadata']['times']['end'] = None
+    
+
+    return article
+        
 
 async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
@@ -139,96 +238,14 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     for article in articles:
         if article:
 
-            date = None
-            time = None
+            prepared_article = make_article_event(article)
 
-            if 'date' in article['metadata']['parsed_metadata']:
-                date = extract_datetime(article['metadata']['parsed_metadata']['date'])
-
-            if 'time' in article['metadata']:
-                time = extract_datetime(article['metadata']['parsed_metadata']['time'])
-
-            article_ts = {'start': None, 'end': None}
-
-            if date is not None and time is not None:
-
-                tokens_start = time[0].split(':')
-                ts_start = ts_pad_hour(tokens_start)
-
-                if len(time) > 1:
-                    tokens_end = time[1].split(':')
-                    ts_end = ts_pad_hour(tokens_end)
-
-                    article['metadata']['parsed_metadata']['time'] = f"{ts_start}-{ts_end}"
-
-                else:
-                    article['metadata']['parsed_metadata']['time'] = f"{ts_start}"
-
-                # -- construct datetime start
-                date_start = date[0]
-
-                dts_start = f"{date_start} {ts_start}"
-                article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD HH:mm')
-
-                if len(date) > 1:
-                    # -- construct datetime end
-                    date_end = date[1]
-
-                    dts_end = f"{date_end} {ts_end}"
-                    article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD HH:mm')
-
-            elif date is not None:
-                date_start = date[0]
-
-                dts_start = f"{date_start}"
-                article_ts['start'] = arrow.get(dts_start, 'YYYY/MM/DD')
-
-                if len(date) > 1:
-                    date_end = date[1]
-
-                    dts_end = f"{date_end}"
-                    article_ts['end'] = arrow.get(dts_end, 'YYYY/MM/DD')
-
-            if article_ts['start'] is not None and article_ts['end'] is not None:
-
-                if date_now > article_ts['start'] and date_now < article_ts['end']:
-                    article['metadata']['when'] = 'happening'
-                    # events['happening'].append(article)
-
-            if article_ts['start']:
-
-                if date_now < article_ts['start']:
-                    article['metadata']['when'] = 'upcoming'
-                    # events['upcoming'].append(article)
-
-                else:
-                    article['metadata']['when'] = 'past'
-                    # events['past'].append(article)
-
-            # -- prepare article dates for template
-
-            article['metadata']['dates'] = {'start': None, 'end': None}
-            article['metadata']['times'] = {'start': None, 'end': None}
-
-            if article_ts['start'] is not None:
-                article['metadata']['dates']['start'] = arrow.get(article_ts['start']).format('YYYY-MM-DD')
-                article['metadata']['times']['start'] = arrow.get(article_ts['start']).format('HH:mm')
-            else:
-                article['metadata']['dates']['start'] = None
-                article['metadata']['times']['start'] = None
-
-            if article_ts['end'] is not None:
-                article['metadata']['dates']['end'] = arrow.get(article_ts['end']).format('YYYY-MM-DD')
-                article['metadata']['times']['end'] = arrow.get(article_ts['end']).format('HH:mm')
-            else:
-                article['metadata']['dates']['end'] = None
-                article['metadata']['times']['end'] = None
-
-
-            print( json.dumps( article, indent=2 ) )
-
-            if ( article['metadata'] and article['metadata']['parsed_metadata'] and article['metadata']['parsed_metadata']['type'] ):
-                event_type = article['metadata']['parsed_metadata']['type']
+            if (
+                    prepared_article['metadata'] and
+                    prepared_article['metadata']['parsed_metadata'] and
+                    prepared_article['metadata']['parsed_metadata']['type']
+            ):
+                event_type = prepared_article['metadata']['parsed_metadata']['type']
                 if event_type and event_type not in types:
                     types.append(event_type)
 
@@ -264,6 +281,8 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     return article
 
 
+# -- collaborators
+
 async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     template = get_template(f"{cat}-index")
@@ -282,7 +301,6 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     articles = filter_subpages( articles )
 
-
     article = {
         'title': cat,
         'slug': slugify(cat_label),
@@ -297,6 +315,7 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
 
     return article
 
+# -- publishing
 
 async def make_publishing_index(articles, cat: str, cat_label: str):
 
@@ -324,6 +343,7 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
 
     return article
 
+# -- tool
 
 async def make_tool_index(articles, cat: str, cat_label: str):
 
@@ -354,6 +374,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 
     return article
 
+# -- search
 
 async def make_search_index(articles, query):
 
@@ -376,6 +397,7 @@ async def make_search_index(articles, query):
 
     return article
 
+# -- article
 
 async def make_article_index(articles, cat, cat_label):
 
