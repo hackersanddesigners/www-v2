@@ -1,8 +1,8 @@
 <article id="{{ article.title | slug }}">
-  <h3><a href="/{{ category }}/{{ item.title | slug }}">{{ item.title }}</a></h3>
-  {% if item.backlinks | length > 0 %}
+  <h3><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h3>
+  {% if article.metadata.backlinks | length > 0 %}
   <section>See also:
-    {% for backlink in item.backlinks %}
+    {% for backlink in article.metadata.backlinks %}
     <a href="/{{ backlink.title | slug }}">{{ backlink.title }}</a>
     {% endfor %}
   </section>
