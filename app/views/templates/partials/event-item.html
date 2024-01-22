@@ -1,45 +1,44 @@
 <article
   class="
-    event
-    when-{{ event.metadata.when }}
-    type-{{ event.metadata.parsed_metadata.type | slug }}
+    event-item
+    when-{{ article.metadata.when }}
+    type-{{ article.metadata.parsed_metadata.type | slug }}
   "
-  data-when="{{ event.metadata.when }}"
-  data-type="{{ event.metadata.parsed_metadata.type | slug }}"
-  data-start="{{ event.metadata.dates.start }}"
+  data-when="{{ article.metadata.when }}"
+  data-type="{{ article.metadata.parsed_metadata.type | slug }}"
+  data-start="{{ article.metadata.dates.start }}"
+  id="{{ article.title | slug }}"
 >
-  {% if event.metadata.images[0] %}
-  <img
-    src="{{ event.metadata.images[0].thumb }}"
-    alt="{{ event.metadata.images[0].alt }}"
-    loading="lazy"
-  >
-  {% endif %}
-  <div>
-    <p><a href="{{ event.title | slug }}.html">{{ event.title }}</a></p>
+  <a href="{{ article.title | slug }}.html">
     <p>
-      {% if event.metadata.location %}
-        {{ event.metadata.location }}
-        <br>
-      {% endif %}
-      <time datetime="{{ event.metadata.dates.start }}">
-        {{ event.metadata.dates.start }}
+      <time datetime="{{ article.metadata.dates.start }}">
+        {{ article.metadata.dates.start }}
       </time>
-      {% if event.metadata.dates.end %} –
-        <time datetime="{{ event.metadata.dates.end }}">
-          {{ event.metadata.dates.end }}
+      {% if article.metadata.dates.end %}
+        <br> -
+        <time datetime="{{ article.metadata.dates.end }}">
+          {{ article.metadata.dates.end }}
         </time>
       {% endif %}
-      {% if event.metadata.time %}
-        <time datetime="{{ event.metadata.times.start }}">
-          {{ event.metadata.times.start }}
+      {% if article.metadata.time %}
+        <time datetime="{{ article.metadata.times.start }}">
+          {{ article.metadata.times.start }}
         </time>
-        {% if event.metadata.times.end %}–
-          <time datetime="{{ event.metadata.times.end }}">
-            {{ event.metadata.times.end }}
+        {% if article.metadata.times.end %}–
+          <br>
+          <time datetime="{{ article.metadata.times.end }}">
+           {{ article.metadata.times.end }}
           </time>
         {% endif %}
-      </p>
+      {% endif %}
+    </p>
+    <p class="title">{{ article.title }}</p>
+    {% if article.metadata.images[0] %}
+      <img
+        src="{{ article.metadata.images[0].thumb }}"
+        alt="{{ article.metadata.images[0].alt }}"
+        loading="lazy"
+      >
     {% endif %}
-  </div>
+  </a>
 </article>

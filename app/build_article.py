@@ -9,6 +9,7 @@ from app.views.template_utils import (
     make_url_slug,
     make_mw_url_slug,
     make_timestamp,
+    make_timestamp_full,
 )
 from pathlib import Path
 from app.read_settings import main as read_settings
@@ -33,7 +34,10 @@ def make_nav():
     nav = []
     for k, v in cats.items():
         if v['nav']:
-            nav.append({ "label": v['label'],
+            label = v['label']
+            if 'actual_label' in v:
+                label = v['actual_label']
+            nav.append({ "label": label,
                       "uri": f"/{slugify(v['label'])}" })
 
     nav.extend([{
@@ -120,8 +124,8 @@ async def make_article(page_title: str, client):
             "mw_edit_url": mw_url + '&action=edit',
             "images": images,
             "template": get_article_field('templates', article),
-            "creation": article['creation'],
-            "last_modified": article['last_modified'],
+            "creation": make_timestamp_full( article['creation'] ),
+            "last_modified": make_timestamp_full( article['last_modified'] ),
             "backlinks": backlinks,
             "nav": nav,
             "footer_nav": footer_nav,

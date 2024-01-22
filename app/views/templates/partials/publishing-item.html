@@ -1,24 +1,27 @@
-<article id="{{ article.title | slug }}">
-  {% if article.metadata.images | length > 0 %}
-  <img
-    src="{{ article.metadata.images[0].thumb }}"
-    alt="{{ article.metadata.images[0].alt }}"
-    loading="lazy"
-  >
-  {% endif %}
-  <div>
-    <h3><a href="{{ article.title | slug }}">{{ article.title }}</a></h3>
-    {% if article.metadata.backlinks | length > 0 %}
-    <div>See also:
-      {% for backlink in article.metadata.backlinks %}
-      <a href="/{{ backlink.title | slug }}" class="pr0-5">{{ backlink.title }}</a>
-      {% endfor %}
-    </div>
+<article
+  id="{{ article.title | slug }}"
+  class="publishing-item"
+>
+  <a href="{{ article.title | slug }}.html">
+    <p class="title">{{ article.title }}</p>
+    {% if article.metadata.images | length > 0 %}
+      <img
+        src="{{ article.metadata.images[0].thumb }}"
+        alt="{{ article.metadata.images[0].alt }}"
+        loading="lazy"
+      />
     {% endif %}
-  </div>
-  <p>
-    <time datetime="{{ article.metadata.creation }}">
-      {{ article.metadata.creation }}
-    </time>
-  </p>
+    <p>
+      <time datetime="{{ article.metadata.creation }}">
+        {{ article.metadata.creation }}
+      </time>
+    </p>
+    {% if article.metadata.backlinks | length > 0 %}
+      <div>See also:
+        {% for backlink in article.metadata.backlinks %}
+          <a href="/{{ backlink.title | slug }}" class="related-item">{{ backlink.title }}</a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </a>
 </article>

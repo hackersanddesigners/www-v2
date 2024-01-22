@@ -124,8 +124,8 @@ async def fetch_article(title: str, client):
 
             # -- filter out `<title>/<num-version>/<lang> (eg article snippet translation)
 
-            translation_langs = config['wiki']['translation_langs']
-            lang_stem = parse_data['parse']['title'].split('/')[-1]
+            # translation_langs = config['wiki']['translation_langs']
+            # lang_stem = parse_data['parse']['title'].split('/')[-1]
 
             # check if value before lang is a number
             tokens = parse_data['parse']['title'].split('/')

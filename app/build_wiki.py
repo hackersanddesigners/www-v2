@@ -121,7 +121,7 @@ async def main(ENV: str, URL: str):
             articles = [item for item
                         in prepared_articles
                         if item is not None]
-            
+
             articles_index.extend(articles)
 
             save_tasks = []
@@ -141,7 +141,7 @@ async def main(ENV: str, URL: str):
         await build_categories(categories, template, sem)
 
         # -- make front-page
-        await make_front_index(config['wiki']['frontpage'])
+        # await make_front_index(config['wiki']['frontpage']['article'])
 
         # -- ahah
         copy_assets()

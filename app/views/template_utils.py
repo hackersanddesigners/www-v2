@@ -82,6 +82,12 @@ def sorting(query_params, query_key: str, sort_params: list[str], query_value: s
     return sort_icon
 
 
+def filter_subpages( articles ):
+    """
+    Filter out all mediaiwki subpages from indeces (such as translations)
+    """
+    return [a for a in articles if '/' not in a['title']]
+
 def make_url_slug(url: str):
 
     if url:
@@ -99,6 +105,13 @@ def make_timestamp(t: str):
 
     if t:
         ts = arrow.get(t).to('local').format('YYYY-MM-DD')
+        return ts
+
+
+def make_timestamp_full(t: str):
+
+    if t:
+        ts = arrow.get(t).to('local').format('YYYY-MM-DD hh:mm:ss')
         return ts
 
 
