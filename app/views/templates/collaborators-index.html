@@ -3,7 +3,7 @@
 
 <main id="main-content">
   <h1>{{ article.title }}</h1>
-  {% for item in article.collaborators %}
+  {% for article in article.collaborators %}
   {% include "partials/collaborators-item.html" %}
   {% endfor %}
 </main>
