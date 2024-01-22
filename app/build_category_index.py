@@ -145,7 +145,7 @@ async def update_categories(article, template, sem):
     """
     Update Index page for each value part of `categories`.
     We don't rebuild the whole Index page from scratch by parsing every
-    article part it. Rather, we just update the article's info
+    article in it. Rather, we just update the article's info
     in the Index page that has triggered the update_categories function.
     """
 
