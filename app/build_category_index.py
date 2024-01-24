@@ -189,6 +189,17 @@ async def update_categories(article, sem):
         index_doc = cat_label.lower()
 
         # get existing cat-index HTML
+        if not Path(f"./{WIKI_DIR}/{index_doc}.html").exists():
+            # cat-event HTML file does not exist. let's build it from scratch
+            # and write it to disk w/o doing the HTML-swap step
+            # (as unnecessary at this point).
+            cat_index = await make_category_index(cat)
+            filepath = f"{cat_index['slug']}"
+            await write_to_disk(filepath, cat_index['html'], sem=None)
+            
+            break
+
+        
         index_old = Path(f"./{WIKI_DIR}/{index_doc}.html").read_text()
         
         # find cat index's list item (article snippet) matching
