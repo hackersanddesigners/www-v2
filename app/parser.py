@@ -27,141 +27,15 @@ config = read_settings()
 MEDIA_DIR = os.getenv('MEDIA_DIR')
 
 
-def make_tool_repo(tool_key: str, config_tool):
-    """
-    Parse MW custom <tool> tag into a dictionary. We use this
-    to retrieve the content of the README file from the git repo.
-    """
-
-    repo = {"host": None, "branch": [], "file": None}
-    fallback_branch = config['tool-plugin']['branch_default']
-    repo['branch'] = fallback_branch
-
-    tokens = tool_key.split()
-
-    for t in tokens:
-        # let's split only `<word>=<word>` items
-        if '=' in t:
-            prop = t.split('=')
-
-            if t == 'branch':
-                v = prop[1][1:-1].strip()
-
-                if v not in repo['branch']:
-                    repo['branch'].append(v)
-
-            else:
-                repo[prop[0].strip()] = prop[1][1:-1].strip()
-
-    if repo['host'] == None:
-        repo['host'] = config_tool['host_default']
-
-    if len(repo['branch']) == 0:
-        repo['branch'] = config_tool['branch_default']
-
-    if repo['file'] == None:
-        repo['file'] = config_tool['file_default']
-
-
-    return repo
-
-
-def parse_tool_tag(tool_key):
-
-    if tool_key is not None:
-
-        repo = make_tool_repo(tool_key, config['tool-plugin'])
-
-        # construct a URL for github raw link
-        # so we fetch the actual README file content
-        # and do whatever we like with it
-        # https://raw.githubusercontent.com/<user>/<repo>/<branch>/<file>
-        # suggestion: add two more fields to the <tool> syntax:
-        # - host
-        # - branch
-
-        ENV = os.getenv('ENV')
-        context = create_context(ENV)
-        with httpx.Client(verify=context) as client:
-
-            base_URL = config['tool-plugin']['host'][repo['host']][0]
-            URL_tokens = [base_URL, repo['user'], repo['repo'], repo['branch'][0], repo['file']]
-
-            for branch in repo['branch']:
-
-                URL_tokens[3] = branch
-                URL = "/".join(URL_tokens)
-
-                response = client.get(URL)
-
-                if response.status_code == 200:
-                    text = response.text
-                    return mistletoe.markdown(text), repo
-
-            return False, False
-
-    else:
-        return False, False
-
-
-def tool_convert_rel_uri_to_abs(items, attr, repo):
-    """
-    tool plugin: replace each items relative URLs to an absolute one,
-    using the specified attribute
-    """
-
-    if len(items) > 0:
-        for item in items:
-            uri = item[attr]
-
-            if not uri.startswith('http'):
-                f = uri.split('/').pop()
-
-                # -- handle URL to text files and binary files
-                #    eg a.href and img.src
-                #    <host>/<user>/<repo>/<blob?>/<branch>/<file>
-                blob = ''
-                base_URL = config['tool-plugin']['host'][repo['host']][0]
-
-                if attr != 'src':
-                    base_URL = config['tool-plugin']['host'][repo['host']][1]
-                    blob = 'blob/'
-
-                item[attr] = f"{base_URL}/{repo['user']}/{repo['repo']}/{blob}{repo['branch'][0]}/{f}"
-
-
-def replace_img_src_url_to_mw(soup, file: str, url: str, HTML_MEDIA_DIR: str):
-    """
-    if archive-mode is off, replace all img src attribute,
-    plus img alt and the parent a's href to point to the
-    MW URL file instance
-    """
-
-    f = Path(unquote(file))
-
-    url_match = f"/{HTML_MEDIA_DIR}/{slugify(f.stem)}{f.suffix}"
-    img_tag = soup.find(src=re.compile(url_match))
-
-    if img_tag:
-        img_tag['src'] = url
-
-        if 'alt' in img_tag.attrs:
-            if img_tag['alt'] == url_match:
-                img_tag['alt'] = url
-
-                img_tag.parent['href'] = url
-
-
 def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_target: str | None = None):
     """
     update HTML before saving to disk:
-    - add redirect text + link, if necessary
     - update wikilinks to set correct title attribute
-    - replace Tool's wiki syntax to actual HTML
-    - if non archive-mode: update img's src to point to MW image server
     - scan for a-href pointing to <https://hackersanddesigners.nl/...>
       and change them to be relative URLs
     - return list of images URLs
+    - extract repo URL from <tool> HTML
+    - do HTML clean-up for design fitting
     """
 
     canonical_url = config['domain']['canonical_url']
@@ -260,27 +134,12 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 del thumb.attrs[attr]
 
     # -- tool parser
-    # naive regex to grab the <tool ... /> string
-    # tool_keywords = soup.find_all(string=re.compile(r"<tool(.*?)/>"))
+    tool_repos = soup.find_all('a', class_='inGitHub')
+    repos_index = []
+    for repo in tool_repos:
+        repos_index.append(repo.attrs['href'])
 
-    # for tk in tool_keywords:
-    #     tool_key = tk.strip()
-    #     tool_HTML, repo = parse_tool_tag(tool_key)
-
-    #     if tool_HTML is not False and repo is not False:
-    #         tool_soup = BeautifulSoup(tool_HTML, 'lxml')
-
-    #         # change all relative URIs to absolute
-    #         links = tool_soup.find_all('a')
-    #         tool_convert_rel_uri_to_abs(links, 'href', repo)
-
-    #         imgs = tool_soup.find_all('img')
-    #         tool_convert_rel_uri_to_abs(imgs, 'src', repo)
-
-    #         # append updated tool_soup to the article's <body>
-    #         tk.parent.parent.extend(tool_soup.body.contents)
-    #         # remove <p> with inside the string `<tool .../>`
-    #         tk.parent.decompose()
+    print(f"repos-index => {repos_index}")
 
 
     # -- extract list of image URLs
@@ -301,11 +160,10 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     # therefore soup.contents is an empty list
     if len(soup.contents) > 0:
         t = "".join(str(item) for item in soup.body.contents)
+        article = t
 
-        return t, imageURLs
 
-    else:
-        return article, imageURLs
+    return article, imageURLs, repos_index
 
 
 def get_table_data_row(td):
@@ -426,11 +284,13 @@ async def parser(article: dict[str, int], redirect_target: str | None = None):
 
     metadata = get_metadata(article)
 
-    body_html, imageURLs = post_process(article['text'],
-                                        article['images'],
-                                        HTML_MEDIA_DIR,
-                                        redirect_target)
+    body_html, imageURLs, repos_index = post_process(article['text'],
+                                                     article['images'],
+                                                     HTML_MEDIA_DIR,
+                                                     redirect_target)
 
+    metadata['repos_index'] = repos_index
+    
     print(f"parsed {article['title']}!")
 
     return body_html, metadata, imageURLs
