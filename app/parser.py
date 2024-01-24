@@ -55,7 +55,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 # eg point to a page in *this* wiki
 
                 url_parse = urlparse(link.attrs['href'])
-                uri = slugify(url_parse.path.split('/')[-1].lower())
+                uri = slugify(url_parse.path.split('/')[-1])
                 matches = file_lookup(uri)
 
                 if len(matches) > 0:
@@ -105,7 +105,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
                     url_parse = urlparse(link.attrs['href'])
                     uri_title = unquote(url_parse.query.split('=')[-1])
-                    uri = slugify(uri_title).lower()
+                    uri = slugify(uri_title)
                     matches = file_lookup(uri)
 
                     if len(matches) > 0:
