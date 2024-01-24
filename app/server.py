@@ -70,32 +70,20 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                 and msg['log_action'] in ['restore', 'delete_redir']):
 
                 try:
-                    article_list = []
                     article = await make_article(msg['title'], client)
 
                     if not article:
-                        return
-
-                    # TODO if we remove below code for translations,
-                    # we don't need to append article to the list and
-                    # loop over it. update_categories handles its own
-                    # async iterator to write HTML to disk (unless we
-                    # find a better way to run just one async iterator)
-                    # thing is we need to `await make_article()` above
-                    # immediately, before handling collateral article's
-                    # functions like translaions, categories update, etc
-                    # since if article returns None, we stop everything
-                    # right there.
-                    article_list.append(article)
+                        print(f"server :: new / edit op: no article found\n"
+                              f"for => {msg['title']}")
+                        break
 
                     # -- update every category index page the article has
                     #    and write it to disk
                     await update_categories(article, sem)
 
                     # -- write article to disk
-                    for article in article_list:
-                        filepath = f"{article['slug']}"
-                        await save_article(article, filepath, template, sem)
+                    filepath = f"{article['slug']}"
+                    await save_article(article, filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
