@@ -114,7 +114,7 @@ async def make_article(page_title: str, client):
 
     if article is not None:
 
-        body_html, metadata, images = await parser(article, redirect_target)
+        body_html, art_metadata, images = await parser(article, redirect_target)
 
         metadata = {
             "id": article['pageid'],
@@ -130,8 +130,9 @@ async def make_article(page_title: str, client):
             "nav": nav,
             "footer_nav": footer_nav,
             "translations": article_translations,
-            "parsed_metadata": metadata['info'],
-            "categories": metadata['categories'],
+            "parsed_metadata": art_metadata['info'],
+            "categories": art_metadata['categories'],
+            "tool_repos": art_metadata['repos_index'],
         }
 
         article = {
