@@ -62,7 +62,7 @@ def search_file_content(pattern: str) -> list[str]:
         return []
 
 
-async def write_to_disk(page_slug: str, document: str, sem):
+async def write_to_disk(page_slug: str, document: str, sem: int | None = None):
     """
     write file to disk; make necessary directories if part of the path.
     """

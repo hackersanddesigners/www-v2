@@ -7,6 +7,8 @@ import time
 from app.server import main as srv
 from app.build_wiki import main as bw
 from app.make_change_in_wiki import main as mc
+from app.build_category_index import make_category_index
+from app.file_ops import write_to_disk
 load_dotenv()
 
 
@@ -77,6 +79,22 @@ def make_article(article: Annotated[str, typer.Argument(help="article to work wi
     URL = os.getenv('BASE_URL')
 
     asyncio.run(mc(ENV, URL, article, operation))
+
+
+@app.command()
+def build_index(index: Annotated[str, typer.Argument(help="index page to work with (see settings.toml for list)")]):
+    
+    """
+    (re-) Make the given index page. See settings.toml for list of
+    set categories — eg Article, Event, Publishing, etc.
+    """
+
+    index = index.lower()
+    
+    cat_index = asyncio.run(make_category_index(index))
+
+    filepath = f"{cat_index['slug']}"
+    asyncio.run(write_to_disk(filepath, cat_index['html'], sem=None))
 
 
 if __name__ == "__main__":
