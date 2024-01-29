@@ -58,10 +58,8 @@ async def query_continue(client, url, params):
             last_continue = result['continue']
 
         except httpx.TimeoutException as exception:
-            # print(f"query-continue e => {params['titles']}")
-
             sem = None
-            msg = f"query-continue e => {params['titles']}\n"
+            msg = f"query-continue e => {params}\n"
             await log('error', msg, sem)
 
 
