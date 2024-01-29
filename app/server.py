@@ -134,7 +134,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
             else:
-                print(f"we dont' know how to parse this MW operation.")
+                print(f"we dont' know how to parse this MW operation.",
+                      f"=> {msg}")
 
 
 if __name__ == '__main__':
