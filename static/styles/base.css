@@ -628,6 +628,7 @@ menu.types input[type="radio"] {
 
 ul.events,
 ul.publishing {
+  padding-left: 0;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -838,6 +839,10 @@ table.tools tr td.icon img {
   ul.gallery+menu ul {
     left: 0;
   }
+  ul.events,
+  ul.publishing {
+    gap: 0.5rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -887,6 +892,16 @@ table.tools tr td.icon img {
   }
   div.mw-pt-languages {
     display: inline-block;
+  }
+  article.event-item,
+  article.publishing-item {
+    max-width: 20rem;
+  }
+
+  article.event-item img,
+  article.publishing-item img {
+    min-height: 8rem;
+    max-height: 15rem;
   }
 }
 
