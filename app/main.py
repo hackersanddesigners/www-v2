@@ -211,18 +211,17 @@ async def redirect_uri(request: Request, call_next):
 
             matches = file_lookup(new_uri)
             if len(matches) > 0:
-                matching_uri = Path(matches[0]).stem
+                redirect_uri = Path(matches[0]).stem
 
                 print(f"uri-redirect => {uri}\n",
                       f"=> {new_uri}\n",
                       f"matches => {matches}\n"
-                      f"r => {matching_uri}")
+                      f"r => {redirect_uri}")
 
-                redirect_uri = f"/{matching_uri}"
-                return RedirectResponse(url=redirect_uri, status_code=307)
+                return RedirectResponse(url=f"/{redirect_uri}", status_code=307)
 
             else:
-                return RedirectResponse(url="/not-found", status_code=307)
+                return RedirectResponse(url=f"/{new_uri}", status_code=307)
 
     
     # -- 
