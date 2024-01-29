@@ -287,6 +287,9 @@ footer nav {
   /* margin-inline: auto; */
   /* margin-left: auto; */
 }
+footer nav ul {
+  flex-wrap: wrap;
+}
 
 div.mw-parser-output {}
 
@@ -832,6 +835,13 @@ table.tools tr td.icon img {
   }
   header #menu-button {
     display: unset;
+  }
+  footer #meta {
+    flex-wrap: wrap;
+  }
+  footer #meta .metadata,
+  footer #meta .backlinks {
+    width: unset;
   }
 }
 
