@@ -153,13 +153,15 @@ async def make_article(page_title: str, client):
         # check if there's a copy of article in `wiki/` and
         # if yes, remove it?
 
-        print(f":: article is none (?) => {page_title}")
+        print(f":: article is possible duplicate ? => {page_title}")
 
-        try:
-            await delete_article(page_title)
+        # TODO the below code deletes lots of articles
+        # apparently. improve this duplicate clean-up function.
+        # try:            
+        #     # await delete_article(page_title)
 
-        except Exception as e:
-            print(f"delete article err => {e}")
+        # except Exception as e:
+        #     print(f"delete article err => {e}")
 
 
 async def redirect_article(article_title: str, redirect_target: str):
