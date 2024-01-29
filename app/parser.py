@@ -262,6 +262,10 @@ def get_category(categories, cats) -> [str]:
         # <2023-12-20> manually removing the 'Article' category
         # part of every wiki entry created through the Create New Article Page
         # button, as it add the category `Article` by default.
+        # <2024-01-24> the above suggestion is non-sense, as adding a
+        # new article in the wiki sets by default the `category: Article`
+        # and it's somewhat counterintuitive to then remove this category
+        # afterwards by hand.
 
         return [cat['category'] for cat
              in categories
