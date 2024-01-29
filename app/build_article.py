@@ -1,4 +1,5 @@
 import os
+import asyncio
 from app.fetch import fetch_article
 from app.parser import parser
 from bs4 import BeautifulSoup
@@ -16,6 +17,7 @@ from app.read_settings import main as read_settings
 from app.file_ops import (
     file_lookup,
     write_to_disk,
+    search_file_content,
 )
 
 
@@ -95,12 +97,123 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
             if page['title'] in matches]
 
 
+def update_backlink(backlink, new_title):
+    """
+    Update given backlink to new article title.
+    """
+   
+    new_url = None
+
+    # update MW-style URL w/ possible querystring
+    if 'index.php?' in backlink.attrs['href']:
+        new_title_slug = make_mw_url_slug(new_title)
+        new_url = mw_host + '/index.php?title=' + new_title_slug
+                        
+        query_tokens = backlink.attrs['href'].split('&')
+        if len(query_tokens) > 1:
+            new_url = f"{new_url}&{query_tokens[-1]}"
+                            
+            backlink.attrs['href'] = new_url
+
+    # update kebab-style URL
+    else:
+        new_url = f"/{slugify(new_title)}.html"
+        backlink.attrs['href'] = new_url
+        backlink.string = new_title
+    
+    print(f"backlink new-url => {new_url}")
+    
+
+def remove_backlink(backlink):
+    """
+    Remove given backlink from DOM.
+    """
+
+    backlink.decompose()
+
+
+async def update_backlinks(filepath: str,
+                           old_title: str,
+                           new_title: str | None = None,
+                           operation: str | None = 'update'):
+    """
+    yaye
+    """
+
+    async with aiofiles.open(f"{WIKI_DIR}/{filepath}", mode='r') as f:
+        tree = await f.read()
+        soup = BeautifulSoup(tree, 'lxml')
+            
+        backlinks = soup.find_all('a', href=True)
+            
+        for backlink in backlinks:
+            # we try to match any type of URL
+            # independently of their slug style, that is:
+            # - <article-title>
+            # - /<article-title>
+            # - /<article-title>.html
+            # - http://localhost:8001/index.php?title=<Article_title_ABC>
+            # - http://localhost:8001/index.php?title=<Article_title_ABC>&action=history
+            # - http://localhost:8001/index.php?title=<Article_title_ABC>b&action=edit
+                
+            old_title_slug = slugify(old_title)
+            backlink_slug = slugify(backlink.attrs['href'])
+                
+            if old_title_slug in backlink_slug:
+                print(f"update-backlink => {filepath} :: {backlink.attrs['href']}")
+
+                if operation == 'update':
+                    update_backlink(backlink, new_title)
+                        
+                elif operation == 'remove':
+                    remove_backlink(backlink)
+
+            
+        # write updated article to disk
+        # if len(soup.contents) > 0:
+        #     new_tree = "".join(str(item) for item in soup.body.contents)
+
+        #     # repl
+
+        filename = Path(filepath).stem
+        print(f"backlinks-art-update => {filename}")
+        # await write_to_disk(filename, new_tree, sem=None)
+        await write_to_disk(filename, soup.prettify(), sem=None)
+
+
+
+async def update_article_backlinks(old_title: str,
+                                   new_title: str,
+                                   operation: str | None = 'update'):
+    """
+    Grep across WIKI_DIR to check if the given article title has
+    backlinks in other HTML files and update them to the newest
+    version of the article title.
+
+    scan all category index HTML templates
+    with bs4 and update / remove any block + link pointing
+    to article updated / removed.
+    """
+
+    skip_self = f"{slugify(old_title)}.html"
+    matches = search_file_content(old_title, skip_self)
+    print(f"update_article_backlinks => {matches}")
+
+    if len(matches) > 0:
+        save_tasks = []
+        for filepath in matches:
+            task = update_backlinks(filepath, old_title, new_title, operation)
+            save_tasks.append(asyncio.ensure_future(task))
+            
+        await asyncio.gather(*save_tasks)
+
+
 async def make_article(page_title: str, client):
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
     # TODO we wouldn't need this get_translations func anymore,
-    # since the HTML article contains alreasy links to available translations (?)
+    # since the HTML article contains already links to available translations (?)
     article_translations = []
     if backlinks:
         article_translations = get_translations(page_title, backlinks)
@@ -188,6 +301,8 @@ async def redirect_article(article_title: str, redirect_target: str):
                 await f.write(output)
 
 
+            # TODO is this producing `wiki/<article-title>`
+            print(f"redirect_article => {fn.parent.stem} + / + {fn.stem}")
             return f"{fn.parent.stem}/{fn.stem}"
 
         else:

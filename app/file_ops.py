@@ -23,7 +23,7 @@ def file_lookup(filename: str) -> list[str]:
     return paths
 
 
-def search_file_content(pattern: str) -> list[str]:
+def search_file_content(pattern: str, skip_self: str | None = None) -> list[str]:
     """
     Run a ripgrep search with the given pattern
     inside WIKI_DIR and return a list of filepaths.
@@ -41,16 +41,21 @@ def search_file_content(pattern: str) -> list[str]:
               f"in the system. please install it, see README.md")
         sys.exit(1)
 
-    print(f"RG_PATH => {RG_PATH}")
 
     try:
         # we're `cd`-ing into WIKI_DIR by passing the option
         # `cwd=WIKI_DIR, so we don't pass to `rg` a base-dir path
         # at it's assumed to default to CWD
-        matches = subprocess.check_output([RG_PATH,
-                                           '--type', 'html',
-                                           '--files-with-matches',
-                                           pattern],
+
+        argument_list = [RG_PATH,
+                         '--type', 'html',
+                         '--files-with-matches',
+                         pattern]
+
+        if skip_self is not None:
+            argument_list.extend(['-g', f'!{skip_self}'])
+
+        matches = subprocess.check_output(argument_list,
                                           text=True, cwd=WIKI_DIR)
 
         matches = matches.splitlines()

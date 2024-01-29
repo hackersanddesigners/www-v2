@@ -18,6 +18,7 @@ from app.build_article import (
     redirect_article,
     save_article,
     delete_article,
+    update_article_backlinks,
 )
 from app.build_category_index import (
     update_categories,
@@ -100,6 +101,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             # -- TODO scan all category index HTML templates
                             #    with bs4 and remove any block + link pointing
                             #    to article removed just above.
+                            # await update_article_backlinks(old_title=msg['title'], new_title=None, operation='remove')
 
                         except Exception as e:
                             print(f"delete article err => {e}")
@@ -128,6 +130,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             if make_redirect:
                                 source = await make_article(msg['title'], client)
                                 source_filepath = await redirect_article(msg['title'], redirect['target'])
+
+                                # TODO <2024-01-25> if "no redirect is left behind" when moving the page
+                                # in MW, this code is not running
+                                # await update_article_backlinks(msg['title'], redirect['target'])
+
                                 await save_article(source, source_filepath, template, sem)
 
                             await save_article(target, target['slug'], template, sem)
