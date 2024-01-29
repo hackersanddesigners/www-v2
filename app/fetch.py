@@ -154,7 +154,7 @@ async def fetch_article(title: str, client):
 
 
     except httpx.HTTPError as exc:
-        print(f"get-article err => {exc}")
+        print(f"(fetch) get-article err => {exc}")
         return article, backlinks, redirect_target
 
 
