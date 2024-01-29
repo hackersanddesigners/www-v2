@@ -16,7 +16,11 @@ def file_lookup(filename: str) -> list[str]:
     in WIKI_DIR and return list of results.
     """
 
-    pattern = f"**/*{filename}*.html"
+    # TODO look how to make this pattern work
+    # so we can match also partial URI
+    # pattern = f"*{filename}*.html"
+    
+    pattern = f"{filename}.html"
     paths = [p for p
              in Path(WIKI_DIR).glob(pattern)]
 
