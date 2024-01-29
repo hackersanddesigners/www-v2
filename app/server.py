@@ -107,6 +107,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                 elif msg['log_type'] == 'move':
 
+                    # TODO make sure to remove previous article from disk
+                    # after the new renamed article has been written to disk
+                    # update: we actually leave the previous article as a redirect page
+                    # like MW does.
+
                     if msg['log_action'] in ['move', 'delete_redir']:
                         try:
                             redirect = msg['log_params']
