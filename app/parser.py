@@ -137,9 +137,13 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
     tool_repos = soup.find_all('a', class_='inGitHub')
     repos_index = []
     for repo in tool_repos:
-        repos_index.append(repo.attrs['href'])
-
-    print(f"repos-index => {repos_index}")
+        href = repo.attrs['href']
+        repos_index.append({
+            "href": href,
+            "name": href.split("/")[-1],
+            "user": href.split("/")[-2],
+            "host": href.split("/")[-3]
+        })
 
 
     # -- extract list of image URLs
@@ -294,7 +298,7 @@ async def parser(article: dict[str, int], redirect_target: str | None = None):
                                                      redirect_target)
 
     metadata['repos_index'] = repos_index
-    
+
     print(f"parsed {article['title']}!")
 
     return body_html, metadata, imageURLs
