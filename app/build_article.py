@@ -202,7 +202,7 @@ async def save_article(article: str | None, filepath: str, template: str, sem: i
         await write_to_disk(filepath, document, sem)
 
 
-async def delete_article(article_title: str, cat: str | None = None):
+async def delete_article(article_title: str):
     """
     pass article title and remove it from local wiki dir, if it exists.
 
@@ -214,22 +214,19 @@ async def delete_article(article_title: str, cat: str | None = None):
     WIKI_DIR for a matching filename.
     """
 
-    print(f"delete-article => {article_title, cat}")
+    print(f"delete-article => {article_title}")
 
     p = Path(article_title)
     filename = slugify(str(p.stem))
 
-    if cat:
-        fn = f"{WIKI_DIR}/{cat}/{filename}.html"
-    else:
-        paths = file_lookup(filename)
+    paths = file_lookup(filename)
 
-        print(f"delete-article => scan for full filepath => {paths}")
-        if len(paths) > 0:
-            fn = paths[0]
-        else:
-            print(f"delete-article => scan-dir found no article match for {filename}")
-            return
+    print(f"delete-article => scan for full filepath => {paths}")
+    if len(paths) > 0:
+        fn = paths[0]
+    else:
+        print(f"delete-article => scan-dir found no article match for {filename}")
+        return
 
     if await aos.path.exists(fn):
         await aos.remove(fn)
