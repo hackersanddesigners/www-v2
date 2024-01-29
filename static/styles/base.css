@@ -164,6 +164,13 @@ table {
 
 img {
   height: auto;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-style: italic;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 hr {
@@ -743,12 +750,19 @@ table.tools tr td {
 table.tools tr td.icon {
   max-width: 4rem;
   max-height: 4rem;
-
 }
 
 table.tools tr td.icon img {
   max-height: 4rem;
   max-width: 4rem;
+}
+
+table.tools tr td.title h3 {
+  margin: 0;
+}
+
+table.tools tr td ul {
+  padding: 0;
 }
 
 
@@ -903,6 +917,48 @@ table.tools tr td.icon img {
     min-height: 8rem;
     max-height: 15rem;
   }
+  /* Force table to not be like tables anymore */
+  table.tools,
+  table.tools thead,
+  table.tools tbody,
+  table.tools th,
+  table.tools td,
+  table.tools tr {
+    display: block;
+  }
+  table.tools thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+  }
+  table.tools tr {
+    margin: 0 0 1rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid red;
+  }
+  table.tools tr td {
+    border: none;
+    position: relative;
+    padding: 0;
+    padding-left: 35%;
+  }
+  table.tools tr td.title h3 {
+    margin-block: 0.25rem;
+  }
+  table.tools tr td:before {
+    position: absolute;
+    top: 0;
+    left: 6px;
+    width: 35%;
+    padding-right: 10px;
+    white-space: nowrap;
+  }
+  table.tools td:nth-of-type(1):not(:empty):before { content: ""; }
+  table.tools td:nth-of-type(2):not(:empty):before { content: "Title"; }
+  table.tools td:nth-of-type(3):not(:empty):before { content: "Repositories"; }
+  table.tools td:nth-of-type(4):not(:empty):before { content: "In Use"; }
+
 }
 
 

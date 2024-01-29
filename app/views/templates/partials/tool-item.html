@@ -11,8 +11,7 @@
   <td class="title">
     <h3><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h3>
   </td>
-  <td class="repo">
-    {% if article.metadata.tool_repos %}
+  <td class="repo">{% if article.metadata.tool_repos %}
       <ul>
         {% for repo in article.metadata.tool_repos %}
           <li>
@@ -20,9 +19,8 @@
           </li>
         {% endfor %}
       </ul>
-    {% endif %}
-  </td>
-  <td class="inuse">
+    {% endif %}</td>
+  <td class="inuse">{% if article.metadata.backlinks %}
     <ul>
       {% for backlink in article.metadata.backlinks %}
         <li>
@@ -30,5 +28,5 @@
         </li>
       {% endfor %}
     </ul>
-  </td>
+  {% endif %}</td>
 </tr>
