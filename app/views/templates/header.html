@@ -10,4 +10,20 @@
     </uL>
   </nav>
   {% include 'search-form.html' %}
+  <script>
+    function toggle( e ) {
+      const button = e.target, menu = button.parentElement
+      if ( menu.classList.contains( 'visible' ) ) {
+        menu.classList.remove( 'visible' )
+        button.innerHTML = '☰'
+      } else {
+        menu.classList.add( 'visible' )
+        button.innerHTML = '×'
+      }
+    }
+  </script>
+  <button
+    id="menu-button"
+    onclick="toggle( event )"
+  >☰</button>
 </header>
