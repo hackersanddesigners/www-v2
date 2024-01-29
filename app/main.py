@@ -186,43 +186,48 @@ async def root(request: Request):
                                            "article": article})
 
 
-# @app.middleware("http")
-# async def redirect_uri(request: Request, call_next):
-#     """
-#     Middleware to check incoming URL and do an article look-up
-#     to see if anything matches from the local filesystem wiki.
-#     If anything matches, redirects the incoming request to the
-#     correct URL.
-#     """
+@app.middleware("http")
+async def redirect_uri(request: Request, call_next):
+    """
+    Check if incoming URI is formatted in the previous style
+    (see below for examples), and rewrite it to match
+    a possible wiki article on disk.
+    """
 
-#     # this is done to figure out which category each article belongs to.
-#     # as of <2023-08-22> this is useful for when we add a backlink URL,
-#     # for which we don't have a category by default. we could parse this
-#     # when retrieve the set of backlinks, but it is pretty wasteful.
-#     # ideally this can be solved by rather having an sqlite cache layer.
+    uri = request.url.path[1:]
 
-#     uri = request.url.path[1:]
-#     uri = uri.replace('.html', '')
-#     uri_first = uri.split('/')[0]
+    # ignore URI to static assets
+    if not uri.startswith('static'):
 
-#     # build a list of categories, plus other items that might appear
-#     # as first item in the URI (eg. `/static`)
-#     cats = config['wiki']['categories']
-#     uri_list = [cat['label'].lower() for cat in cats.values()]
-#     uri_list.append('static')
+        # -- examples of old-style URIs:
+        # p/About
+        # s/Collaborators
+        # s/Summer_Camp_2023/p/Open_Call!_H%26D_Summer_Camp_2023_-_HopePunk%3A_Reknitting_Collective_Infrastructures
+        # s/Summer_Camp_2023/p/Coding_in_Situ
 
-#     if uri_first not in uri_list:
-#         matches = file_lookup(uri)
+        tokens = uri.split('/')
+        if len(tokens) > 1:
+            new_uri = slugify(tokens[-1])
 
-#         if len(matches) > 0:
-#             filename = str(matches[0]).split('.')[0]
-#             new_url = "/".join(filename.split('/')[1:])
-#             redirect_url = f"/{new_url}"
-#             return RedirectResponse(url=redirect_url)
+            matches = file_lookup(new_uri)
+            if len(matches) > 0:
+                matching_uri = Path(matches[0]).stem
 
+                print(f"uri-redirect => {uri}\n",
+                      f"=> {new_uri}\n",
+                      f"matches => {matches}\n"
+                      f"r => {matching_uri}")
 
-#     response = await call_next(request)
-#     return response
+                redirect_uri = f"/{matching_uri}"
+                return RedirectResponse(url=redirect_uri, status_code=307)
+
+            else:
+                return RedirectResponse(url="/not-found", status_code=307)
+
+    
+    # -- 
+    response = await call_next(request)
+    return response
 
 
 @app.get("/search", response_class=HTMLResponse)
