@@ -555,9 +555,13 @@ ul.gallery li div img {
   max-height: 80vh;
   max-width: 90vw;
 }
-
+ul.gallery+menu {
+padding-left: 0;
+}
 ul.gallery+menu ul {
-  left: -8rem;
+  list-style: none;
+  margin: 0;
+  left: -6rem;
   display: flex;
   padding: 0;
   margin: 0;
@@ -574,10 +578,14 @@ ul.gallery+menu ul li:last-of-type:hover::before {
 }
 
 ul.gallery+menu ul li button {
-  height: 2rem;
-  width: 2rem;
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 5px;
   vertical-align: middle;
-
+  padding: 0.1rem 0.5rem 0.5rem 0.5rem;
+  background-color: var(--beige);
+  border: 1px solid var(--brown);
+  font-size: 1.2rem;
 }
 
 
@@ -815,14 +823,22 @@ table.tools tr td.icon img {
     left: unset;
     top: unset;
     width: unset;
-    /* margin-right: 1rem; */
-    /* margin-bottom: 1rem; */
     z-index:unset;
     float: unset;
     margin-left: calc((100% - var(--base-width))/2);
   }
 }
-
+@media (max-width: 1000px) {
+  ul.gallery {
+    padding-inline: 0;
+  }
+  ul.gallery li div img {
+    max-width: calc(100vw - 5rem );
+  }
+  ul.gallery+menu ul {
+    left: 0;
+  }
+}
 
 @media (max-width: 600px) {
   header {
