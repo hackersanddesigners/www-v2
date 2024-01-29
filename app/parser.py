@@ -55,7 +55,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
                 # eg point to a page in *this* wiki
 
                 url_parse = urlparse(link.attrs['href'])
-                uri = slugify(url_parse.path.split('/')[-1].lower())
+                uri = slugify(url_parse.path.split('/')[-1])
                 matches = file_lookup(uri)
 
                 if len(matches) > 0:
@@ -105,7 +105,7 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
                     url_parse = urlparse(link.attrs['href'])
                     uri_title = unquote(url_parse.query.split('=')[-1])
-                    uri = slugify(uri_title).lower()
+                    uri = slugify(uri_title)
                     matches = file_lookup(uri)
 
                     if len(matches) > 0:
@@ -262,6 +262,10 @@ def get_category(categories, cats) -> [str]:
         # <2023-12-20> manually removing the 'Article' category
         # part of every wiki entry created through the Create New Article Page
         # button, as it add the category `Article` by default.
+        # <2024-01-24> the above suggestion is non-sense, as adding a
+        # new article in the wiki sets by default the `category: Article`
+        # and it's somewhat counterintuitive to then remove this category
+        # afterwards by hand.
 
         return [cat['category'] for cat
              in categories

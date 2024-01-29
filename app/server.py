@@ -70,32 +70,20 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                 and msg['log_action'] in ['restore', 'delete_redir']):
 
                 try:
-                    article_list = []
                     article = await make_article(msg['title'], client)
 
                     if not article:
-                        return
-
-                    # TODO if we remove below code for translations,
-                    # we don't need to append article to the list and
-                    # loop over it. update_categories handles its own
-                    # async iterator to write HTML to disk (unless we
-                    # find a better way to run just one async iterator)
-                    # thing is we need to `await make_article()` above
-                    # immediately, before handling collateral article's
-                    # functions like translaions, categories update, etc
-                    # since if article returns None, we stop everything
-                    # right there.
-                    article_list.append(article)
+                        print(f"server :: new / edit op: no article found\n"
+                              f"for => {msg['title']}")
+                        break
 
                     # -- update every category index page the article has
                     #    and write it to disk
                     await update_categories(article, sem)
 
                     # -- write article to disk
-                    for article in article_list:
-                        filepath = f"{article['slug']}"
-                        await save_article(article, filepath, template, sem)
+                    filepath = f"{article['slug']}"
+                    await save_article(article, filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
@@ -118,6 +106,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
                 elif msg['log_type'] == 'move':
+
+                    # TODO make sure to remove previous article from disk
+                    # after the new renamed article has been written to disk
+                    # update: we actually leave the previous article as a redirect page
+                    # like MW does.
 
                     if msg['log_action'] in ['move', 'delete_redir']:
                         try:
@@ -146,7 +139,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
             else:
-                print(f"we dont' know how to parse this MW operation.")
+                print(f"we dont' know how to parse this MW operation.",
+                      f"=> {msg}")
 
 
 if __name__ == '__main__':
