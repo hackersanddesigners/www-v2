@@ -27,6 +27,7 @@ from app.file_ops import write_to_disk
 from bs4 import (
     BeautifulSoup,
 )
+from app.log_to_file import main as log
 
 
 ENV = os.getenv('ENV')
@@ -95,12 +96,16 @@ async def make_category_index(cat: str):
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
-        print(f"prep-articles {cat_key} => un-filtered {len(prepared_articles)}")
+        await log('error',
+                  f"prep-articles {cat_key} => un-filtered {len(prepared_articles)}\n",
+                  sem=None)
         
         prepared_articles = [item for item
                              in prepared_articles 
                              if item is not None]
-        print(f"prep-articles {cat_key} => filtered {len(prepared_articles)}")
+        await log('error',
+                  f"prep-articles {cat_key} => filtered {len(prepared_articles)}\n",
+                  sem=None)
 
         article = None
         sorting = None

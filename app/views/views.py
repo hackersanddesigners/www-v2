@@ -22,6 +22,7 @@ from app.parser import (
 )
 from app.fetch import create_context
 import httpx
+from app.log_to_file import main as log
 load_dotenv()
 
 
@@ -260,10 +261,14 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     # events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
     events = sorted( events, key=lambda d: d['metadata']['dates']['start'] or "" , reverse=True)
-    print(f"make-event => un-filtered {len(events)}")
-
+    await log('error',
+              f"make-event => un-filtered {len(events)}\n",
+              sem=None)
+            
     events = filter_subpages( events )
-    print(f"make-event => filtered {len(events)}")
+    await log('error',
+              f"make-event => filtered {len(events)}\n",
+              sem=None)
     
     types = sorted( types, key=str.lower )
 
