@@ -96,14 +96,14 @@ async def make_category_index(cat: str):
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
-        await log('error',
+        await log('info',
                   f"prep-articles {cat_key} => un-filtered {len(prepared_articles)}\n",
                   sem=None)
         
         prepared_articles = [item for item
                              in prepared_articles 
                              if item is not None]
-        await log('error',
+        await log('info',
                   f"prep-articles {cat_key} => filtered {len(prepared_articles)}\n",
                   sem=None)
 

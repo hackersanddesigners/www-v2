@@ -261,12 +261,12 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     # events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
     events = sorted( events, key=lambda d: d['metadata']['dates']['start'] or "" , reverse=True)
-    await log('error',
+    await log('info',
               f"make-event => un-filtered {len(events)}\n",
               sem=None)
             
     events = filter_subpages( events )
-    await log('error',
+    await log('info',
               f"make-event => filtered {len(events)}\n",
               sem=None)
     

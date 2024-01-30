@@ -58,9 +58,9 @@ async def query_continue(client, url, params):
             last_continue = result['continue']
 
         except httpx.TimeoutException as exception:
-            sem = None
-            msg = f"query-continue e => {params}\n"
-            await log('error', msg, sem)
+            await log('error',
+                      f"query-continue e => {params}\n",
+                      sem=None)
 
 
 async def fetch_article(title: str, client):
@@ -246,10 +246,9 @@ async def fetch_file(title: str):
 
             if 'missing' in response['pages'][0]:
                 title = response['pages'][0]['title']
-
-                msg = f"the image could not be found => {title}\n"
-                sem = None
-                await log('error', msg, sem)
+                await log('error',
+                          f"the image could not be found => {title}\n",
+                          sem=None)
 
                 return (False, "")
 
