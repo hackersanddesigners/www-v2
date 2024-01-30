@@ -72,7 +72,7 @@ async def make_category_index(cat: str):
 
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
-    async with httpx.AsyncClient(verify=context) as client:
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         # -- get full list of entries from category
         data = []
