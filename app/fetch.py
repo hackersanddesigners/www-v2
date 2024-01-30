@@ -157,7 +157,9 @@ async def fetch_article(title: str, client):
 
 
     except httpx.HTTPError as exc:
-        print(f"(fetch) get-article err :: HTTP Exception for {exc.request.url} - {exc}")
+        await log('error',
+                  f"(fetch) get-article err :: HTTP Exception for {exc.request.url} - {exc}\n",
+                  sem=None)
 
         return article, backlinks, redirect_target
 
