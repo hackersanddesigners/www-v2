@@ -88,6 +88,7 @@ def filter_subpages( articles ):
     """
     return [a for a in articles if '/' not in a['title']]
 
+
 def make_url_slug(url: str):
 
     if url:
@@ -95,11 +96,13 @@ def make_url_slug(url: str):
 
     return url
 
+
 def make_mw_url_slug(url: str):
     if url:
         return quote_plus( url.replace( " ", "_") )
 
     return url
+
 
 def make_timestamp(t: str):
 
