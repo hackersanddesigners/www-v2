@@ -101,8 +101,6 @@ async def fetch_article(title: str, client):
         parse_data = parse_response.json()
         parse_response.raise_for_status()
 
-        print(f"parse_response => {parse_response.status_code}")
-
         query_response = await client.get(URL, params=query_params)
         query_data = query_response.json()
         query_response.raise_for_status()
@@ -122,7 +120,8 @@ async def fetch_article(title: str, client):
             if parse_data['parse']['title'].startswith("Special:"):
                 return
 
-            # -- filter out `<title>/<num-version>/<lang> (eg article snippet translation)
+            # -- filter out `<title>/<num-version>/<lang>
+            # (eg article snippet translation)
 
             # translation_langs = config['wiki']['translation_langs']
             # lang_stem = parse_data['parse']['title'].split('/')[-1]
@@ -158,7 +157,8 @@ async def fetch_article(title: str, client):
 
 
     except httpx.HTTPError as exc:
-        print(f"(fetch) get-article err => {exc}")
+        print(f"(fetch) get-article err :: HTTP Exception for {exc.request.url} - {exc}")
+
         return article, backlinks, redirect_target
 
 
