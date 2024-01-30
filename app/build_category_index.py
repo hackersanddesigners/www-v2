@@ -38,7 +38,6 @@ config = read_settings()
 async def make_category_index(cat: str):
     """
     Build Index page of the specified category.
-    `return-data` return the dictionary of the given category index article.
     """
 
     cat_key = None

@@ -111,7 +111,6 @@ async def make_article(page_title: str, client):
     mw_slug = make_mw_url_slug( page_title )
     mw_url = mw_host + '/index.php?title=' + mw_slug
 
-
     if article is not None:
 
         body_html, art_metadata, images = await parser(article, redirect_target)
