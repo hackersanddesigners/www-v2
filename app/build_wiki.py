@@ -88,7 +88,7 @@ async def main(ENV: str, URL: str):
     articles = await asyncio.gather(*cat_tasks)
 
     context = create_context(ENV)
-    timeout = httpx.Timeout(10.0, connect=60.0)
+    timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
 
     # add semaphore as when running
     # save_article => write_file_to_disk
