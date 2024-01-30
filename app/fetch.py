@@ -101,6 +101,8 @@ async def fetch_article(title: str, client):
         parse_data = parse_response.json()
         parse_response.raise_for_status()
 
+        print(f"parse_response => {parse_response.status_code}")
+
         query_response = await client.get(URL, params=query_params)
         query_data = query_response.json()
         query_response.raise_for_status()
