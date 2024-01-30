@@ -55,7 +55,7 @@ async def make_category_index(cat: str):
         print(f"make-category-index: the 'cat: {cat}' has not matched with any\n",
               f"of the following categories:\n",
               f"{list(cats.keys())}")
-        return
+        return None
 
     # --
 

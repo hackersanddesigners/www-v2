@@ -93,8 +93,9 @@ def build_index(index: Annotated[str, typer.Argument(help="index page to work wi
     
     cat_index = asyncio.run(make_category_index(index))
 
-    filepath = f"{cat_index['slug']}"
-    asyncio.run(write_to_disk(filepath, cat_index['html'], sem=None))
+    if cat_index is not None:
+        filepath = f"{cat_index['slug']}"
+        asyncio.run(write_to_disk(filepath, cat_index['html'], sem=None))
 
 
 if __name__ == "__main__":
