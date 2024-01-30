@@ -18,7 +18,6 @@
   {% endif %}
   {% if article.events | length > 0 %}
     <ul class="events">
-      <p>events num: {{ article.events | length }}</p>
       {% for article in article.events %}
       {% include "partials/event-item.html" %}
       {% endfor %}

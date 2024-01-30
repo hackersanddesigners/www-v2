@@ -266,7 +266,6 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     print(f"make-event => filtered {len(events)}")
     
     types = sorted( types, key=str.lower )
-    print(f"make-types => {len(types)}")
 
     nav = make_nav()
     footer_nav = make_footer_nav()
