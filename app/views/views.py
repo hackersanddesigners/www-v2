@@ -245,6 +245,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
                     prepared_article['metadata']['parsed_metadata'] and
                     prepared_article['metadata']['parsed_metadata']['type']
             ):
+                
                 event_type = prepared_article['metadata']['parsed_metadata']['type']
                 if event_type and event_type not in types:
                     types.append(event_type)
@@ -259,8 +260,13 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     # events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
 
     events = sorted( events, key=lambda d: d['metadata']['dates']['start'] or "" , reverse=True)
+    print(f"make-event => un-filtered {len(events)}")
+
     events = filter_subpages( events )
+    print(f"make-event => filtered {len(events)}")
+    
     types = sorted( types, key=str.lower )
+    print(f"make-types => {len(types)}")
 
     nav = make_nav()
     footer_nav = make_footer_nav()

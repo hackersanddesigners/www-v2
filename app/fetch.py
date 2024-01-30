@@ -150,6 +150,8 @@ async def fetch_article(title: str, client):
             if article and len(article['redirects']) > 0:
                 redirect_target = article['redirects'][0]['to']
 
+        
+
         return article, backlinks, redirect_target
 
 

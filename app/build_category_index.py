@@ -86,6 +86,11 @@ async def make_category_index(cat: str):
             else:
                 data.extend(response)
 
+        # TODO the code above can be replaced with get_category from build_wiki.py
+        # --
+
+        print(f"make-cat article num => {cat_key} :: {len(data)}")
+
 
         art_tasks = []
         for article in data:
@@ -93,9 +98,13 @@ async def make_category_index(cat: str):
             art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
+        print(f"prep-articles => un-filtered {len(prepared_articles)}")
+        
         prepared_articles = [item for item
                              in prepared_articles 
                              if item is not None]
+
+        print(f"prep-articles => filtered {len(prepared_articles)}")
 
         article = None
         sorting = None
