@@ -649,8 +649,8 @@ ul.publishing {
   overflow: scroll;
 }
 
-.upcoming_activities ul.events,
-.upcoming_activities ul.highlights {
+.index_row ul.events,
+.index_row ul.highlights {
   width: calc( var(--base-width) + 2rem);
   justify-content: flex-start;
   margin: auto;
