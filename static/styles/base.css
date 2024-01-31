@@ -650,7 +650,7 @@ ul.publishing {
 }
 
 .upcoming_activities ul.events {
-  width: var(--base-width);
+  width: calc( var(--base-width) + 2rem);
   justify-content: flex-start;
   margin: auto;
   padding-inline: 1rem;
