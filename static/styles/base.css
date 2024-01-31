@@ -649,6 +649,11 @@ ul.publishing {
   overflow: scroll;
 }
 
+.upcoming_activities ul.events {
+  max-width: var(--base-width);
+  justify-content: flex-start;
+}
+
 article.event-item,
 article.publishing-item {
   max-width: 15rem;

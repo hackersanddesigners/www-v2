@@ -4,7 +4,7 @@
 <main id="main-content">
   <h1>{{ article['title'] }}</h1>
   {% if article.upcoming | length > 0 %}
-    <section>
+    <section class="upcoming_activities">
       <h2>Upcoming activities</h2>
       <ul class="events">
         {% for event in article.upcoming %}
