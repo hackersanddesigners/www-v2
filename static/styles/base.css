@@ -497,7 +497,7 @@ header #menu-button {
   max-height: 2.25rem;
   min-width: 2.25rem;
   margin-left: calc(100% - 3.5rem);
-  margin-top: 0.5rem;
+  margin-top: calc( 0.75rem + 2px );
 }
 
 /* images */
@@ -884,7 +884,7 @@ table.tools tr td ul {
   header {
     position: fixed;
     justify-content: start;
-    translate: 0 calc(4.25rem - 100%);
+    translate: 0 calc(4.5rem - 100%);
     transition: translate var(--fast) linear;
   }
   header.visible {
