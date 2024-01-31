@@ -640,6 +640,7 @@ menu.types input[type="radio"] {
 ul.events,
 ul.publishing {
   padding-left: 0;
+  padding-bottom: 2rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -699,7 +700,7 @@ article.publishing-item img {
 
 article.event-item img:hover,
 article.publishing-item img:hover {
-  animation: jello 1s ease-in-out forwards;
+  /* animation: jello 1s ease-in-out forwards; */
 }
 
 
