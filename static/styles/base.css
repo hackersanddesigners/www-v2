@@ -653,6 +653,7 @@ ul.publishing {
   width: var(--base-width);
   justify-content: flex-start;
   margin: auto;
+  padding-inline: 1rem;
 }
 
 article.event-item,
