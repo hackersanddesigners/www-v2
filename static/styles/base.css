@@ -650,8 +650,9 @@ ul.publishing {
 }
 
 .upcoming_activities ul.events {
-  max-width: var(--base-width);
+  width: var(--base-width);
   justify-content: flex-start;
+  margin: auto;
 }
 
 article.event-item,
