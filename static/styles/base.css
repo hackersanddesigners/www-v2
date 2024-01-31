@@ -650,7 +650,7 @@ ul.publishing {
 }
 
 .index_row ul.events,
-.index_row ul.highlights {
+.index_row ul.publishing {
   width: calc( var(--base-width) + 2rem);
   justify-content: flex-start;
   margin: auto;
