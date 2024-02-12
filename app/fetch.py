@@ -78,7 +78,7 @@ async def fetch_article(title: str, client):
         'disablestylededuplication': '1',
     }
 
-    # for wiki article's revisions and backlinks fields
+    # for wiki article's  oldest revisions and backlinks fields
     query_params = {
         'action': 'query',
         'titles': title,
@@ -87,6 +87,21 @@ async def fetch_article(title: str, client):
         'rvprop': 'timestamp',
         'bltitle': title,
         'list': 'backlinks',
+        'formatversion': '2',
+        'format': 'json',
+        'redirects': '1'
+    }
+
+    # we might either want to fetch the whole list of revisions in several
+    # HTTP calls, (see for instance fetch_category()), or do two HTTP calls
+    # and fetch the first 5 + the last one in the list. we do this second
+    # option given MW's APIs are what they are...
+    rev_params = {
+        'action': 'query',
+        'titles': title,
+        'prop': 'revisions',
+        'rvdir': 'older',
+        'rvprop': 'timestamp',
         'formatversion': '2',
         'format': 'json',
         'redirects': '1'
@@ -105,7 +120,12 @@ async def fetch_article(title: str, client):
         query_data = query_response.json()
         query_response.raise_for_status()
 
+        rev_response = await client.get(URL, params=rev_params)
+        rev_data = rev_response.json()
+        rev_response.raise_for_status()
+
         query_data = query_data['query']
+        rev_data = rev_data['query']
 
         # -- ns: -1 is part of Special Pages, we don't parse those
         if query_data['pages'][0]['ns'] == -1:
@@ -138,10 +158,11 @@ async def fetch_article(title: str, client):
 
             article = parse_data['parse']
 
-            revs = query_data['pages'][0]['revisions']
-            article['creation'] = revs[0]['timestamp']
-            article['last_modified'] = revs[len(revs) -1]['timestamp']
-
+            rev_beginning = query_data['pages'][0]['revisions']
+            rev_end = rev_data['pages'][0]['revisions']
+            
+            article['creation'] = rev_beginning[0]['timestamp']
+            article['last_modified'] = rev_end[0]['timestamp']
 
             backlinks = query_data['backlinks']
 
