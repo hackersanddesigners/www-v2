@@ -84,16 +84,16 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     if not article:
                         print(f"server :: new / edit op: no article found\n"
-                              f"for => {msg['title']}")
-                        break
+                              f"  for => {msg['title']}")
 
-                    # -- update every category index page the article has
-                    #    and write it to disk
-                    await update_categories(article, sem)
+                    else:
+                        # -- update every category index page the article has
+                        #    and write it to disk
+                        await update_categories(article, sem)
 
-                    # -- write article to disk
-                    filepath = f"{article['slug']}"
-                    await save_article(article, filepath, template, sem)
+                        # -- write article to disk
+                        filepath = f"{article['slug']}"
+                        await save_article(article, filepath, template, sem)
 
                 except Exception as e:
                     print(f"make-article err ({msg['title']}) => {e}")
