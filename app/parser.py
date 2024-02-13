@@ -13,9 +13,6 @@ from bs4 import (
 )
 import re
 from urllib.parse import urlparse
-import asyncio
-import tomli
-import mistletoe
 from pathlib import Path
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
@@ -27,7 +24,209 @@ config = read_settings()
 MEDIA_DIR = os.getenv('MEDIA_DIR')
 
 
-def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_target: str | None = None):
+def link_rewrite_to_canonical_url(link):
+    """
+    (eg https://hackersanddesigners.nl, no subdomain)
+    and re-write the URL to be in relative format
+    eg point to a page in *this* wiki
+    """
+    
+    url_parse = urlparse(link.attrs['href'])
+    uri = slugify(url_parse.path.split('/')[-1])
+    matches = file_lookup(uri)
+
+    if len(matches) > 0:
+        filename = str(matches[0]).split('.')[0]
+        new_url = "/".join(filename.split('/')[1:])
+        link.attrs['href'] = f"/{new_url}"
+    else:
+        link.attrs['href'] = uri        
+            
+
+def link_image_update(link, img_tag, mw_url):
+    """
+    update any img's srcset attribute to the correct URL format.
+    """
+
+    img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
+
+    if 'srcset' in img_tag.attrs:
+        srcset_list = [url.strip() for url
+                       in img_tag.attrs['srcset'].split(',')]
+            
+        srcset_list_new = []
+        for item in srcset_list:
+            tokens = item.split(' ')
+            tokens[0] = f"{mw_url}{tokens[0]}"
+            srcset_new = " ".join(tokens)
+
+            srcset_list_new.append(srcset_new)
+
+        if srcset_list_new:
+            img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
+
+
+def link_extract_image_URL(links, mw_url):
+    """
+    """
+
+    def extract_image_URL(img):
+        img_name = None
+        src = img.attrs['src']
+
+        # fetch File:<name> by the parent tag, eg. the <a>.
+        # doing it through the img's src URL contains sometimes
+        # a thumb filename prefix in it, eg `520px-<image-name>.jpg`
+        # which breaks our code when using MW's thumb APIs below.
+        if 'href' in img.parent.attrs:
+            img_name = img.parent.attrs['href'].split('File:')[-1]
+        else:
+            img_name = src.split('/')[-1]
+
+        # af <2024-02-12>
+        # we can't just set an arbitrary thumb width value as below,
+        # since sometimes original images are smaller (in width) of
+        # the set thumb width value. this silenty fails and returns
+        # no valid image URL, therefore displaying the img alt text
+        # in the frontend.
+        
+        # therefore one way (1) to go about this is to parse the rest
+        # of the HTML img tag and extract if possible the set width
+        # value in it, either via the `width` attribute, or by parsing
+        # the srcset attribute and read from the first URL the given
+        # width value (slightly more complicated).
+        
+        img_width = None
+
+        if 'width' in img.attrs:
+            img_width = int(img.attrs['width'])
+            
+        elif 'srcset' in img.attrs:
+            srcset = img.attrs['srcset']
+
+            # <http://localhost/images/thumb/b/b4/Mediachoreo5.jpg/240px-Mediachoreo5.jpg 1x,
+            #  http://localhost:8001/images/thumb/b/b4/Mediachoreo5.jpg/480px-Mediachoreo5.jpg 2x>
+            # - we split the srcset list by `,`
+            # - then by ` ` between the URL and the <n>x signature to get the URL only,
+            # - then by `/` and get the last part of it
+            # - then by `px` to get the width of the image
+            # - and convert the width to integer
+            
+            srcset_big = srcset.split(',')[-1].strip()
+            
+            width_x = srcset_big.split(' ')[0]
+            width_x = width_x.split('/')[-1]
+            width_x = width_x.split('px')[0]
+
+            if width_x.isdigit():
+                img_width = int(width_x)                
+
+        if img_width is None:
+            print(f"img => {img}, {img.attrs}")
+        
+        thumb = src
+        thumb_width = 250
+
+        # if img_width is equal or bigger than thumb_width value
+        # make thumb version of given img, else use the original
+        # src URL.
+        
+        # TODO @karl: the MW thumb API works very inconsistently. i figured
+        # that some of the missing images in the index page are due to passing
+        # a "wrong" thumb_width value to the URL. while fiddling with it, i
+        # discovered specific images "wants" specific thumb_width values.
+        # i believe we either have the thumb API setup incorrectly, or the
+        # API is broken.
+        if img_width is not None and img_width >= thumb_width:
+            thumb = f"{mw_url}/thumb.php?f={img_name}&w={thumb_width}"
+
+        alt = img.attrs['alt']
+            
+        img_data = { 'src': src, 'thumb': thumb, 'alt': alt }
+        imageURLs.append(img_data)
+
+
+    imageURLs = []
+
+    for link in links:
+        if link.img:
+            img = link.img
+            extract_image_URL(img)
+
+            # strip images of their wrappers
+            # we do this at the end because we
+            # parse the <a> wrapping the <img>
+            # to retrieve the image URL
+            link.parent.attrs['class'] = 'image'
+            link.unwrap()
+
+    return imageURLs
+
+
+def link_rewrite_image_url(link, mw_url):
+    """
+    update URL for link to an image file.
+    """
+
+    if '=File:' in link.attrs['href']:
+        # update <img> wrapping <a> href
+        link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
+
+        # update <img> tag
+        if link.img:
+            img_tag = link.img
+            
+            link_image_update(link, img_tag, mw_url)
+            # strip_thumb(img_tag)
+            
+                    
+def link_rewrite_other_url(link):
+    """
+    update URL of any other link that is not a `File:`.
+    """
+
+    # TODO
+    # this file-lookup is done to make sure
+    # articles' filename on disks matches
+    # URL used in the article files.
+    # as of <2023-11-08> i am not entirely sure
+    # this is useful, but when thinking about it
+    # it could be well helpful.
+
+    if '=File:' not in link.attrs['href']:
+
+        url_parse = urlparse(link.attrs['href'])
+        uri_title = unquote(url_parse.query.split('=')[-1])
+        uri = slugify(uri_title)
+        matches = file_lookup(uri)
+
+        if len(matches) > 0:
+            filename = str(matches[0]).split('.')[0]
+            new_url = "/".join(filename.split('/')[1:])
+            link.attrs['href'] = f"/{new_url}"
+        else:
+            link.attrs['href'] = f"/{uri}"
+
+
+def strip_thumb(thumb):
+    """
+    strip "thumb" images of their thumb status in their URLs
+    and get the original full size
+    """
+
+    if 'src' in thumb.attrs:
+        # thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
+            
+        # strip height and width from image attribute
+        for attr in ['height', 'width']:
+            if attr in thumb.attrs:
+                del thumb.attrs[attr]
+
+
+def post_process(article: str,
+                 file_URLs: [str],
+                 HTML_MEDIA_DIR: str,
+                 redirect_target: str | None = None):
     """
     update HTML before saving to disk:
     - update wikilinks to set correct title attribute
@@ -43,96 +242,29 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
 
     soup = BeautifulSoup(article, 'lxml')
 
+    # -- update URLs for File: and any other URL type
     links = soup.find_all('a')
     for link in links:
         if 'title' in link.attrs:
             link.attrs['title'] = link.text
 
         if link.has_attr("href"):
-            if link.attrs['href'].startswith(canonical_url):
-                # (eg https://hackersanddesigners.nl, no subdomain)
-                # and re-write the URL to be in relative format
-                # eg point to a page in *this* wiki
-
-                url_parse = urlparse(link.attrs['href'])
-                uri = slugify(url_parse.path.split('/')[-1])
-                matches = file_lookup(uri)
-
-                if len(matches) > 0:
-                    filename = str(matches[0]).split('.')[0]
-                    new_url = "/".join(filename.split('/')[1:])
-                    link.attrs['href'] = f"/{new_url}"
-                else:
-                    link.attrs['href'] = uri
+            if link.attrs['href'].startswith(canonical_url):            
+                link_rewrite_to_canonical_url(link)
 
             elif link.attrs['href'].startswith('/index.php'):
+                link_rewrite_image_url(link, mw_url)
+                link_rewrite_other_url(link)
 
-                # -- update URL for link to image
-                if '=File:' in link.attrs['href']:
-                    link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
 
-                    if link.img:
-                        img_tag = link.img
-                        img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
-
-                        if 'srcset' in img_tag.attrs:
-                            srcset_list = [url.strip() for url in img_tag.attrs['srcset'].split(',')]
-
-                            srcset_list_new = []
-                            for item in srcset_list:
-                                tokens = item.split(' ')
-                                tokens[0] = f"{mw_url}{tokens[0]}"
-                                srcset_new = " ".join(tokens)
-
-                                srcset_list_new.append(srcset_new)
-
-                            if srcset_list_new:
-                                img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
-
-                        # strip images of their wrappers
-                        link.parent.attrs['class'] = 'image'
-                        link.replaceWith( img_tag )
-
-                else:
-                    # -- update URL of any other link
-
-                    # TODO
-                    # this file-lookup is done to make sure
-                    # articles' filename on disks matches
-                    # URL used in the article files.
-                    # as of <2023-11-08> i am not entirely sure
-                    # this is useful, but when thinking about it
-                    # it could be well helpful.
-
-                    url_parse = urlparse(link.attrs['href'])
-                    uri_title = unquote(url_parse.query.split('=')[-1])
-                    uri = slugify(uri_title)
-                    matches = file_lookup(uri)
-
-                    if len(matches) > 0:
-                        filename = str(matches[0]).split('.')[0]
-                        new_url = "/".join(filename.split('/')[1:])
-                        link.attrs['href'] = f"/{new_url}"
-                    else:
-                        link.attrs['href'] = f"/{uri}"
-
+    # -- extract a list of image URLs for the article
+    imageURLs = link_extract_image_URL(links, mw_url)
 
     # add a tag class for iframe wrappers
     iframes = soup.find_all('iframe')
     for iframe in iframes:
         iframe.parent.attrs['class'] = 'iframe'
 
-
-    # strip "thumb" images of their thumb status in their URLs
-    # and get the original full size
-    thumbs = soup.select('.thumb img')
-    for thumb in thumbs:
-        if 'src' in thumb.attrs:
-            thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
-    # strip height and width from image attribute
-        for  attr in [ 'height', 'width' ]:
-            if attr in thumb.attrs:
-                del thumb.attrs[attr]
 
     # -- tool parser
     tool_repos = soup.find_all('a', class_='inGitHub')
@@ -145,19 +277,6 @@ def post_process(article: str, file_URLs: [str], HTML_MEDIA_DIR: str, redirect_t
             "user": href.split("/")[-2],
             "host": href.split("/")[-3]
         })
-
-
-    # -- extract list of image URLs
-    imageURLs = []
-    imgs = soup.find_all('img')
-
-    for img in imgs:
-        src = img.attrs['src']
-        img_name = src.split('/')[-1]
-        # thumb = src.replace( '/images/', '/images/thumb/' ) + '/250px-' + img_name
-        thumb = mw_url + '/thumb.php?f=' + img_name + '&w=250'
-        alt = img.attrs['alt']
-        imageURLs.append({ 'src': src, 'thumb': thumb, 'alt': alt })
 
 
     # -- return article HTML
@@ -280,14 +399,14 @@ def get_category(categories, cats) -> [str]:
         return [cat_fallback_label]
 
 
-async def parser(article: dict[str, int], redirect_target: str | None = None):
+def parser(article: dict[str, int], redirect_target: str | None = None):
     """
     - get page body (HTML)
     - get article's metadata
     - get article images' URL
     """
 
-    print(f"parsing article {article['title']}...")
+    print(f"parsing article {article['title']}")
 
     HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
 
