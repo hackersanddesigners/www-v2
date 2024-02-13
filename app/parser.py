@@ -210,8 +210,8 @@ def link_rewrite_other_url(link):
 
 def strip_thumb(thumb):
     """
-    strip "thumb" images of their thumb status in their URLs
-    and get the original full size
+    strip "thumb" image from its hardcoded
+    width and height attributes.
     """
 
     if 'src' in thumb.attrs:
