@@ -77,23 +77,36 @@ async def make_category_index(cat: str):
 
         # -- get full list of entries from category
         data = []
+        translation_langs = [config['wiki']['default'],
+                             config['wiki']['translation_langs'][0]]
+        
         async for response in query_continue(client, URL, params):
-
             response = response['categorymembers']
+            title = response[0]['title']
+
             if len(response) > 0 and 'missing' in response[0]:
-                title = response[0]['title']
                 print(f"the page could not be found => {title}")
 
             else:
                 data.extend(response)
+                    
 
         # TODO the code above can be replaced with get_category from build_wiki.py
         # --
 
+        translation_langs = [config['wiki']['default'],
+                             config['wiki']['translation_langs'][0]]
+
         art_tasks = []
         for article in data:
-            task = make_article(article['title'], client)
-            art_tasks.append(asyncio.ensure_future(task))
+            # filter out translated article
+            title = article['title']
+            lang_stem = title.split('/')[-1]
+            tokens = title.split('/')
+            
+            if lang_stem not in translation_langs:
+                task = make_article(article['title'], client)
+                art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
         await log('info',

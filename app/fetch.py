@@ -129,32 +129,20 @@ async def fetch_article(title: str, client):
 
         # -- ns: -1 is part of Special Pages, we don't parse those
         if query_data['pages'][0]['ns'] == -1:
-            article = None
+            return article, backlinks, redirect_target
 
         if 'parse' in parse_data:
-            # -- filter out `Concept:<title>` articles
-            if parse_data['parse']['title'].startswith("Concept:"):
-                return
+            
+            # # -- filter out `Concept:<title>` articles
+            # if parse_data['parse']['title'].startswith("Concept:"):
+            #     return article, backlinks, redirect_target
 
-            # -- filter out `Special:<title>` articles
-            if parse_data['parse']['title'].startswith("Special:"):
-                return
+            # # -- filter out `Special:<title>` articles
+            # if parse_data['parse']['title'].startswith("Special:"):
+            #     return article, backlinks, redirect_target
 
             # -- filter out `<title>/<num-version>/<lang>
             # (eg article snippet translation)
-
-            # translation_langs = config['wiki']['translation_langs']
-            # lang_stem = parse_data['parse']['title'].split('/')[-1]
-
-            # check if value before lang is a number
-            tokens = parse_data['parse']['title'].split('/')
-            if len(tokens) >= 2 and tokens[-2].isdigit():
-                
-                # check if article's title ending is matching any of the lang set in
-                # the settings.toml variable `translation_langs`
-                if lang_stem in translation_langs:
-                    return
-
 
             article = parse_data['parse']
 
@@ -283,3 +271,42 @@ async def fetch_file(title: str):
     file_last = data[0]['pages'][0]
 
     return (True, file_last)
+
+
+def convert_article_trans_title_to_regular_title(title: str) -> str:
+    """
+    check if article is a snippet translation, either of:
+    - <title>/<Page display title>/<lang>
+    - <title>/<num-version>/<lang>
+    and instead convert Title to regular article
+    title like `<title>/<lang>` so we can update it,
+    instead of ignoring the translation snippet.
+    """
+
+    translation_langs = [config['wiki']['default'],
+                         config['wiki']['translation_langs'][0]]
+    
+    lang_stem = title.split('/')[-1]
+
+    # remove `Traslations:` prefix
+    title = title.split('Translations:')[-1]
+    
+    # check if value before lang is a number
+    tokens = title.split('/')
+    if len(tokens) >= 2:
+        if (
+                tokens[-2] == 'Page display title' or
+                tokens[-2].isdigit()
+        ):
+                
+            # check if article's title ending is matching any of the lang set in
+            # the settings.toml variable `translation_langs`
+            # and return just actual title without lang and id tokens
+            if lang_stem in translation_langs:
+                t = tokens[:-2]
+                t.append(lang_stem)
+            
+                return "/".join(t)
+
+    # if not matching translation title, return as it is
+    return title

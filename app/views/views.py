@@ -4,7 +4,6 @@ import asyncio
 from .template_utils import (
     make_url_slug,
     make_timestamp,
-    filter_subpages
 )
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
@@ -265,7 +264,6 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
               f"make-event => un-filtered {len(events)}\n",
               sem=None)
             
-    events = filter_subpages( events )
     await log('info',
               f"make-event => filtered {len(events)}\n",
               sem=None)
@@ -309,8 +307,6 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
-    articles = filter_subpages( articles )
-
     article = {
         'title': cat,
         'slug': slugify(cat_label),
@@ -337,8 +333,6 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
            key=lambda d: d['metadata']['creation'],
            reverse=True)
 
-    articles = filter_subpages( articles )
-
     article = {
         'title': cat,
         'slug': slugify(cat_label),
@@ -364,9 +358,6 @@ async def make_tool_index(articles, cat: str, cat_label: str):
     articles = sorted(articles,
                       key=lambda d: d['metadata']['creation'],
                       reverse=True)
-
-    articles = filter_subpages( articles )
-
 
     article = {
         'title': cat_label,

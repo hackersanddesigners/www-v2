@@ -12,7 +12,10 @@ from app.views.template_utils import (
     make_url_slug,
     make_timestamp
 )
-from app.fetch import create_context
+from app.fetch import (
+    create_context,
+    convert_article_trans_title_to_regular_title,
+)
 from app.build_article import (
     make_article,
     redirect_article,
@@ -64,6 +67,13 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # filter our `Special:<title>` articles
             if msg['title'].startswith("Special:"):
                 return
+
+            # -- check if article is a snippet translation
+            #    eg `<title>/<num-version>/<lang>
+            #    and instead convert Title to regular article
+            #    so we updated it, instead of ignorin the
+            #    translation snippet.
+            msg['title'] = convert_article_trans_title_to_regular_title(msg['title'])
 
             if (msg['type'] in ['new', 'edit']
                 or msg['type'] == 'log'
