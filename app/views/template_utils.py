@@ -107,7 +107,8 @@ def make_timestamp(t: str):
 def make_timestamp_full(t: str):
 
     if t:
-        ts = arrow.get(t).to('local').format('YYYY-MM-DD hh:mm:ss')
+        print(f"t => {t}")
+        ts = arrow.get(t).to('local').format('YYYY-MM-DD HH:mm:ss')
         return ts
 
 
