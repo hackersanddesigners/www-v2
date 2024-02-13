@@ -245,12 +245,15 @@ async def query_wiki(ENV: str, URL: str, query: str):
 
 async def fetch_file(title: str):
     """
+    get metadata of the given File: url, timestamp, size.
     """
+
+    # http://localhost:8001/api.php?action=query&format=json&prop=imageinfo&iiprop=size&titles=File:Stim.jpg
 
     params = {
         'action': 'query',
         'prop': 'imageinfo',
-        'iiprop': 'url|timestamp',
+        'iiprop': 'url|timestamp|size',
         'titles': title,
         'formatversion': '2',
         'format': 'json',
@@ -279,4 +282,4 @@ async def fetch_file(title: str):
 
     file_last = data[0]['pages'][0]
 
-    return (True, file_last['imageinfo'][0]['url'])
+    return (True, file_last)
