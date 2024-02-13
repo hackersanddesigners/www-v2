@@ -297,7 +297,12 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
                 tokens[-2] == 'Page display title' or
                 tokens[-2].isdigit()
         ):
-                
+
+            # TODO @karl:
+            # `Page display title` is for the article title translation
+            # but it seems we're not using it?
+            # anyway i added it so if we change that field the code does not break.
+
             # check if article's title ending is matching any of the lang set in
             # the settings.toml variable `translation_langs`
             # and return just actual title without lang and id tokens
