@@ -215,8 +215,6 @@ def strip_thumb(thumb):
     """
 
     if 'src' in thumb.attrs:
-        # thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
-            
         # strip height and width from image attribute
         for attr in ['height', 'width']:
             if attr in thumb.attrs:
