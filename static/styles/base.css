@@ -211,6 +211,10 @@ main {
 */
 }
 
+.iframe {
+  text-align: center;
+}
+
 div.mw-pt-languages {
   padding: 0.5rem;
   border: 1px solid;
@@ -493,7 +497,7 @@ header #menu-button {
   max-height: 2.25rem;
   min-width: 2.25rem;
   margin-left: calc(100% - 3.5rem);
-  margin-top: 0.5rem;
+  margin-top: calc( 0.75rem + 2px );
 }
 
 /* images */
@@ -636,6 +640,7 @@ menu.types input[type="radio"] {
 ul.events,
 ul.publishing {
   padding-left: 0;
+  padding-bottom: 2rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -644,9 +649,25 @@ ul.publishing {
   overflow: scroll;
 }
 
+.index_row ul.events,
+.index_row ul.publishing {
+  width: fit-content;
+  max-width: 100%;
+  min-width: calc( var(--base-width) + 2rem);
+  justify-content: flex-start;
+  margin: auto;
+  padding-inline: 1rem;
+  /* margin-left: calc((100% - var(--base-width))/2); */
+  margin-left: auto;
+  margin-inline: auto;
+  flex-wrap: nowrap;
+  overflow: scroll;
+}
+
 article.event-item,
 article.publishing-item {
   max-width: 15rem;
+  min-width: 12rem;
 }
 
 article.event-item a,
@@ -695,7 +716,7 @@ article.publishing-item img {
 
 article.event-item img:hover,
 article.publishing-item img:hover {
-  animation: jello 1s ease-in-out forwards;
+  /* animation: jello 1s ease-in-out forwards; */
 }
 
 
@@ -863,7 +884,7 @@ table.tools tr td ul {
   header {
     position: fixed;
     justify-content: start;
-    translate: 0 calc(4.25rem - 100%);
+    translate: 0 calc(4.5rem - 100%);
     transition: translate var(--fast) linear;
   }
   header.visible {
