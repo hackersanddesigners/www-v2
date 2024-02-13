@@ -64,7 +64,7 @@ async def query_continue(client, url, params):
 
 
 async def fetch_article(title: str, client):
-    print(f"fetching article {title}...")
+    print(f"fetching article {title}")
 
     # for HTML-parsed wiki article
     parse_params = {
@@ -161,7 +161,6 @@ async def fetch_article(title: str, client):
                 redirect_target = article['redirects'][0]['to']
 
         
-
         return article, backlinks, redirect_target
 
 

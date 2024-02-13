@@ -147,12 +147,13 @@ async def make_article(page_title: str, client):
         return article
 
     else:
-        print('article not found! it could have been deleted meanwhile\n and we got notified about it')
+        print(f"article not found! it could have been deleted meanwhile\n",
+              f"and we got notified about it now.\n")
 
         # check if there's a copy of article in `wiki/` and
         # if yes, remove it?
 
-        print(f":: article is possible duplicate ? => {page_title}")
+        # print(f":: article is possible duplicate ? => {page_title}")
 
         # TODO the below code deletes lots of articles
         # apparently. improve this duplicate clean-up function.
