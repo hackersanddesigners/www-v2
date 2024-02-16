@@ -1,11 +1,19 @@
 import os
-from app.fetch import fetch_article
+import asyncio
+import httpx
+from app.fetch import (
+    query_continue,
+    create_context,
+    fetch_article,
+)
 from app.parser import parser
 from bs4 import BeautifulSoup
+import re
 from slugify import slugify
 import aiofiles
 from aiofiles import os as aos
 from app.views.template_utils import (
+    get_template,
     make_url_slug,
     make_mw_url_slug,
     make_timestamp,
@@ -16,6 +24,7 @@ from app.read_settings import main as read_settings
 from app.file_ops import (
     file_lookup,
     write_to_disk,
+    search_file_content,
 )
 
 
@@ -144,24 +153,11 @@ async def make_article(page_title: str, client):
             "metadata": metadata,
         }
 
+
         return article
 
     else:
-        print(f"article not found! it could have been deleted meanwhile\n",
-              f"and we got notified about it now.\n")
-
-        # check if there's a copy of article in `wiki/` and
-        # if yes, remove it?
-
-        # print(f":: article is possible duplicate ? => {page_title}")
-
-        # TODO the below code deletes lots of articles
-        # apparently. improve this duplicate clean-up function.
-        # try:            
-        #     # await delete_article(page_title)
-
-        # except Exception as e:
-        #     print(f"delete article err => {e}")
+        print(f"{page_title}: article not found!")
 
 
 async def redirect_article(article_title: str, redirect_target: str):
@@ -236,3 +232,174 @@ async def delete_article(article_title: str):
 
     else:
         print(f"delete-article: {article_title} not found, nothing done")
+
+
+async def remove_article_traces(article_title: str):
+    """
+    scan all HTML pages to find any bits of the given article title
+    and remove any block + link pointing to it.
+    """
+
+    sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
+
+    pattern = slugify(article_title)
+    filepaths = search_file_content(pattern)
+    print(f"remove-traces :: filepaths => {filepaths}")
+
+    # map over each filepath and remove matched bits
+    # based on the template style of each article.
+    # eg, cat-index templates might be different than
+    # an article template, and each match needs to remove
+    # the correct DOM element in full.
+
+    # - cat-index + index page => event-item > article.id
+    #   TODO index => currently not written to disk, so nothing to do yet
+    # - collaborators => match <a> by href, go up one level to target parent <li>
+    # - footer => what links here => "
+
+    tasks_html = []
+
+    cats = config['wiki']['categories']
+    cat_labels = []
+    
+    for k, v in cats.items():
+        cat_labels.append(v['label'].lower())
+
+    for filepath in filepaths:
+        print(f"remove-traces from => {filepath}")
+        filename = Path(filepath).stem
+
+        article_html = Path(f"./{WIKI_DIR}/{filename}.html").read_text()
+        soup = BeautifulSoup(article_html, 'lxml')
+
+        # update cat-index pages if any is matching
+        if filename in cat_labels:
+            snippets = soup.select(f"#{pattern}")
+
+            if len(snippets) > 0:
+                for snippet in snippets:
+                    snippet.decompose()
+
+                # write updated cat-index HTML back to disk
+                article_html = str(soup.prettify())
+                task = write_to_disk(filename, article_html, sem)
+                tasks_html.append(asyncio.ensure_future(task))
+
+        else:
+            # update links, eg footer > meta > what-links-here
+            # and collaborator article page
+
+            print(f"remove-traces :: remove links from article => {filepath}")
+
+            links = soup.find_all("a")
+            snippets = [link for link
+                        in links
+                        if 'href' in link.attrs and
+                        link.attrs['href'].startswith(f"/{pattern}")]
+            
+            if len(snippets) > 0:
+                for snippet in snippets:
+                    parent = snippet.parent
+                    if snippet.name == 'a' and parent.name == 'li':
+                        parent.decompose()
+
+                # write updated cat-index HTML back to disk
+                article_html = str(soup.prettify())
+                task = write_to_disk(filename, article_html, sem)
+                tasks_html.append(asyncio.ensure_future(task))
+
+
+    await asyncio.gather(*tasks_html)
+
+
+def extract_title_from_URL(links):
+    """
+    we parse links from the body of the article
+    and rely on the MW convention of WikiLinks, eg:
+    the user type the title of a page inside {{ }}
+    in this way we can extract the title of the link
+    and use it to correctly fetch the page via MW's APIs
+    IMPORTANT: this break in the case a link has a custom title / label.
+    we try to handle this by comparing the href of the link with
+    its title, and make the title matching the href
+    """
+
+    titles = []
+
+    for link in links:
+        if 'href' in link.attrs and not link.attrs['href'].startswith('http'):
+            
+            url = link.attrs['href'][1:]
+            title = link.attrs['title']
+
+            # url and title easily match
+            if url == slugify(title):
+                titles.append(title)
+                
+            else:
+                # title is not 1:1 with url (eg custom title)
+                # let's adjust title to match with url
+                url_tokens = url.split('-')
+                title_tokens = title.split(' ')
+
+                new_title = []
+                for idx, token in enumerate(title_tokens):
+                    try:
+                        if slugify(token) == url_tokens[idx]:
+                            new_title.append(token)
+                    except IndexError:
+                        pass
+
+                if len(new_title) > 0:
+                    new_title = ' '.join(new_title)
+                    titles.append(new_title)
+
+                    
+    return titles
+
+
+async def update_backlinks(article, sem):
+    """
+    scan article for wiki links and rebuild each
+    article it points to.
+    this is an attempt to re-add all the backlinks
+    in the articles we are re-building when we are
+    either creating a new article or restoring a
+    deleted one and we are removing backlinks
+    from them.
+    """
+
+    soup = BeautifulSoup(article['html'], 'lxml')
+    links = soup.find_all("a")
+    titles = extract_title_from_URL(links)
+
+    ENV = os.getenv('ENV')
+    context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
+    sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
+
+    template = get_template('article')
+
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
+        build_tasks = []
+        
+        if len(titles) > 0:
+            for title in titles:
+                build_task = make_article(title, client)
+                build_tasks.append(asyncio.ensure_future(build_task))
+
+                articles = await asyncio.gather(*build_tasks)
+
+                articles = [item for item
+                            in articles
+                            if item is not None]
+
+            save_tasks = []
+            for article in articles:
+                filepath = f"{article['slug']}"
+
+                task = save_article(article, filepath, template, sem)
+                save_tasks.append(asyncio.ensure_future(task))
+        
+            # write all articles to disk
+            await asyncio.gather(*save_tasks)

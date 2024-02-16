@@ -10,10 +10,10 @@ from app.fetch import (
 import asyncio
 import time
 from app.views.views import (
-    get_template,
     make_front_index,
 )
 from app.views.template_utils import (
+    get_template,
     make_url_slug,
     make_timestamp,
 )

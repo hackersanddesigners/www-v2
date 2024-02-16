@@ -2,10 +2,10 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from .template_utils import (
+    get_template,
     make_url_slug,
     make_timestamp,
 )
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
 from app.file_ops import write_to_disk
 from app.build_article import (
@@ -25,23 +25,6 @@ from app.log_to_file import main as log
 load_dotenv()
 
 
-def get_template(template: str):
-
-    # template = slugify(template)
-    template = template.lower()
-
-    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
-    env.filters['slug'] = make_url_slug
-    env.filters['ts'] = make_timestamp
-
-    try:
-        t = env.get_template(f"{template}.html")
-
-    except TemplateNotFound:
-        print(f"template-not-found! => {template}")
-        t = env.get_template("article.html")
-
-    return t
 
 
 def date_split(date: str):

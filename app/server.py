@@ -5,10 +5,8 @@ import socket
 import httpx
 import json
 from app.pretty_json_log import main as pretty_json_log
-from app.views.views import (
-    get_template,
-)
 from app.views.template_utils import (
+    get_template,
     make_url_slug,
     make_timestamp
 )
@@ -21,9 +19,11 @@ from app.build_article import (
     redirect_article,
     save_article,
     delete_article,
+    remove_article_traces,
+    update_backlinks,
 )
 from app.build_category_index import (
-    update_categories,
+    update_categories
 )
 import asyncio
 load_dotenv()
@@ -90,6 +90,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         # -- update every category index page the article has
                         #    and write it to disk
                         await update_categories(article, sem)
+                        await update_backlinks(article, sem)
 
                         # -- write article to disk
                         filepath = f"{article['slug']}"
@@ -106,10 +107,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     if msg['log_action'] == 'delete':
                         try:
                             await delete_article(msg['title'])
-
-                            # -- TODO scan all category index HTML templates
-                            #    with bs4 and remove any block + link pointing
-                            #    to article removed just above.
+                            await remove_article_traces(msg['title'])
 
                         except Exception as e:
                             print(f"delete article err => {e}")
@@ -117,9 +115,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                 elif msg['log_type'] == 'move':
 
-                    # TODO make sure to remove previous article from disk
-                    # after the new renamed article has been written to disk
-                    # update: we actually leave the previous article as a redirect page
+                    # we leave the previous article as a redirect page
                     # like MW does.
 
                     if msg['log_action'] in ['move', 'delete_redir']:

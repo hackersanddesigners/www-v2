@@ -2,6 +2,25 @@ import arrow
 from slugify import slugify
 from urllib.parse import parse_qs, urlencode, quote_plus
 from html import unescape
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+
+
+def get_template(template: str):
+
+    template = template.lower()
+
+    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
+    env.filters['slug'] = make_url_slug
+    env.filters['ts'] = make_timestamp
+
+    try:
+        t = env.get_template(f"{template}.html")
+
+    except TemplateNotFound:
+        print(f"template-not-found! => {template}")
+        t = env.get_template("article.html")
+
+    return t
 
 
 def query_check(url: str,
@@ -107,7 +126,6 @@ def make_timestamp(t: str):
 def make_timestamp_full(t: str):
 
     if t:
-        print(f"t => {t}")
         ts = arrow.get(t).to('local').format('YYYY-MM-DD HH:mm:ss')
         return ts
 

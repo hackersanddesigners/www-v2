@@ -7,7 +7,6 @@ from app.fetch import (
 )
 import httpx
 from app.views.views import (
-    get_template,
     make_article_event,
     make_event_index,
     make_collaborators_index,
@@ -16,6 +15,7 @@ from app.views.views import (
     make_article_index,
 )
 from app.views.template_utils import (
+    get_template,
     paginator,
 )
 from app.read_settings import main as read_settings
@@ -185,6 +185,7 @@ async def update_categories(article, sem):
     for cat in article['metadata']['categories']:
 
         prepared_article = article
+        # TODO add all other category index templates?
         if cat == 'event':
             prepared_article = make_article_event(article)
 
@@ -239,6 +240,25 @@ async def update_categories(article, sem):
             cat_html = str(soup.prettify())
             task = write_to_disk(index_doc, cat_html, sem)
             cat_tasks_html.append(asyncio.ensure_future(task))
-        
+
+        else:
+            # if no matching from the old snippet,
+            # it means we need to insert the article snippet
+            # into the page.
+            # do we try to insert the snippet in the correct position
+            # in the cat index list? no, we just rebuild the entire
+            # page. easier and more effective than otherwise having to
+            # compare against all the other article snippets and find
+            # in which position the newly created or restored
+            # article snippet should be inserted.
+
+            cat_index = await make_category_index(cat)
+            filepath = f"{cat_index['slug']}"
+            await write_to_disk(filepath, cat_index['html'], sem=None)
+
+            break
 
     await asyncio.gather(*cat_tasks_html)
+
+
+    
