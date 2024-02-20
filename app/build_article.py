@@ -320,7 +320,7 @@ def extract_title_from_URL(links):
     in this way we can extract the title of the link
     and use it to correctly fetch the page via MW's APIs
     IMPORTANT: this break in the case a link has a custom title / label.
-    we try to handle this by comparing the href of the link with
+    we try to handle this case by comparing the href of the link with
     its title, and make the title matching the href
     """
 
@@ -328,9 +328,15 @@ def extract_title_from_URL(links):
 
     for link in links:
         if 'href' in link.attrs and not link.attrs['href'].startswith('http'):
-            
+            url = None
+            title = None
+
             url = link.attrs['href'][1:]
-            title = link.attrs['title']
+
+            if 'title' in link.attrs:
+                title = link.attrs['title']
+            else:
+                return ''
 
             # url and title easily match
             if url == slugify(title):
