@@ -10,7 +10,8 @@ from app.views.template_utils import (
 from app.build_article import save_article
 
 
-async def update_front_index(article_title: str, article_cats: list[str] | None):
+async def update_front_index(article_title: str | None,
+                             article_cats: list[str] | None):
     """
     check if:
     - article title = settings.wiki.frontpage, else if
@@ -28,12 +29,14 @@ async def update_front_index(article_title: str, article_cats: list[str] | None)
         
     article = None
 
-    # check title
-    if article_title == index_art:
+    if article_title is None and article_cats is None:
         article = await make_front_index(index_art, index_cat)
 
-    # else check categories
-    if article_cats is None:
+    elif article_title == index_art:
+        # check title
+        article = await make_front_index(index_art, index_cat)
+
+    elif article_cats is None:
         # this handles the case where we delete an article
         # and only have access to its title, no categories.
         # therefore we look if either the upcoming events

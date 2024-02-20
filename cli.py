@@ -4,10 +4,14 @@ import typer
 from typing_extensions import Annotated
 import asyncio
 import time
+from app.read_settings import main as read_settings
 from app.server import main as srv
 from app.build_wiki import main as bw
 from app.make_change_in_wiki import main as mc
+from app.build_front_index import update_front_index
+from app.views.template_utils import get_template
 from app.build_category_index import make_category_index
+from app.build_article import save_article
 from app.file_ops import write_to_disk
 load_dotenv()
 
@@ -67,9 +71,8 @@ def build_wiki():
 
 
 @app.command()
-def make_article(article: Annotated[str, typer.Argument(help="article to work with")],
+def build_article(article: Annotated[str, typer.Argument(help="article to work with")],
                  operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
-    
     """
     Update or delete an article in the MediaWiki
     and create a new HTML version of it.
@@ -82,10 +85,18 @@ def make_article(article: Annotated[str, typer.Argument(help="article to work wi
 
 
 @app.command()
-def build_index(index: Annotated[str, typer.Argument(help="index page to work with (see settings.toml for list)")]):
-    
+def build_article_index():
     """
-    (re-) Make the given index page. See settings.toml for list of
+    (re-) Build the article index page.
+    """
+
+    asyncio.run(update_front_index(article_title=None, article_cats=None))
+
+
+@app.command()
+def build_category_index(index: Annotated[str, typer.Argument(help="index page to work with (see settings.toml for list)")]):
+    """
+    (re-) Build the given category index page. See settings.toml for list of
     set categories — eg Article, Event, Publishing, etc.
     """
 
