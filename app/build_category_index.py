@@ -181,11 +181,27 @@ async def update_categories(article, sem):
     # - check if article item list needs to be re-sorted?
 
     cat_tasks_html = []
+
+    cats = config['wiki']['categories']
+    cat_label = None
     
     for cat in article['metadata']['categories']:
+        
+        # -- get cat_label and check if it matches
+        #    with defined settings.categories
+        for k, v in cats.items():
+            if k.lower() == cat:
+                cat_label = cats[k]['label']
 
+        if cat_label is None:
+            print(f"update-categories err => no cat_label set for {cat}")
+            return
+
+
+        # if article is an event we need to do more work
+        # on the data structure before we pass it to the template.
+        # do it here.
         prepared_article = article
-        # TODO add all other category index templates?
         if cat == 'event':
             prepared_article = make_article_event(article)
 
@@ -195,19 +211,6 @@ async def update_categories(article, sem):
 
         # make bs4 object out of the HTML string
         snippet_new = BeautifulSoup(snippet_new, 'lxml')
-
-        # -- get cat_label
-        cat_label = None
-
-        cats = config['wiki']['categories']
-        for k, v in cats.items():
-            if k.lower() == cat:
-                cat_label = cats[k]['label']
-
-        if cat_label is None:
-            print(f"update-categories err => no cat_label set for {cat}")
-            return
-        # --
 
         index_doc = cat_label.lower()
 
