@@ -160,7 +160,7 @@ async def make_article(page_title: str, client):
         print(f"{page_title}: article not found!")
 
 
-async def redirect_article(article_title: str, target_redirect):
+async def make_redirect_article(article_title: str, target_redirect):
     """
     Update moved article (source, eg the previous version of the article,
     before the rename) to display a redirect page template.

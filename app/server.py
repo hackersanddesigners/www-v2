@@ -16,7 +16,7 @@ from app.fetch import (
 )
 from app.build_article import (
     make_article,
-    redirect_article,
+    make_redirect_article,
     save_article,
     delete_article,
     remove_article_traces,
@@ -158,10 +158,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                     'slug': target['slug']
                                 }
 
-                                source = await make_article(msg['title'], client)
-                                source_filename = await redirect_article(msg['title'], target_redirect)
-                                await save_article(source, target['slug'], template, sem)
-
+                                await make_redirect_article(msg['title'], target_redirect)
+                                
                             else:
                                 await delete_article(msg['title'])
                                 await remove_article_traces(msg['title'])
