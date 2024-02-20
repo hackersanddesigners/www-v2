@@ -26,7 +26,7 @@ from app.build_category_index import (
     update_categories
 )
 from app.build_front_index import (
-    update_front_index
+    build_front_index
 )
 import asyncio
 load_dotenv()
@@ -99,7 +99,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         # update front-index if necessary
                         art_title = article['title']
                         art_cats = article['metadata']['categories']
-                        await update_front_index(art_title, art_cats)
+                        await build_front_index(art_title, art_cats)
 
                         # -- write article to disk
                         filepath = f"{article['slug']}"
@@ -121,7 +121,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             # update front-index if necessary
                             art_title = msg['title']
                             art_cats = None
-                            await update_front_index(art_title, art_cats)
+                            await build_front_index(art_title, art_cats)
 
 
                         except Exception as e:
@@ -151,7 +151,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             # update front-index if necessary
                             art_title = target['title']
                             art_cats = target['metadata']['categories']
-                            await update_front_index(art_title, art_cats)
+                            await build_front_index(art_title, art_cats)
 
                             if make_redirect:
                                 target_redirect = {

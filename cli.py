@@ -8,7 +8,7 @@ from app.read_settings import main as read_settings
 from app.server import main as srv
 from app.build_wiki import main as bw
 from app.make_change_in_wiki import main as mc
-from app.build_front_index import update_front_index
+from app.build_front_index import build_front_index
 from app.views.template_utils import get_template
 from app.build_category_index import make_category_index
 from app.build_article import save_article
@@ -90,7 +90,7 @@ def build_article_index():
     (re-) Build the article index page.
     """
 
-    asyncio.run(update_front_index(article_title=None, article_cats=None))
+    asyncio.run(build_front_index(article_title=None, article_cats=None))
 
 
 @app.command()

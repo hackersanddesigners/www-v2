@@ -10,7 +10,7 @@ from app.views.template_utils import (
 from app.build_article import save_article
 
 
-async def update_front_index(article_title: str | None,
+async def build_front_index(article_title: str | None,
                              article_cats: list[str] | None):
     """
     check if:

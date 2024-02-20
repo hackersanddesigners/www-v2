@@ -25,7 +25,7 @@ from app.read_settings import main as read_settings
 from app.build_category_index import (
     build_categories,
 )
-from app.build_front_index import update_front_index
+from app.build_front_index import build_front_index
 load_dotenv()
 
 
@@ -139,7 +139,7 @@ async def main(ENV: str, URL: str):
         await build_categories(categories, template, sem)
 
         # -- build front-index page
-        await update_front_index(article_title=None, article_cats=None)
+        await build_front_index(article_title=None, article_cats=None)
 
         # -- ahah
         copy_assets()
