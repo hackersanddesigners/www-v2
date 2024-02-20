@@ -379,16 +379,9 @@ def get_category(categories, cats) -> [str]:
     cat_fallback_label = cat_fallback['label']
 
     if len(categories) > 0:
-        # TODO fix this by changing the Article template in the
-        # MediaWiki with another more category-bounded template
-        # <2023-12-20> manually removing the 'Article' category
-        # part of every wiki entry created through the Create New Article Page
-        # button, as it add the category `Article` by default.
-        # <2024-01-24> the above suggestion is non-sense, as adding a
-        # new article in the wiki sets by default the `category: Article`
-        # and it's somewhat counterintuitive to then remove this category
-        # afterwards by hand.
-
+        # we manually remove the cat Article from each article
+        # as it is added by default when using the template: Article
+        # in MW.
         return [cat['category'] for cat
              in categories
              if not cat['category'] == 'Article']
