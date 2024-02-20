@@ -145,10 +145,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 make_redirect = True
 
                             target = await make_article(redirect['target'], client)
-                            target_redirect = {
-                                'title': target['title'],
-                                'slug': target['slug']
-                            }
                             await update_categories(target, sem)
 
                             # update front-index if necessary
@@ -157,6 +153,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             await update_front_index(art_title, art_cats)
 
                             if make_redirect:
+                                target_redirect = {
+                                    'title': target['title'],
+                                    'slug': target['slug']
+                                }
+
                                 source = await make_article(msg['title'], client)
                                 source_filename = await redirect_article(msg['title'], target_redirect)
                                 await save_article(source, target['slug'], template, sem)
