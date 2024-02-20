@@ -262,9 +262,8 @@ async def remove_article_traces(article_title: str):
     # the correct DOM element in full.
 
     # - cat-index + index page => event-item > article.id
-    #   TODO index => currently not written to disk, so nothing to do yet
     # - collaborators => match <a> by href, go up one level to target parent <li>
-    # - footer => what links here => "
+    # - footer => what links here => ""
 
     tasks_html = []
 
