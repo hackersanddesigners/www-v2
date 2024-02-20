@@ -7,7 +7,7 @@ from app.fetch import (
     fetch_article,
 )
 from app.parser import parser
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import re
 from slugify import slugify
 import aiofiles
@@ -160,8 +160,10 @@ async def make_article(page_title: str, client):
         print(f"{page_title}: article not found!")
 
 
-async def redirect_article(article_title: str, redirect_target: str):
+async def redirect_article(article_title: str, target_redirect):
     """
+    Update moved article (source, eg the previous version of the article,
+    before the rename) to display a redirect page template.
     """
 
     p = Path(article_title)
@@ -176,16 +178,23 @@ async def redirect_article(article_title: str, redirect_target: str):
                 tree = await f.read()
                 soup = BeautifulSoup(tree, 'lxml')
 
-                main_h1 = soup.body.main.h1
-                redirect = f"<p>This page has been moved to <a href=\"{slugify(redirect_target)}.html\">{redirect_target}</a>.</p>"
+                # remove everything from inside body.main
+                # except <h1>
+                for item in soup.body.main.children:
+                    if isinstance(item, Tag):
+                        if item.name != 'h1':
+                            item.decompose()
 
-                main_h1.insert_after(redirect)
+                            
+                redirect = f"<p>This page has been moved to <a href=\"{target_redirect['slug']}.html\">{target_redirect['title']}</a>.</p>"
+                soup.body.main.append(redirect)
+                
                 output = soup.prettify(formatter=None)
 
             async with aiofiles.open(fn, mode='w') as f:
                 await f.write(output)
 
-
+            # return source article filename
             return fn.stem
 
         else:

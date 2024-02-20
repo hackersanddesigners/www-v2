@@ -131,11 +131,15 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 make_redirect = True
 
                             target = await make_article(redirect['target'], client)
+                            target_redirect = {
+                                'title': target['title'],
+                                'slug': target['slug']
+                            }
 
                             if make_redirect:
                                 source = await make_article(msg['title'], client)
-                                source_filepath = await redirect_article(msg['title'], redirect['target'])
-                                await save_article(source, source_filepath, template, sem)
+                                source_filename = await redirect_article(msg['title'], target_redirect)
+                                await save_article(source, target['slug'], template, sem)
 
                             else:
                                 await delete_article(msg['title'])
