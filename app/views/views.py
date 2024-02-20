@@ -97,9 +97,9 @@ async def make_front_index(home_art: str, home_cat: str):
             task = make_article(article['title'], client)
             art_tasks.append(asyncio.ensure_future(task))
 
-        prepared_articles = await asyncio.gather(*art_tasks)
-        prepared_articles = [item for item
-                             in prepared_articles
+        highlight_articles = await asyncio.gather(*art_tasks)
+        highlight_articles = [item for item
+                             in highlight_articles
                              if item is not None]
 
         # `Hackers & Designers` article
@@ -109,7 +109,7 @@ async def make_front_index(home_art: str, home_cat: str):
         article['backlinks'] = article['metadata']['backlinks']
 
         # add highlights to dict
-        article['highlights'] = prepared_articles
+        article['highlights'] = highlight_articles
 
         # -- upcoming events
         upcoming_events = []
@@ -139,7 +139,6 @@ async def make_front_index(home_art: str, home_cat: str):
 
                             
         article['upcoming'] = upcoming_events_str
-
 
         return article
 
