@@ -361,13 +361,13 @@ def get_metadata(article):
 
     cats = config['wiki']['categories']
     cat_keys = cats.keys()
-    categories = get_category(article['categories'], cats)
+    categories = get_categories(article['categories'], cats)
     metadata['categories'] = [slugify(cat) for cat in categories]
 
     return metadata
 
 
-def get_category(categories, cats) -> [str]:
+def get_categories(categories, cats) -> [str]:
 
     cat_fallback = None
     cat_fallback_key = ""
@@ -379,12 +379,16 @@ def get_category(categories, cats) -> [str]:
     cat_fallback_label = cat_fallback['label']
 
     if len(categories) > 0:
-        # we manually remove the cat Article from each article
+        # (1) we manually remove the cat Article from each article
         # as it is added by default when using the template: Article
         # in MW.
+        # (2) we make sure that every cat is part of the list of
+        # set categories in settings.toml
+
         return [cat['category'] for cat
-             in categories
-             if not cat['category'] == 'Article']
+                in categories
+                if not cat['category'] == 'Article'
+                and cat['category'] in list(cats.keys())]
 
     else:
         return [cat_fallback_label]

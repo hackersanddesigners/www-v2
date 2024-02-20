@@ -178,88 +178,89 @@ async def update_categories(article, sem):
     # - select index-template by `cat`
     # - build updated article item HTML snippet for category index
     # - use bs4 to search and replace previous article-item with new one
-    # - check if article item list needs to be re-sorted?
 
     cat_tasks_html = []
 
     cats = config['wiki']['categories']
     cat_label = None
-    
     for cat in article['metadata']['categories']:
         
-        # -- get cat_label and check if it matches
-        #    with defined settings.categories
+        # -- get cat_label and check if:
+        #    - index is True (if False we don't want
+        #      to build index page for it)
+        #    - given cat match any of the set category
+        #      so we can fetch the label value
         for k, v in cats.items():
-            if k.lower() == cat:
+            if v['index'] and cat == k.lower():
                 cat_label = cats[k]['label']
 
         if cat_label is None:
             print(f"update-categories err => no cat_label set for {cat}")
-            break
-
-
-        # if article is an event we need to do more work
-        # on the data structure before we pass it to the template.
-        # do it here.
-        prepared_article = article
-        if cat == 'event':
-            prepared_article = make_article_event(article)
-
-        # make new snippet for updated article 
-        template = get_template(f'partials/{cat}-item')
-        snippet_new = template.render(article=prepared_article)
-
-        # make bs4 object out of the HTML string
-        snippet_new = BeautifulSoup(snippet_new, 'lxml')
-
-        index_doc = cat_label.lower()
-
-        # get existing cat-index HTML
-        if not Path(f"./{WIKI_DIR}/{index_doc}.html").exists():
-            # cat-event HTML file does not exist. let's build it from scratch
-            # and write it to disk w/o doing the HTML-swap step
-            # (as unnecessary at this point).
-            cat_index = await make_category_index(cat)
-            filepath = f"{cat_index['slug']}"
-            await write_to_disk(filepath, cat_index['html'], sem=None)
             
-            break
-
-        
-        index_old = Path(f"./{WIKI_DIR}/{index_doc}.html").read_text()
-        
-        # find cat index's list item (article snippet) matching
-        # against given article's slug
-        soup = BeautifulSoup(index_old, 'lxml')
-        snippets_old = soup.select(f"#{article['slug']}")
-
-        # replace matched article snippet with newer one
-        article_snippet = soup.select(f"#{article['slug']}")
-        if len(article_snippet) > 0:
-            for item in article_snippet:
-                item.replace_with(snippet_new)
-
-            # write updated cat-index HTML back to disk
-            cat_html = str(soup.prettify())
-            task = write_to_disk(index_doc, cat_html, sem)
-            cat_tasks_html.append(asyncio.ensure_future(task))
-
         else:
-            # if no matching from the old snippet,
-            # it means we need to insert the article snippet
-            # into the page.
-            # do we try to insert the snippet in the correct position
-            # in the cat index list? no, we just rebuild the entire
-            # page. easier and more effective than otherwise having to
-            # compare against all the other article snippets and find
-            # in which position the newly created or restored
-            # article snippet should be inserted.
+            # if article is an `event` we need to do more work
+            # on the data structure before we pass it to the template.
+            # do it here.
+            prepared_article = article
+            if cat == 'event':
+                prepared_article = make_article_event(article)
 
-            cat_index = await make_category_index(cat)
-            filepath = f"{cat_index['slug']}"
-            await write_to_disk(filepath, cat_index['html'], sem=None)
+            # make new snippet for updated article 
+            template = get_template(f'partials/{cat}-item')
+            snippet_new = template.render(article=prepared_article)
 
-            break
+            # make bs4 object out of the HTML string
+            snippet_new = BeautifulSoup(snippet_new, 'lxml')
+
+            index_doc = cat_label.lower()
+
+            # get existing cat-index HTML
+            if not Path(f"./{WIKI_DIR}/{index_doc}.html").exists():
+                # cat-event HTML file does not exist. let's build it from scratch
+                # and write it to disk w/o doing the HTML-swap step
+                # (as unnecessary at this point).
+                cat_index = await make_category_index(cat)
+                filepath = f"{cat_index['slug']}"
+                await write_to_disk(filepath, cat_index['html'], sem=None)
+
+                break
+
+        
+            index_old = Path(f"./{WIKI_DIR}/{index_doc}.html").read_text()
+        
+            # find cat index's list item (article snippet) matching
+            # against given article's slug
+            soup = BeautifulSoup(index_old, 'lxml')
+            snippets_old = soup.select(f"#{article['slug']}")
+
+            # replace matched article snippet with newer one
+            article_snippet = soup.select(f"#{article['slug']}")
+            if len(article_snippet) > 0:
+                for item in article_snippet:
+                    item.replace_with(snippet_new)
+
+                # write updated cat-index HTML back to disk
+                cat_html = str(soup.prettify())
+                task = write_to_disk(index_doc, cat_html, sem)
+                cat_tasks_html.append(asyncio.ensure_future(task))
+
+            else:
+                # if no matching from the old snippet,
+                # it means we need to insert the article snippet
+                # into the page.
+                # do we try to insert the snippet in the correct position
+                # in the cat index list? no, we just rebuild the entire
+                # page. easier and more effective than otherwise having to
+                # compare against all the other article snippets and find
+                # in which position the newly created or restored
+                # article snippet should be inserted.
+
+                cat_index = await make_category_index(cat)
+                filepath = f"{cat_index['slug']}"
+                await write_to_disk(filepath, cat_index['html'], sem=None)
+                
+                break
+        
 
     await asyncio.gather(*cat_tasks_html)
 
