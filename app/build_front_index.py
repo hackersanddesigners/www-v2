@@ -14,7 +14,8 @@ async def update_front_index(article_title: str, article_cats: list[str] | None)
     """
     check if:
     - article title = settings.wiki.frontpage, else if
-    - article_cats is either 'highlight' or 'event'
+    - article_cats is either 'highlight' or 'event',
+    - else if article has been deleted, do another check
     
     if so update front index page and write it to disk.
     """

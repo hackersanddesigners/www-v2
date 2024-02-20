@@ -121,8 +121,6 @@ def link_extract_image_URL(links, mw_url):
             if width_x.isdigit():
                 img_width = int(width_x)                
 
-        if img_width is None:
-            print(f"img => {img}, {img.attrs}")
         
         thumb = src
         thumb_width = 250

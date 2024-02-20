@@ -92,6 +92,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     else:
                         # -- update every category index page the article has
                         #    and write it to disk
+                        # -- update article backlinks
                         await update_categories(article, sem)
                         await update_backlinks(article, sem)
 
