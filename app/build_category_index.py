@@ -195,7 +195,7 @@ async def update_categories(article, sem):
 
         if cat_label is None:
             print(f"update-categories err => no cat_label set for {cat}")
-            return
+            break
 
 
         # if article is an event we need to do more work
