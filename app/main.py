@@ -184,10 +184,10 @@ async def redirect_uri(request: Request, call_next):
                       f"matches => {matches}\n"
                       f"r => {redirect_uri}")
 
-                return RedirectResponse(url=f"/{redirect_uri}", status_code=307)
+                return RedirectResponse(url=f"/{redirect_uri}", status_code=301)
 
             else:
-                return RedirectResponse(url=f"/{new_uri}", status_code=307)
+                return RedirectResponse(url=f"/{new_uri}", status_code=301)
 
     
     # -- 
