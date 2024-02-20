@@ -194,12 +194,8 @@ async def make_redirect_article(article_title: str, target_redirect):
             async with aiofiles.open(fn, mode='w') as f:
                 await f.write(output)
 
-            # return source article filename
-            return fn.stem
-
         else:
             print(f"redirect-article: {article_title} not found, nothing done")
-            return None
 
 
 async def save_article(article: str | None, filepath: str, template: str, sem: int):
