@@ -16,6 +16,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from .views.views import (
+    make_front_index,
     make_event_index,
     make_collaborators_index,
     make_publishing_index,
@@ -45,9 +46,7 @@ from app.build_wiki import get_category
 from slugify import slugify
 from app.read_settings import main as read_settings
 import arrow
-from bs4 import BeautifulSoup
-import aiofiles
-from aiofiles import os as aos
+
 
 load_dotenv()
 
@@ -100,56 +99,20 @@ async def http_exception_handler(request, exc):
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """
-    fetch and return Hackers & Designers article
+    fetch and return index.html
     """
 
-    home_art = config['wiki']['frontpage']['article']
-    home_cat = config['wiki']['frontpage']['category']
+    try:
+        WIKI_DIR = os.getenv('WIKI_DIR')
+        file_path = f"{WIKI_DIR}/index.html"
 
-    context = create_context(ENV)
-    timeout = httpx.Timeout(10.0, connect=60.0)
-    async with httpx.AsyncClient(verify=context) as client:
+        with open(file_path) as f:
+            return f.read()
 
-        # `Hackers & Designers` article
-        article = await make_article(home_art, client)
-        article['slug'] = 'index'
-        article['last_modified'] = article['metadata']['last_modified']
-        article['backlinks'] = article['metadata']['backlinks']
+    except FileNotFoundError:
+        print(f"return 404")
 
-        # list of articles w/ `highlight` cat
-        data = await fetch_category(home_cat, client)
-        art_tasks = []
-        for article in data:
-            task = make_article(article['title'], client)
-            art_tasks.append(asyncio.ensure_future(task))
-
-        prepared_articles = await asyncio.gather(*art_tasks)
-        prepared_articles = [item for item
-                             in prepared_articles
-                             if item is not None]
-
-        article['highlights'] = prepared_articles
-
-        # -- upcoming events
-        upcoming_events = []
-        events_path = file_lookup("events")
-
-        if (events_path[0]):
-            if await aos.path.exists(events_path[0]):
-                async with aiofiles.open(events_path[0], mode='r') as f:
-                    tree = await f.read()
-                    soup = BeautifulSoup(tree, 'lxml')
-                    upcoming_events = soup.find_all("article", {"class": "when-upcoming" })
-                    upcoming_events_str = []
-                    for x in upcoming_events:
-                        upcoming_events_str.append(str(x))
-
-        article['upcoming'] = upcoming_events_str
-
-        # TODO or we write this to disk to speed up website first page?
-        return templates.TemplateResponse("index.html",
-                                          {"request": request,
-                                           "article": article})
+        raise HTTPException(status_code=404)
 
 
 @app.middleware("http")

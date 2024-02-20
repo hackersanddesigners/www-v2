@@ -1,13 +1,19 @@
 from dotenv import load_dotenv
 import os
 import asyncio
+import aiofiles
+from aiofiles import os as aos
+from bs4 import BeautifulSoup
 from .template_utils import (
     get_template,
     make_url_slug,
     make_timestamp,
 )
 from slugify import slugify
-from app.file_ops import write_to_disk
+from app.file_ops import (
+    write_to_disk,
+    file_lookup,
+)
 from app.build_article import (
     make_nav,
     make_footer_nav,
@@ -19,12 +25,13 @@ from app.parser import (
     get_metadata,
     parser,
 )
-from app.fetch import create_context
+from app.fetch import (
+    create_context,
+    fetch_category,
+)
 import httpx
 from app.log_to_file import main as log
 load_dotenv()
-
-
 
 
 def date_split(date: str):
@@ -74,7 +81,69 @@ def normalize_data(item):
     else:
         return ''
 
+# -- front-page
+
+async def make_front_index(home_art: str, home_cat: str):
     
+    ENV = os.getenv('ENV')
+    context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0)
+    async with httpx.AsyncClient(verify=context) as client:
+
+        # list of articles w/ `highlight` cat
+        data = await fetch_category(home_cat, client)
+        art_tasks = []
+        for article in data:
+            task = make_article(article['title'], client)
+            art_tasks.append(asyncio.ensure_future(task))
+
+        prepared_articles = await asyncio.gather(*art_tasks)
+        prepared_articles = [item for item
+                             in prepared_articles
+                             if item is not None]
+
+        # `Hackers & Designers` article
+        article = await make_article(home_art, client)
+        article['slug'] = 'index'
+        article['last_modified'] = article['metadata']['last_modified']
+        article['backlinks'] = article['metadata']['backlinks']
+
+        # add highlights to dict
+        article['highlights'] = prepared_articles
+
+        # -- upcoming events
+        upcoming_events = []
+        events_path = file_lookup("events")
+
+        current_timestamp = arrow.now().to('local')
+
+        if (events_path[0]):
+            if await aos.path.exists(events_path[0]):
+                async with aiofiles.open(events_path[0], mode='r') as f:
+                    tree = await f.read()
+                    soup = BeautifulSoup(tree, 'lxml')
+
+                    upcoming_events = soup.find_all("article", {"class": "when-upcoming" })
+                    upcoming_events_str = []
+                    
+                    for event in upcoming_events:
+                        # check if upcoming-event's date is bigger than
+                        # current timestamp. this helps to keep the list of
+                        # upcoming events even when no change is done to an event
+                        # and by consequence to the events page, which we
+                        # use above to query for all the upcoming events.
+                        
+                        event_date = arrow.get(event.attrs['data-start'])
+                        if event_date > current_timestamp:
+                            upcoming_events_str.append(str(event))
+
+                            
+        article['upcoming'] = upcoming_events_str
+
+
+        return article
+
+
 # -- events
 
 def make_article_event(article):

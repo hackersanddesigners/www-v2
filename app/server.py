@@ -25,6 +25,9 @@ from app.build_article import (
 from app.build_category_index import (
     update_categories
 )
+from app.build_front_index import (
+    update_front_index
+)
 import asyncio
 load_dotenv()
 
@@ -92,6 +95,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         await update_categories(article, sem)
                         await update_backlinks(article, sem)
 
+                        # update front-index if necessary
+                        art_title = article['title']
+                        art_cats = article['metadata']['categories']
+                        await update_front_index(art_title, art_cats)
+
                         # -- write article to disk
                         filepath = f"{article['slug']}"
                         await save_article(article, filepath, template, sem)
@@ -108,6 +116,12 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         try:
                             await delete_article(msg['title'])
                             await remove_article_traces(msg['title'])
+
+                            # update front-index if necessary
+                            art_title = msg['title']
+                            art_cats = None
+                            await update_front_index(art_title, art_cats)
+
 
                         except Exception as e:
                             print(f"delete article err => {e}")
@@ -135,6 +149,12 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 'title': target['title'],
                                 'slug': target['slug']
                             }
+                            await update_categories(target, sem)
+
+                            # update front-index if necessary
+                            art_title = target['title']
+                            art_cats = target['metadata']['categories']
+                            await update_front_index(art_title, art_cats)
 
                             if make_redirect:
                                 source = await make_article(msg['title'], client)
@@ -147,7 +167,6 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 
 
                             await save_article(target, target['slug'], template, sem)
-                            await update_categories(target, sem)
                             
 
                         except Exception as e:
