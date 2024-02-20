@@ -74,29 +74,7 @@ def normalize_data(item):
     else:
         return ''
 
-# -- front-page
-
-async def make_front_index(article_title: str):
-
-    template = get_template("index")
-
-    # - get Hackers_%26_Designers wiki page for latest news
-    ENV = os.getenv('ENV')
-    context = create_context(ENV)
-    sem = None
-
-    async with httpx.AsyncClient(verify=context) as client:
-
-        article = await make_article(article_title, client)
-
-        article['slug'] = 'index'
-        article['last_modified'] = article['metadata']['last_modified']
-        article['backlinks'] = article['metadata']['backlinks']
-
-        document = template.render(article=article)
-        await write_to_disk(article['slug'], document, sem)
-
-
+    
 # -- events
 
 def make_article_event(article):

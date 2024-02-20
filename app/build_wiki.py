@@ -9,9 +9,6 @@ from app.fetch import (
 )
 import asyncio
 import time
-from app.views.views import (
-    make_front_index,
-)
 from app.views.template_utils import (
     get_template,
     make_url_slug,
@@ -139,9 +136,6 @@ async def main(ENV: str, URL: str):
         # -- update category index
         categories = [k.lower() for k,v in cats.items()]
         await build_categories(categories, template, sem)
-
-        # -- make front-page
-        # await make_front_index(config['wiki']['frontpage']['article'])
 
         # -- ahah
         copy_assets()
