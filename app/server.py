@@ -115,8 +115,9 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                 elif msg['log_type'] == 'move':
 
-                    # we leave the previous article as a redirect page
-                    # like MW does.
+                    # we honor user's preference in the MW Move Article page:
+                    # if leave redirect behind is toggled, we leave the previous page
+                    # else we remove it, including any URL traces across the wiki
 
                     if msg['log_action'] in ['move', 'delete_redir']:
                         try:
@@ -136,9 +137,14 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 source_filepath = await redirect_article(msg['title'], redirect['target'])
                                 await save_article(source, source_filepath, template, sem)
 
-                            await save_article(target, target['slug'], template, sem)
+                            else:
+                                await delete_article(msg['title'])
+                                await remove_article_traces(msg['title'])
+                                
 
+                            await save_article(target, target['slug'], template, sem)
                             await update_categories(target, sem)
+                            
 
                         except Exception as e:
                             print(f"move article err => {e}")
