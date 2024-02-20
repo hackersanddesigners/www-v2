@@ -186,7 +186,7 @@ async def redirect_article(article_title: str, redirect_target: str):
                 await f.write(output)
 
 
-            return f"{fn.parent.stem}/{fn.stem}"
+            return fn.stem
 
         else:
             print(f"redirect-article: {article_title} not found, nothing done")
