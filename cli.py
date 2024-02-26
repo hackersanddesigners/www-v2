@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import os
+import aiofiles
+from aiofiles import os as aos
 import typer
 from typing_extensions import Annotated
 import asyncio
@@ -31,13 +33,16 @@ def setup():
 
     dir_list = [WIKI_DIR, MEDIA_DIR, LOG_DIR]
 
-    for path_dir in dir_list:
-        dir_path = os.path.abspath(path_dir)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-            print(f"created {dir_path}")
-        else:
-            print(f"{dir_path} exists already")
+    async def make_dirs_setup(dir_list: [str]):
+        for path_dir in dir_list:
+            dir_path = os.path.abspath(path_dir)
+            if not await aos.path.exists(dir_path):
+                await aos.makedirs(dir_path)
+                print(f"created {dir_path}")
+            else:
+                print(f"{dir_path} exists already")
+
+    asyncio.run(make_dirs_setup(dir_list))
 
 
 @app.command()
