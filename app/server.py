@@ -59,16 +59,18 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # -- we have the UPD message, let's read the operation
             #    type (new, edit, delete) and run appropriate function
 
+            article_title = msg['title']
+
             # namespace: -1 is part of Special Pages, we don't parse those
             if msg['namespace'] == -1:
                 return
 
             # filter out `Concept:<title>` articles
-            if msg['title'].startswith("Concept:"):
+            if article_title.startswith("Concept:"):
                 return
 
             # filter our `Special:<title>` articles
-            if msg['title'].startswith("Special:"):
+            if article_title.startswith("Special:"):
                 return
 
             # -- check if article is a snippet translation
@@ -76,18 +78,18 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             #    and instead convert Title to regular article
             #    so we updated it, instead of ignorin the
             #    translation snippet.
-            msg['title'] = convert_article_trans_title_to_regular_title(msg['title'])
+            article_title = convert_article_trans_title_to_regular_title(article_title)
 
             if (msg['type'] in ['new', 'edit']
                 or msg['type'] == 'log'
                 and msg['log_action'] in ['restore', 'delete_redir']):
 
                 try:
-                    article = await make_article(msg['title'], client)
+                    article = await make_article(article_title, client)
 
                     if not article:
                         print(f"server :: new / edit op: no article found\n"
-                              f"  for => {msg['title']}")
+                              f"  for => {article_title}")
 
                     else:
                         # -- update every category index page the article has
@@ -106,7 +108,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         await save_article(article, filepath, template, sem)
 
                 except Exception as e:
-                    print(f"make-article err ({msg['title']}) => {e}")
+                    print(f"make-article err ({article_title}) => {e}")
                     traceback.print_exc()
 
             elif msg['type'] == 'log':
@@ -115,13 +117,12 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
 
                     if msg['log_action'] == 'delete':
                         try:
-                            await delete_article(msg['title'])
-                            await remove_article_traces(msg['title'])
+                            await delete_article(article_title)
+                            await remove_article_traces(article_title)
 
                             # update front-index if necessary
-                            art_title = msg['title']
                             art_cats = None
-                            await build_front_index(art_title, art_cats)
+                            await build_front_index(article_title, art_cats)
 
 
                         except Exception as e:
@@ -159,11 +160,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                     'slug': target['slug']
                                 }
 
-                                await make_redirect_article(msg['title'], target_redirect)
+                                await make_redirect_article(article_title, target_redirect)
                                 
                             else:
-                                await delete_article(msg['title'])
-                                await remove_article_traces(msg['title'])
+                                await delete_article(article_title)
+                                await remove_article_traces(article_title)
                                 
 
                             await save_article(target, target['slug'], template, sem)
