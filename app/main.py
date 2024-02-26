@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 import os
 import json
 import asyncio
+import aiofiles
+from aiofiles import os as aos
 from fastapi import (
     FastAPI,
     Request,
@@ -106,8 +108,8 @@ async def root(request: Request):
         WIKI_DIR = os.getenv('WIKI_DIR')
         file_path = f"{WIKI_DIR}/index.html"
 
-        with open(file_path) as f:
-            return f.read()
+        async with aiofiles.open(file_path, mode='r') as f:
+            return await f.read()
 
     except FileNotFoundError:
         print(f"return 404")
@@ -192,8 +194,8 @@ async def article(request: Request, article: str):
         filename = Path(article).stem
         file_path = f"{WIKI_DIR}/{slugify(filename)}.html"
 
-        with open(file_path) as f:
-            return f.read()
+        async with aiofiles.open(file_path, mode='r') as f:
+            return await f.read()
 
     except FileNotFoundError:
         print(f"return 404")
