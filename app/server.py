@@ -76,7 +76,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # -- check if article is a snippet translation
             #    eg `<title>/<num-version>/<lang>
             #    and instead convert Title to regular article
-            #    so we updated it, instead of ignorin the
+            #    so we updated it, instead of ignoring the
             #    translation snippet.
             article_title = convert_article_trans_title_to_regular_title(article_title)
 
@@ -92,7 +92,12 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                               f"  for => {article_title}")
 
                     else:
-                        # -- update every category index page the article has
+
+                        # -- if we remove a category from an article
+                        # we need to remove its traces from the website
+                        await remove_article_traces(article_title)
+
+                        # -- then, update every category index page the article has
                         #    and write it to disk
                         # -- update article backlinks
                         await update_categories(article, sem)
