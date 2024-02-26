@@ -9,6 +9,7 @@ from app.fetch import (
 from app.parser import parser
 from bs4 import BeautifulSoup, Tag
 import re
+from unidecode import unidecode
 from slugify import slugify
 import aiofiles
 from aiofiles import os as aos
@@ -143,10 +144,16 @@ async def make_article(page_title: str, client):
             "tool_repos": art_metadata['repos_index'],
         }
 
+        # convert possible unicode title with special characters
+        # to "normal" ASCII characters
+        # eg 𝒟𝒾𝑔𝒾𝓉𝒶𝓁 𝒲𝑒𝓇𝑒𝒸𝓇𝑒𝒶𝓉𝓊𝓇𝑒𝓈 => Digital Werecreatures
+        article_title = unidecode(page_title)
+        article_slug = slugify(article_title)
+
         article = {
             "title": page_title,
             "html": body_html,
-            "slug": slugify(page_title),
+            "slug": article_slug,
             "nav": nav,
             "footer_nav": footer_nav,
             "translations": article_translations,
