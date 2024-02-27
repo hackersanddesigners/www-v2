@@ -165,7 +165,8 @@ async def fetch_article(title: str, client):
     except httpx.HTTPError as exc:
         await log(
             "error",
-            f"(fetch) get-article err :: HTTP Exception for {exc.request.url} - {exc}\n",
+            "(fetch) get-article err :: HTTP Exception for"
+            f"{exc.request.url} - {exc}\n",
             sem=None,
         )
 
