@@ -15,61 +15,16 @@ from app.fetch import create_context, fetch_category
 from app.file_ops import file_lookup
 from app.log_to_file import main as log
 
-from .template_utils import get_template
+from .template_utils import (
+    get_template,
+    extract_datetime,
+    ts_pad_hour,
+)
 
 load_dotenv()
 
 
-def date_split(date: str):
-
-    dates = date.split("-")
-    if len(dates) == 2:
-        return f"{dates[0]} – {dates[1]}"
-    else:
-        return date
-
-
-def extract_datetime(value):
-    # article.metadata's date and time could be
-    # constructed with a <start>-<end> format
-    # eg date: <2023-04-12>-<2023-04-16>
-    #    time: <18:00>-<21:00>
-
-    if value is not None:
-        tokens = value.split("-")
-
-        if len(tokens) <= 2:
-            return tokens
-
-        elif len(tokens) > 2:
-            return None
-
-
-def ts_pad_hour(tokens):
-    hour = tokens[0]
-
-    if len(hour) == 1:
-        ts = f"0{hour}:{tokens[1]}"
-        return ts
-
-    else:
-        return ":".join(tokens)
-
-
-def normalize_data(item):
-    """
-    Convert None to "" (empty string) if value
-    is missing, else make value uppercase.
-    """
-
-    if item:
-        return item.upper()
-    else:
-        return ""
-
-
 # -- front-page
-
 
 async def make_front_index(home_art: str, home_cat: str):
     """

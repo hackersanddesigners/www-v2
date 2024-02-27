@@ -70,15 +70,6 @@ def make_timestamp_full(t: str):
         return ts
 
 
-def date_split(date: str):
-
-    dates = date.split("-")
-    if len(dates) == 2:
-        return f"{dates[0]} – {dates[1]}"
-    else:
-        return date
-
-
 def extract_datetime(value):
     """
     Extract datetime string from given value.
