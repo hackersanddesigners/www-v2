@@ -22,7 +22,7 @@ mw_host = config["domain"]["mw_url"]
 
 def make_nav():
     """
-    make a list of dictionaries {label, uri} as links
+    Make a list of dictionaries {label, uri} as links
     to listed categories in settings.toml
     """
 
@@ -48,7 +48,7 @@ def make_nav():
 
 def make_footer_nav():
     """
-    make a sub nav from settings.toml for footer links
+    Make a sub nav from settings.toml for footer links
     """
 
     links = config["wiki"]["footer_links"]
@@ -62,6 +62,9 @@ def make_footer_nav():
 
 
 def get_article_field(field: str, article: dict[str]):
+    """
+    Extract specified field from the given dictionary.
+    """
 
     if field in article:
         article_field = article[field]
@@ -89,6 +92,9 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
 
 
 async def make_article(page_title: str, client):
+    """
+    Fetch and return a dictionary based on the given page_title.
+    """
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
 
@@ -151,7 +157,7 @@ async def make_article(page_title: str, client):
 
 async def make_redirect_article(article_title: str, target_redirect):
     """
-    Update moved article (source, eg the previous version of the article,
+    Update moved article (article source, eg the previous version of the article,
     before the rename) to display a redirect page template.
     """
 
@@ -187,6 +193,9 @@ async def make_redirect_article(article_title: str, target_redirect):
 
 
 async def save_article(article: str | None, filepath: str, template: str, sem: int):
+    """
+    Helper function to save article to disk.
+    """
 
     if article is not None:
         document = template.render(article=article)
@@ -195,9 +204,9 @@ async def save_article(article: str | None, filepath: str, template: str, sem: i
 
 async def delete_article(article_title: str):
     """
-    pass article title and remove it from local wiki dir, if it exists.
+    Pass article_title and remove it from local WIKI_DIR, if it exists.
 
-    let's construct the correct filepath in here
+    Let's construct the correct filepath in here
     instead of demanding the requiring function to
     do it; in this way we uniformize what we need it
     and just assume we receive the title of the article
@@ -229,7 +238,7 @@ async def delete_article(article_title: str):
 
 async def remove_article_traces(article_title: str):
     """
-    scan all HTML pages to find any bits of the given article title
+    Scan WIKI_DIR to find any bits of the given article_title
     and remove any block + link pointing to it.
     """
 
@@ -306,13 +315,12 @@ async def remove_article_traces(article_title: str):
 
 def extract_title_from_URL(links):
     """
-    we parse links from the body of the article
-    and rely on the MW convention of WikiLinks, eg:
-    the user type the title of a page inside {{ }}
-    in this way we can extract the title of the link
-    and use it to correctly fetch the page via MW's APIs
+    Parse links from the body of the article and
+    extract title from it. Then use it to fetch the page via MW's APIs.
+    We rely on the MW convention of WikiLinks, eg:
+    the user types the title of a page inside {{ }}
     IMPORTANT: this break in the case a link has a custom title / label.
-    we try to handle this case by comparing the href of the link with
+    We try to handle this case by comparing the href of the link with
     its title, and make the title matching the href
     """
 
@@ -357,9 +365,9 @@ def extract_title_from_URL(links):
 
 async def update_backlinks(article, sem):
     """
-    scan article for wiki links and rebuild each
+    Scan article for wiki links and rebuild each
     article it points to.
-    this is an attempt to re-add all the backlinks
+    This is an attempt to re-add all the backlinks
     in the articles we are re-building when we are
     either creating a new article or restoring a
     deleted one and we are removing backlinks

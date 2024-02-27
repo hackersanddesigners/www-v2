@@ -17,6 +17,9 @@ load_dotenv()
 
 
 async def get_category(ENV: str, URL: str, cat: str):
+    """
+    Fetch all articles from the given cat.
+    """
 
     params = {
         "action": "query",
@@ -49,7 +52,7 @@ async def get_category(ENV: str, URL: str, cat: str):
 
 async def main(ENV: str, URL: str):
     """
-    this function (re-)build the entire wiki by fetching a set of specific
+    This function (re-)build the entire wiki by fetching a set of specific
     pages from the MediaWiki instance
     """
 

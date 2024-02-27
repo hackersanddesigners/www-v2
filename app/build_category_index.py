@@ -140,7 +140,7 @@ async def make_category_index(cat: str):
 
 async def build_categories(categories: list[str], template, sem):
     """
-    Build all category index pages.
+    Build index page for all categories.
     """
 
     cat_tasks = []
@@ -164,7 +164,7 @@ async def build_categories(categories: list[str], template, sem):
 
 async def update_categories(article, sem):
     """
-    Update Index page for each value part of `categories`.
+    Update Index page for each category defined in settings.toml.
     We don't rebuild the whole Index page from scratch by parsing every
     article in it. Rather, we just update the article's info
     in the Index page that has triggered the update_categories function.

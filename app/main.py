@@ -45,6 +45,10 @@ config = read_settings()
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
+    """
+    Custom HTTP handler function to display custom
+    user-facing error messages (HTTP code, HTML response). 
+    """
 
     if exc.status_code == 404:
         message = "Nothing was found here."
@@ -72,7 +76,7 @@ async def http_exception_handler(request, exc):
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """
-    fetch and return index.html
+    Read from WIKI_DIR and return index.html.
     """
 
     try:
@@ -91,9 +95,9 @@ async def root(request: Request):
 @app.middleware("http")
 async def redirect_uri(request: Request, call_next):
     """
-    Check if incoming URI is formatted in the previous style
-    (see below for examples), and rewrite it to match
-    a possible wiki article on disk.
+    Check if incoming URI is formatted in the previous
+    hd-www-v1 style (eg had-py) — below for examples.
+    Rewrite URI to match a possible wiki article on disk.
     """
 
     uri = request.url.path[1:]
@@ -134,7 +138,8 @@ async def redirect_uri(request: Request, call_next):
 @app.get("/search", response_class=HTMLResponse)
 async def search(request: Request, query: str, page: int | None = 0):
     """
-    initiate wiki search on website
+    Run a search query on MediaWiki's APIs and display
+    results back.
     """
 
     # check if exact slug is matches rendered HTML page and redirect to it
@@ -155,7 +160,7 @@ async def search(request: Request, query: str, page: int | None = 0):
 @app.get("/{article}", response_class=HTMLResponse)
 async def article(request: Request, article: str):
     """
-    return HTML article from disk
+    Read from WIKI_DIR and return matching HTML article.
     """
 
     try:

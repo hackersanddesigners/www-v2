@@ -72,6 +72,9 @@ def normalize_data(item):
 
 
 async def make_front_index(home_art: str, home_cat: str):
+    """
+    Prepare necessary data for the Front index page.
+    """
 
     ENV = os.getenv("ENV")
     context = create_context(ENV)
@@ -135,7 +138,7 @@ async def make_front_index(home_art: str, home_cat: str):
 
 def make_article_event(article):
     """
-    Extend data for single Event article.
+    Extend necessary data for the Event article.
     """
 
     date = None
@@ -234,6 +237,9 @@ def make_article_event(article):
 
 
 async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
+    """
+    Prepare necessary data for the Event index page.
+    """
 
     template = get_template(f"{cat}-index")
 
@@ -297,6 +303,9 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
 
 
 async def make_collaborators_index(articles, cat: str, cat_label: str):
+    """
+    Prepare necessary data for the Collaborators index page.
+    """
 
     template = get_template(f"{cat}-index")
 
@@ -329,6 +338,9 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
 
 
 async def make_publishing_index(articles, cat: str, cat_label: str):
+    """
+    Prepare necessary data for the Publishing index page.
+    """
 
     template = get_template(f"{cat}-index")
     nav = make_nav()
@@ -355,6 +367,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
 
 
 async def make_tool_index(articles, cat: str, cat_label: str):
+    """
+    Prepare necessary data for the Tool index page.
+    """
 
     template = get_template(f"{cat}-index")
     nav = make_nav()
@@ -383,6 +398,9 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 
 
 async def make_search_index(articles, query):
+    """
+    Prepare necessary data for the Search index page.
+    """
 
     nav = make_nav()
     footer_nav = make_footer_nav()
@@ -407,6 +425,9 @@ async def make_search_index(articles, query):
 
 
 async def make_article_index(articles, cat, cat_label):
+    """
+    Prepare necessary data for the Article index page.
+    """
 
     template = get_template(f"{cat}-index")
 

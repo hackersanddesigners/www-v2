@@ -47,9 +47,9 @@ def setup():
 @app.command()
 def server():
     """
-    Run server to receive a message whenever an article from the MediaWiki is updated
-    (add, edit, rename, delete).
-    Create an HTML version of the article.
+    Run server to receive a message whenever an article from the MediaWiki
+    is updated (add, edit, rename, delete).
+    Create / Edit / Rename or Delete an HTML version of the article.
     """
 
     SERVER_IP = os.getenv("SERVER_IP")
@@ -106,8 +106,7 @@ def build_category_index(
     ]
 ):
     """
-    (re-) Build the given category index page. See settings.toml for list of
-    set categories — eg Article, Event, Publishing, etc.
+    (re-) Build the given category index page.
     """
 
     index = index.lower()

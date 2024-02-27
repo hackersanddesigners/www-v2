@@ -9,7 +9,7 @@ load_dotenv()
 
 def main():
     """
-    copy assets folder from root directory to ./wiki/.
+    Copy assets folder from root directory to WIKI_DIR.
     """
 
     ASSETS_DIR = os.getenv("ASSETS_DIR")

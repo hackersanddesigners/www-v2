@@ -17,9 +17,11 @@ MEDIA_DIR = os.getenv("MEDIA_DIR")
 
 def link_rewrite_to_canonical_url(link):
     """
-    (eg https://hackersanddesigners.nl, no subdomain)
-    and re-write the URL to be in relative format
-    eg point to a page in *this* wiki
+    Given a URL like:
+    https://hackersanddesigners.nl (no subdomain
+
+    Rewrite it to be in relative format, eg.
+    pointing to a page in *this* wiki.
     """
 
     url_parse = urlparse(link.attrs["href"])
@@ -36,7 +38,7 @@ def link_rewrite_to_canonical_url(link):
 
 def link_image_update(link, img_tag, mw_url):
     """
-    update any img's srcset attribute to the correct URL format.
+    Update any img's srcset attribute to the correct URL format.
     """
 
     img_tag.attrs["src"] = f"{mw_url}{img_tag.attrs['src']}"
@@ -57,7 +59,10 @@ def link_image_update(link, img_tag, mw_url):
 
 
 def link_extract_image_URL(links, mw_url):
-    """ """
+    """
+    Extract image's URL from a list of links.
+    Update URL to point to specified MediaWiki instance.
+    """
 
     def extract_image_URL(img):
         img_name = None
@@ -150,7 +155,7 @@ def link_extract_image_URL(links, mw_url):
 
 def link_rewrite_image_url(link, mw_url):
     """
-    update URL for link to an image file.
+    Update URL for link pointing to an image file.
     """
 
     if "=File:" in link.attrs["href"]:
@@ -167,7 +172,8 @@ def link_rewrite_image_url(link, mw_url):
 
 def link_rewrite_other_url(link):
     """
-    update URL of any other link that is not a `File:`.
+    Update URL for any other link that is not pointing
+    to a `File:`.
     """
 
     # TODO
@@ -195,8 +201,7 @@ def link_rewrite_other_url(link):
 
 def strip_thumb(thumb):
     """
-    strip "thumb" image from its hardcoded
-    width and height attributes.
+    Strip "thumb" image from its hardcoded width and height attributes.
     """
 
     if "src" in thumb.attrs:
@@ -213,13 +218,11 @@ def post_process(
     redirect_target: str | None = None,
 ):
     """
-    update HTML before saving to disk:
-    - update wikilinks to set correct title attribute
-    - scan for a-href pointing to <https://hackersanddesigners.nl/...>
-      and change them to be relative URLs
-    - return list of images URLs
+    Update article HTML before saving it to disk:
+    - update links
+    - extract list of images URLs
+    - manipulate and clean-up HTML for better design
     - extract repo URL from <tool> HTML
-    - do HTML clean-up for design fitting
     """
 
     canonical_url = config["domain"]["canonical_url"]
@@ -332,8 +335,8 @@ def get_data_from_HTML_table(article_html):
 
 def get_metadata(article):
     """
-    extract wiki template tags from article, if any.
-    extract article category
+    Extract wiki template tags from article, if any.
+    Extract article's categories too. 
     """
 
     metadata = {
@@ -353,6 +356,10 @@ def get_metadata(article):
 
 
 def get_categories(categories, cats) -> [str]:
+    """
+    Extract article's categories and handle
+    eventual fallback situations.
+    """
 
     cat_fallback = None
 
@@ -382,9 +389,9 @@ def get_categories(categories, cats) -> [str]:
 
 def parser(article: dict[str, int], redirect_target: str | None = None):
     """
-    - get page body (HTML)
-    - get article's metadata
-    - get article images' URL
+    Parse given article dictionary by:
+    - extracting metadata (images, categories, templates, tables, etc.)
+    - post-process HTML (fix links, extract Tool metadata, etc.)
     """
 
     print(f"parsing article {article['title']}")

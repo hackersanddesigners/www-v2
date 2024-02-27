@@ -72,12 +72,12 @@ def search_file_content(pattern: str) -> list[str]:
 
 async def write_to_disk(page_slug: str, document: str, sem: int | None = None):
     """
-    write file to disk.
+    Write given file to disk. We wrap the actual function in an
+    extra function that checks whether the sem parameter is used,
+    so as to iterate with it accordingly.
     """
 
     async def write(page_slug: str, document: str):
-        """ """
-
         if page_slug is not None:
             async with aiofiles.open(f"./{WIKI_DIR}/{page_slug}.html", mode="w") as f:
                 try:

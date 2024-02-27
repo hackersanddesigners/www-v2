@@ -6,6 +6,9 @@ from slugify import slugify
 
 
 def get_template(template: str):
+    """
+    Helper function to load the correct template for Jinja.
+    """
 
     template = template.lower()
 
@@ -24,6 +27,9 @@ def get_template(template: str):
 
 
 def make_url_slug(url: str):
+    """
+    Convert given url to a slug version of itself.
+    """
 
     if url:
         return slugify(url)
@@ -32,6 +38,10 @@ def make_url_slug(url: str):
 
 
 def make_mw_url_slug(url: str):
+    """
+    Convert given url to a MediaWiki friendly format.
+    """
+    
     if url:
         return quote_plus(url.replace(" ", "_"))
 
@@ -39,6 +49,10 @@ def make_mw_url_slug(url: str):
 
 
 def make_timestamp(t: str):
+    """
+    Shape given timestamp string into a standard
+    timestamp format.
+    """
 
     if t:
         ts = arrow.get(t).to("local").format("YYYY-MM-DD")
@@ -46,6 +60,10 @@ def make_timestamp(t: str):
 
 
 def make_timestamp_full(t: str):
+    """
+    Shape given timestamp string into a standard
+    timestamp format, including hours, minutes and seconds.
+    """
 
     if t:
         ts = arrow.get(t).to("local").format("YYYY-MM-DD HH:mm:ss")
@@ -62,10 +80,14 @@ def date_split(date: str):
 
 
 def extract_datetime(value):
-    # article.metadata's date and time could be
-    # constructed with a <start>-<end> format
-    # eg date: <2023-04-12>-<2023-04-16>
-    #    time: <18:00>-<21:00>
+    """
+    Extract datetime string from given value.
+    
+    Article.metadata's date and time could be
+    constructed with a <start>-<end> format
+    eg. date: <2023-04-12>-<2023-04-16>
+        time: <18:00>-<21:00>
+    """
 
     if value is not None:
         tokens = value.split("-")
@@ -78,6 +100,11 @@ def extract_datetime(value):
 
 
 def ts_pad_hour(tokens):
+    """
+    Helper function to add an extra 0 to the begining
+    of the hour token if necessary.
+    """
+    
     hour = tokens[0]
 
     if len(hour) == 1:
@@ -89,6 +116,11 @@ def ts_pad_hour(tokens):
 
 
 def paginator(items: list[dict], list_size: int, cursor: int):
+    """
+    Paginate over the given list of items by the specified list_size.
+    The function returns back a dictionary with a cursor value that
+    is used to navigate through the entire list.
+    """
 
     cursors = []
     pagination = []

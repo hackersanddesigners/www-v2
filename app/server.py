@@ -26,9 +26,10 @@ load_dotenv()
 
 async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     """
-    - listen to UDP message coming from mediawiki instance at SERVER_PORT
-    - fetch article by title using data from UDP message
-    - parse article from wikitext and transform it to HTML
+    Server function that:
+    - listens to UDP message coming from the specified MediaWiki instance at SERVER_PORT
+    - fetches article by title using data from UDP message
+    - post-process article data and save it to disk as HTML
     """
 
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

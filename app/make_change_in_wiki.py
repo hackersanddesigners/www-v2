@@ -12,7 +12,7 @@ load_dotenv()
 
 async def get_csrf_token(URL: str, client) -> str:
     """
-    login to the wikimedia instance as a bot user
+    Login to the wikimedia instance as a bot user
     and return CSRF token to use for other MW operations
     <https://www.mediawiki.org/wiki/API:Edit>
     """
@@ -62,7 +62,7 @@ async def get_csrf_token(URL: str, client) -> str:
 
 async def create_edit_page(URL: str, input_page: str, client):
     """
-    this func create a new article or edit an existing one.
+    Create a new article or edit an existing one.
 
     <https://www.mediawiki.org/wiki/API:Edit>
     login to the wikimedia instance as a bot user
@@ -91,7 +91,7 @@ async def create_edit_page(URL: str, input_page: str, client):
 
 async def delete_page(URL, input_page, client):
     """
-    this func delete an existing wiki article
+    Delete a wiki article.
     <https://www.mediawiki.org/wiki/API:Delete>
     """
 
@@ -113,7 +113,7 @@ async def delete_page(URL, input_page, client):
 
 async def main(ENV: str, URL: str, input_page: str, operation: str):
     """
-    set of functions to test the whole build / update workflow
+    Set of functions to test the whole build / update workflow
     by creating, updating or deleting a wiki article;
     this lets server.py do the rest.
     """

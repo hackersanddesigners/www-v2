@@ -19,6 +19,11 @@ config = read_settings()
 
 
 def create_context(ENV):
+    """
+    Helper function to detect whether httpx needs to pass
+    a custom TLS certificate (if running in `ENV=dev`), or not.
+    """
+    
     if ENV == "dev":
         base_dir = Path(__file__).parent.parent
         import ssl
@@ -34,10 +39,17 @@ def create_context(ENV):
         return True
 
 
-# refs:
-# <https://www.mediawiki.org/wiki/API:Continue#Example_3:_Python_code_for_iterating_through_all_results>
-# <https://github.com/nyurik/pywikiapi/blob/master/pywikiapi/Site.py#L259>
 async def query_continue(client, url, params):
+    """
+    Helper function needed by MediaWiki's APIs to fetch all the data
+    from a given `list` endpoint (eg. category). The code paginates
+    through the entire list until all results are returned.
+
+    Refs:
+    - <https://www.mediawiki.org/wiki/API:Continue#Example_3:_Python_code_for_iterating_through_all_results>
+    - <https://github.com/nyurik/pywikiapi/blob/master/pywikiapi/Site.py#L259>
+    """
+    
     request = params
     last_continue = {}
 
@@ -64,6 +76,11 @@ async def query_continue(client, url, params):
 
 
 async def fetch_article(title: str, client):
+    """
+    Fetch an article by its title, running several requests
+    to get all the necessary bits of data.
+    """
+    
     print(f"fetching article {title}")
 
     # for HTML-parsed wiki article
@@ -174,6 +191,10 @@ async def fetch_article(title: str, client):
 
 
 async def fetch_category(cat, client):
+    """
+    Fetch all the articles from the given cat.
+    """
+    
     print(f"fetching category data {cat}")
 
     params = {
@@ -203,6 +224,10 @@ async def fetch_category(cat, client):
 
 
 async def query_wiki(ENV: str, URL: str, query: str):
+    """
+    Run a search query to MediaWiki and return its results.
+    """
+    
     print(f"Querying mediawiki for { query } ...")
 
     params = {

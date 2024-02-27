@@ -12,12 +12,14 @@ from app.views.views import make_front_index
 
 async def build_front_index(article_title: str | None, article_cats: list[str] | None):
     """
-    check if:
+    Build front index page.
+    
+    Check if:
     - article title = settings.wiki.frontpage, else if
     - article_cats is either 'highlight' or 'event',
     - else if article has been deleted, do another check
 
-    if so update front index page and write it to disk.
+    If so update front index page and write it to disk.
     """
 
     WIKI_DIR = Path(os.getenv("WIKI_DIR"))
