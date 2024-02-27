@@ -255,54 +255,18 @@ async def query_wiki(ENV: str, URL: str, query: str):
     return results
 
 
-async def fetch_file(title: str):
-    """
-    get metadata of the given File: url, timestamp, size.
-    """
-
-    # http://localhost:8001/api.php?action=query&format=json&prop=imageinfo&iiprop=size&titles=File:Stim.jpg
-
-    params = {
-        "action": "query",
-        "prop": "imageinfo",
-        "iiprop": "url|timestamp|size",
-        "titles": title,
-        "formatversion": "2",
-        "format": "json",
-        "redirects": "1",
-    }
-
-    data = []
-    context = create_context(ENV)
-    timeout = httpx.Timeout(10.0, connect=60.0)
-
-    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
-        async for response in query_continue(client, URL, params):
-
-            if "missing" in response["pages"][0]:
-                title = response["pages"][0]["title"]
-                await log(
-                    "error", f"the image could not be found => {title}\n", sem=None
-                )
-
-                return (False, "")
-
-            else:
-                data.append(response)
-
-    file_last = data[0]["pages"][0]
-
-    return (True, file_last)
-
-
 def convert_article_trans_title_to_regular_title(title: str) -> str:
     """
-    check if article is a snippet translation, either of:
+    Extract given title from a translation-like format to
+    a normal, title-only, format.
+    
+    Check if article is a snippet translation, either of:
     - <title>/<Page display title>/<lang>
     - <title>/<num-version>/<lang>
-    and instead convert Title to regular article
-    title like `<title>/<lang>` so we can update it,
-    instead of ignoring the translation snippet.
+
+    And convert Title to regular article title
+    like `<title>/<lang>` so we can update it, instead of
+    ignoring the translation snippet.
     """
 
     translation_langs = [
