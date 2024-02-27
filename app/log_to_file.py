@@ -1,5 +1,5 @@
-import arrow
 import aiofiles
+import arrow
 
 
 async def write(filename: str, msg: str):

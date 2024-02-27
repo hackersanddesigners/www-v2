@@ -1,8 +1,9 @@
-import arrow
-from slugify import slugify
-from urllib.parse import parse_qs, urlencode, quote_plus
 from html import unescape
+from urllib.parse import parse_qs, quote_plus, urlencode
+
+import arrow
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from slugify import slugify
 
 
 def get_template(template: str):

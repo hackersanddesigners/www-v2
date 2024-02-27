@@ -1,9 +1,12 @@
-from dotenv import load_dotenv
-import sys
-import os
 import asyncio
+import os
+import sys
+
 import httpx
+from dotenv import load_dotenv
+
 from app.fetch import create_context
+
 load_dotenv()
 
 

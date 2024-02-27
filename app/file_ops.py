@@ -1,10 +1,12 @@
-from dotenv import load_dotenv
-import sys
-import subprocess
-import os
 import glob
+import os
+import subprocess
+import sys
 from pathlib import Path
+
 import aiofiles
+from dotenv import load_dotenv
+
 load_dotenv()
 
 

@@ -1,6 +1,7 @@
-import tomli
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import tomli
 
 
 def main():

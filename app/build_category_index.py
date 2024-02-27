@@ -1,34 +1,19 @@
+import asyncio
 import os
 from pathlib import Path
-import asyncio
-from app.fetch import (
-    create_context,
-    query_continue,
-)
-import httpx
-from app.views.views import (
-    make_article_event,
-    make_event_index,
-    make_collaborators_index,
-    make_publishing_index,
-    make_tool_index,
-    make_article_index,
-)
-from app.views.template_utils import (
-    get_template,
-    paginator,
-)
-from app.read_settings import main as read_settings
-from app.build_article import (
-    make_article,
-    save_article,
-)
-from app.file_ops import write_to_disk
-from bs4 import (
-    BeautifulSoup,
-)
-from app.log_to_file import main as log
 
+import httpx
+from bs4 import BeautifulSoup
+
+from app.build_article import make_article, save_article
+from app.fetch import create_context, query_continue
+from app.file_ops import write_to_disk
+from app.log_to_file import main as log
+from app.read_settings import main as read_settings
+from app.views.template_utils import get_template, paginator
+from app.views.views import (make_article_event, make_article_index,
+                             make_collaborators_index, make_event_index,
+                             make_publishing_index, make_tool_index)
 
 ENV = os.getenv('ENV')
 URL = os.getenv('BASE_URL')

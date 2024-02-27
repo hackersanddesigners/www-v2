@@ -1,31 +1,22 @@
-from dotenv import load_dotenv
-from sys import argv
-import os
-import httpx
-from app.fetch import (
-    query_continue,
-    create_context,
-    fetch_article,
-)
 import asyncio
-import time
-from app.views.template_utils import (
-    get_template,
-    make_url_slug,
-    make_timestamp,
-)
-from app.build_article import (
-    make_article,
-    save_article,
-)
 import json
+import os
+import time
+from sys import argv
+
+import httpx
+from dotenv import load_dotenv
 from slugify import slugify
-from app.copy_assets import main as copy_assets
-from app.read_settings import main as read_settings
-from app.build_category_index import (
-    build_categories,
-)
+
+from app.build_article import make_article, save_article
+from app.build_category_index import build_categories
 from app.build_front_index import build_front_index
+from app.copy_assets import main as copy_assets
+from app.fetch import create_context, fetch_article, query_continue
+from app.read_settings import main as read_settings
+from app.views.template_utils import (get_template, make_timestamp,
+                                      make_url_slug)
+
 load_dotenv()
 
 

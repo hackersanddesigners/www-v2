@@ -1,36 +1,23 @@
-from dotenv import load_dotenv
-import os
 import asyncio
+import json
+import os
+
 import aiofiles
+import arrow
+import httpx
 from aiofiles import os as aos
 from bs4 import BeautifulSoup
-from .template_utils import (
-    get_template,
-    make_url_slug,
-    make_timestamp,
-)
+from dotenv import load_dotenv
 from slugify import slugify
-from app.file_ops import (
-    write_to_disk,
-    file_lookup,
-)
-from app.build_article import (
-    make_nav,
-    make_footer_nav,
-    make_article,
-)
-import arrow
-import json
-from app.parser import (
-    get_metadata,
-    parser,
-)
-from app.fetch import (
-    create_context,
-    fetch_category,
-)
-import httpx
+
+from app.build_article import make_article, make_footer_nav, make_nav
+from app.fetch import create_context, fetch_category
+from app.file_ops import file_lookup, write_to_disk
 from app.log_to_file import main as log
+from app.parser import get_metadata, parser
+
+from .template_utils import get_template, make_timestamp, make_url_slug
+
 load_dotenv()
 
 

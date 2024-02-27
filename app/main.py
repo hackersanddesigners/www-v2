@@ -1,53 +1,32 @@
-from dotenv import load_dotenv
-import os
-import json
 import asyncio
-import aiofiles
-from aiofiles import os as aos
-from fastapi import (
-    FastAPI,
-    Request,
-    HTTPException,
-)
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import (
-    HTMLResponse,
-    RedirectResponse,
-)
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.templating import Jinja2Templates
+import json
+import os
 from pathlib import Path
-from .views.views import (
-    make_front_index,
-    make_event_index,
-    make_collaborators_index,
-    make_publishing_index,
-    make_tool_index,
-    make_article_index,
-    make_search_index,
-)
-from .views.template_utils import (
-    make_url_slug,
-    make_timestamp,
-    paginator,
-)
+
+import aiofiles
+import arrow
 import httpx
-from app.fetch import (
-    create_context,
-    query_continue,
-    query_wiki,
-    fetch_category,
-)
-from app.file_ops import (
-    file_lookup,
-    search_file_content,
-)
+from aiofiles import os as aos
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from slugify import slugify
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from app.build_article import make_article
 from app.build_wiki import get_category
-from slugify import slugify
+from app.fetch import (create_context, fetch_category, query_continue,
+                       query_wiki)
+from app.file_ops import file_lookup, search_file_content
 from app.read_settings import main as read_settings
-import arrow
 
+from .views.template_utils import make_timestamp, make_url_slug, paginator
+from .views.views import (make_article_index, make_collaborators_index,
+                          make_event_index, make_front_index,
+                          make_publishing_index, make_search_index,
+                          make_tool_index)
 
 load_dotenv()
 

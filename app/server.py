@@ -1,34 +1,23 @@
-from dotenv import load_dotenv
-import os
-import traceback
-import socket
-import httpx
-import json
-from app.pretty_json_log import main as pretty_json_log
-from app.views.template_utils import (
-    get_template,
-    make_url_slug,
-    make_timestamp
-)
-from app.fetch import (
-    create_context,
-    convert_article_trans_title_to_regular_title,
-)
-from app.build_article import (
-    make_article,
-    make_redirect_article,
-    save_article,
-    delete_article,
-    remove_article_traces,
-    update_backlinks,
-)
-from app.build_category_index import (
-    update_categories
-)
-from app.build_front_index import (
-    build_front_index
-)
 import asyncio
+import json
+import os
+import socket
+import traceback
+
+import httpx
+from dotenv import load_dotenv
+
+from app.build_article import (delete_article, make_article,
+                               make_redirect_article, remove_article_traces,
+                               save_article, update_backlinks)
+from app.build_category_index import update_categories
+from app.build_front_index import build_front_index
+from app.fetch import (convert_article_trans_title_to_regular_title,
+                       create_context)
+from app.pretty_json_log import main as pretty_json_log
+from app.views.template_utils import (get_template, make_timestamp,
+                                      make_url_slug)
+
 load_dotenv()
 
 

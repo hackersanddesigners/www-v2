@@ -1,22 +1,17 @@
-from dotenv import load_dotenv
 import os
-from app.fetch import (
-    fetch_file,
-    create_context,
-)
-import httpx
-from slugify import slugify
-from bs4 import (
-    BeautifulSoup,
-    NavigableString,
-    Tag,
-)
 import re
-from urllib.parse import urlparse
 from pathlib import Path
+from urllib.parse import unquote, urlparse
+
+import httpx
+from bs4 import BeautifulSoup, NavigableString, Tag
+from dotenv import load_dotenv
+from slugify import slugify
+
+from app.fetch import create_context, fetch_file
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
-from urllib.parse import unquote
+
 load_dotenv()
 
 

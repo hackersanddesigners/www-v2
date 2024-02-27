@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
-from slugify import slugify
+
 from bs4 import BeautifulSoup
-from app.read_settings import main as read_settings
-from app.views.views import make_front_index
-from app.views.template_utils import (
-    get_template
-)
+from slugify import slugify
+
 from app.build_article import save_article
+from app.read_settings import main as read_settings
+from app.views.template_utils import get_template
+from app.views.views import make_front_index
 
 
 async def build_front_index(article_title: str | None,

@@ -1,12 +1,15 @@
-from dotenv import load_dotenv
-import os
 import json
+import os
+from pathlib import Path
+
 import arrow
 import httpx
-from pathlib import Path
+from dotenv import load_dotenv
 from slugify import slugify
+
 from app.log_to_file import main as log
 from app.read_settings import main as read_settings
+
 load_dotenv()
 
 

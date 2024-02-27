@@ -1,20 +1,23 @@
-from dotenv import load_dotenv
-import os
-import aiofiles
-from aiofiles import os as aos
-import typer
-from typing_extensions import Annotated
 import asyncio
+import os
 import time
+
+import aiofiles
+import typer
+from aiofiles import os as aos
+from dotenv import load_dotenv
+from typing_extensions import Annotated
+
+from app.build_article import save_article
+from app.build_category_index import make_category_index
+from app.build_front_index import build_front_index
+from app.build_wiki import main as bw
+from app.file_ops import write_to_disk
+from app.make_change_in_wiki import main as mc
 from app.read_settings import main as read_settings
 from app.server import main as srv
-from app.build_wiki import main as bw
-from app.make_change_in_wiki import main as mc
-from app.build_front_index import build_front_index
 from app.views.template_utils import get_template
-from app.build_category_index import make_category_index
-from app.build_article import save_article
-from app.file_ops import write_to_disk
+
 load_dotenv()
 
 

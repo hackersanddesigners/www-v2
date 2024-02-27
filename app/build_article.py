@@ -1,33 +1,22 @@
-import os
 import asyncio
-import httpx
-from app.fetch import (
-    query_continue,
-    create_context,
-    fetch_article,
-)
-from app.parser import parser
-from bs4 import BeautifulSoup, Tag
+import os
 import re
-from unidecode import unidecode
-from slugify import slugify
-import aiofiles
-from aiofiles import os as aos
-from app.views.template_utils import (
-    get_template,
-    make_url_slug,
-    make_mw_url_slug,
-    make_timestamp,
-    make_timestamp_full,
-)
 from pathlib import Path
-from app.read_settings import main as read_settings
-from app.file_ops import (
-    file_lookup,
-    write_to_disk,
-    search_file_content,
-)
 
+import aiofiles
+import httpx
+from aiofiles import os as aos
+from bs4 import BeautifulSoup, Tag
+from slugify import slugify
+from unidecode import unidecode
+
+from app.fetch import create_context, fetch_article, query_continue
+from app.file_ops import file_lookup, search_file_content, write_to_disk
+from app.parser import parser
+from app.read_settings import main as read_settings
+from app.views.template_utils import (get_template, make_mw_url_slug,
+                                      make_timestamp, make_timestamp_full,
+                                      make_url_slug)
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()
