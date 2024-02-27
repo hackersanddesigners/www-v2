@@ -14,7 +14,6 @@ from app.build_article import make_article, make_footer_nav, make_nav
 from app.fetch import create_context, fetch_category
 from app.file_ops import file_lookup
 from app.log_to_file import main as log
-from app.parser import parser
 
 from .template_utils import get_template
 
