@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import sys
@@ -10,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-WIKI_DIR = os.getenv('WIKI_DIR')
+WIKI_DIR = os.getenv("WIKI_DIR")
+
 
 def file_lookup(filename: str) -> list[str]:
     """
@@ -21,10 +21,9 @@ def file_lookup(filename: str) -> list[str]:
     # TODO look how to make this pattern work
     # so we can match also partial URI
     # pattern = f"*{filename}*.html"
-    
+
     pattern = f"{filename}.html"
-    paths = [p for p
-             in Path(WIKI_DIR).glob(pattern)]
+    paths = [p for p in Path(WIKI_DIR).glob(pattern)]
 
     return paths
 
@@ -36,15 +35,18 @@ def search_file_content(pattern: str) -> list[str]:
     """
 
     try:
-        RG_PATH = subprocess.check_output(['/usr/bin/which', 'rg'],
-                                          text=True, cwd=WIKI_DIR).strip()
-        
+        RG_PATH = subprocess.check_output(
+            ["/usr/bin/which", "rg"], text=True, cwd=WIKI_DIR
+        ).strip()
+
     except subprocess.CalledProcessError:
         # no ripgrep (rg) found in the system.
         # stop everything and exit. print a user-facing
         # message asking to install ripgrep.
-        print("search_file_content error =>  ripgrep is not installed\n",
-              "in the system. please install it, see README.md")
+        print(
+            "search_file_content error =>  ripgrep is not installed\n",
+            "in the system. please install it, see README.md",
+        )
         sys.exit(1)
 
     print(f"RG_PATH => {RG_PATH}")
@@ -53,18 +55,18 @@ def search_file_content(pattern: str) -> list[str]:
         # we're `cd`-ing into WIKI_DIR by passing the option
         # `cwd=WIKI_DIR, so we don't pass to `rg` a base-dir path
         # at it's assumed to default to CWD
-        matches = subprocess.check_output([RG_PATH,
-                                           '--type', 'html',
-                                           '--files-with-matches',
-                                           pattern],
-                                          text=True, cwd=WIKI_DIR)
+        matches = subprocess.check_output(
+            [RG_PATH, "--type", "html", "--files-with-matches", pattern],
+            text=True,
+            cwd=WIKI_DIR,
+        )
 
         matches = matches.splitlines()
         return matches
     except subprocess.CalledProcessError:
         # no rg match. return empty list.
         print(f"search-file-content => no match for {pattern}")
-        
+
         return []
 
 
@@ -74,21 +76,19 @@ async def write_to_disk(page_slug: str, document: str, sem: int | None = None):
     """
 
     async def write(page_slug: str, document: str):
-        """
-        """
+        """ """
 
         if page_slug is not None:
-            async with aiofiles.open(f"./{WIKI_DIR}/{page_slug}.html", mode='w') as f:
+            async with aiofiles.open(f"./{WIKI_DIR}/{page_slug}.html", mode="w") as f:
                 try:
                     await f.write(document)
                     print(f"✓ {page_slug} has been correctly written to disk")
                 except Exception as e:
                     print(f"✕ error for {page_slug} => {e}")
-    
 
     if sem is not None:
         async with sem:
             await write(page_slug, document)
-            
+
     else:
         await write(page_slug, document)

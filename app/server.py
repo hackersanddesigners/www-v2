@@ -7,16 +7,19 @@ import traceback
 import httpx
 from dotenv import load_dotenv
 
-from app.build_article import (delete_article, make_article,
-                               make_redirect_article, remove_article_traces,
-                               save_article, update_backlinks)
+from app.build_article import (
+    delete_article,
+    make_article,
+    make_redirect_article,
+    remove_article_traces,
+    save_article,
+    update_backlinks,
+)
 from app.build_category_index import update_categories
 from app.build_front_index import build_front_index
-from app.fetch import (convert_article_trans_title_to_regular_title,
-                       create_context)
+from app.fetch import convert_article_trans_title_to_regular_title, create_context
 from app.pretty_json_log import main as pretty_json_log
-from app.views.template_utils import (get_template,
-                                      )
+from app.views.template_utils import get_template
 
 load_dotenv()
 
@@ -31,10 +34,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_sock.bind((SERVER_IP, SERVER_PORT))
 
-    print("UDP server has started and is ready to receive...",
-          f"{SERVER_IP, SERVER_PORT}")
+    print(
+        "UDP server has started and is ready to receive...", f"{SERVER_IP, SERVER_PORT}"
+    )
 
-    template = get_template('article')
+    template = get_template("article")
     sem = None
     context = create_context(ENV)
 
@@ -48,10 +52,10 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             # -- we have the UPD message, let's read the operation
             #    type (new, edit, delete) and run appropriate function
 
-            article_title = msg['title']
+            article_title = msg["title"]
 
             # namespace: -1 is part of Special Pages, we don't parse those
-            if msg['namespace'] == -1:
+            if msg["namespace"] == -1:
                 return
 
             # filter out `Concept:<title>` articles
@@ -69,16 +73,20 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
             #    translation snippet.
             article_title = convert_article_trans_title_to_regular_title(article_title)
 
-            if (msg['type'] in ['new', 'edit']
-                or msg['type'] == 'log'
-                and msg['log_action'] in ['restore', 'delete_redir']):
+            if (
+                msg["type"] in ["new", "edit"]
+                or msg["type"] == "log"
+                and msg["log_action"] in ["restore", "delete_redir"]
+            ):
 
                 try:
                     article = await make_article(article_title, client)
 
                     if not article:
-                        print(f"server :: new / edit op: no article found\n"
-                              f"  for => {article_title}")
+                        print(
+                            f"server :: new / edit op: no article found\n"
+                            f"  for => {article_title}"
+                        )
 
                     else:
 
@@ -93,8 +101,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         await update_backlinks(article, sem)
 
                         # update front-index if necessary
-                        art_title = article['title']
-                        art_cats = article['metadata']['categories']
+                        art_title = article["title"]
+                        art_cats = article["metadata"]["categories"]
                         await build_front_index(art_title, art_cats)
 
                         # -- write article to disk
@@ -105,11 +113,11 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                     print(f"make-article err ({article_title}) => {e}")
                     traceback.print_exc()
 
-            elif msg['type'] == 'log':
+            elif msg["type"] == "log":
 
-                if msg['log_type'] == 'delete':
+                if msg["log_type"] == "delete":
 
-                    if msg['log_action'] == 'delete':
+                    if msg["log_action"] == "delete":
                         try:
                             await delete_article(article_title)
                             await remove_article_traces(article_title)
@@ -118,65 +126,63 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             art_cats = None
                             await build_front_index(article_title, art_cats)
 
-
                         except Exception as e:
                             print(f"delete article err => {e}")
                             traceback.print_exc()
 
-                elif msg['log_type'] == 'move':
+                elif msg["log_type"] == "move":
 
                     # we honor user's preference in the MW Move Article page:
                     # if leave redirect behind is toggled, we leave the previous page
                     # else we remove it, including any URL traces across the wiki
 
-                    if msg['log_action'] in ['move', 'delete_redir']:
+                    if msg["log_action"] in ["move", "delete_redir"]:
                         try:
-                            redirect = msg['log_params']
+                            redirect = msg["log_params"]
 
                             # no-redirect:
                             # - 0 => make redirect
                             # - 1 => no redirect
                             make_redirect = False
-                            if 'noredir' in redirect and redirect['noredir'] == '0':
+                            if "noredir" in redirect and redirect["noredir"] == "0":
                                 make_redirect = True
 
-                            target = await make_article(redirect['target'], client)
+                            target = await make_article(redirect["target"], client)
                             await update_categories(target, sem)
 
                             # update front-index if necessary
-                            art_title = target['title']
-                            art_cats = target['metadata']['categories']
+                            art_title = target["title"]
+                            art_cats = target["metadata"]["categories"]
                             await build_front_index(art_title, art_cats)
 
                             if make_redirect:
                                 target_redirect = {
-                                    'title': target['title'],
-                                    'slug': target['slug']
+                                    "title": target["title"],
+                                    "slug": target["slug"],
                                 }
 
-                                await make_redirect_article(article_title, target_redirect)
-                                
+                                await make_redirect_article(
+                                    article_title, target_redirect
+                                )
+
                             else:
                                 await delete_article(article_title)
                                 await remove_article_traces(article_title)
-                                
 
-                            await save_article(target, target['slug'], template, sem)
-                            
+                            await save_article(target, target["slug"], template, sem)
 
                         except Exception as e:
                             print(f"move article err => {e}")
                             traceback.print_exc()
 
             else:
-                print("we dont' know how to parse this MW operation.",
-                      f"=> {msg}")
+                print("we dont' know how to parse this MW operation.", f"=> {msg}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    SERVER_IP = os.getenv('SERVER_IP')
-    SERVER_PORT = int(os.getenv('SERVER_PORT'))
-    ENV = os.getenv('ENV')
+    SERVER_IP = os.getenv("SERVER_IP")
+    SERVER_PORT = int(os.getenv("SERVER_PORT"))
+    ENV = os.getenv("ENV")
 
     asyncio.run(main(SERVER_IP, SERVER_PORT, ENV))

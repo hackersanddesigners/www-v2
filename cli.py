@@ -2,21 +2,17 @@ import asyncio
 import os
 import time
 
-
 import typer
 from aiofiles import os as aos
 from dotenv import load_dotenv
 from typing_extensions import Annotated
-
 
 from app.build_category_index import make_category_index
 from app.build_front_index import build_front_index
 from app.build_wiki import main as bw
 from app.file_ops import write_to_disk
 from app.make_change_in_wiki import main as mc
-
 from app.server import main as srv
-
 
 load_dotenv()
 
@@ -30,9 +26,9 @@ def setup():
     Setup necessary folders and files to run the program.
     """
 
-    WIKI_DIR = os.getenv('WIKI_DIR')
-    MEDIA_DIR = os.getenv('MEDIA_DIR')
-    LOG_DIR = os.getenv('LOG_DIR')
+    WIKI_DIR = os.getenv("WIKI_DIR")
+    MEDIA_DIR = os.getenv("MEDIA_DIR")
+    LOG_DIR = os.getenv("LOG_DIR")
 
     dir_list = [WIKI_DIR, MEDIA_DIR, LOG_DIR]
 
@@ -56,12 +52,12 @@ def server():
     Create an HTML version of the article.
     """
 
-    SERVER_IP = os.getenv('SERVER_IP')
-    SERVER_PORT = int(os.getenv('SERVER_PORT'))
-    ENV = os.getenv('ENV')
+    SERVER_IP = os.getenv("SERVER_IP")
+    SERVER_PORT = int(os.getenv("SERVER_PORT"))
+    ENV = os.getenv("ENV")
 
     asyncio.run(srv(SERVER_IP, SERVER_PORT, ENV))
-    
+
 
 @app.command()
 def build_wiki():
@@ -69,8 +65,8 @@ def build_wiki():
     Rebuild entire wiki from scratch.
     """
 
-    URL = os.getenv('BASE_URL')
-    ENV = os.getenv('ENV')
+    URL = os.getenv("BASE_URL")
+    ENV = os.getenv("ENV")
 
     start_time = time.time()
     # -- run everything
@@ -79,15 +75,17 @@ def build_wiki():
 
 
 @app.command()
-def build_article(article: Annotated[str, typer.Argument(help="article to work with")],
-                 operation: Annotated[str, typer.Argument(help="operation type: edit, delete")]):
+def build_article(
+    article: Annotated[str, typer.Argument(help="article to work with")],
+    operation: Annotated[str, typer.Argument(help="operation type: edit, delete")],
+):
     """
     Update or delete an article in the MediaWiki
     and create a new HTML version of it.
     """
-    
-    ENV = os.getenv('ENV')
-    URL = os.getenv('BASE_URL')
+
+    ENV = os.getenv("ENV")
+    URL = os.getenv("BASE_URL")
 
     asyncio.run(mc(ENV, URL, article, operation))
 
@@ -102,19 +100,23 @@ def build_article_index():
 
 
 @app.command()
-def build_category_index(index: Annotated[str, typer.Argument(help="index page to work with (see settings.toml for list)")]):
+def build_category_index(
+    index: Annotated[
+        str, typer.Argument(help="index page to work with (see settings.toml for list)")
+    ]
+):
     """
     (re-) Build the given category index page. See settings.toml for list of
     set categories — eg Article, Event, Publishing, etc.
     """
 
     index = index.lower()
-    
+
     cat_index = asyncio.run(make_category_index(index))
 
     if cat_index is not None:
         filepath = f"{cat_index['slug']}"
-        asyncio.run(write_to_disk(filepath, cat_index['html'], sem=None))
+        asyncio.run(write_to_disk(filepath, cat_index["html"], sem=None))
 
 
 if __name__ == "__main__":

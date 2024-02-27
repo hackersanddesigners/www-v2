@@ -11,13 +11,18 @@ from app.file_ops import write_to_disk
 from app.log_to_file import main as log
 from app.read_settings import main as read_settings
 from app.views.template_utils import get_template
-from app.views.views import (make_article_event, make_article_index,
-                             make_collaborators_index, make_event_index,
-                             make_publishing_index, make_tool_index)
+from app.views.views import (
+    make_article_event,
+    make_article_index,
+    make_collaborators_index,
+    make_event_index,
+    make_publishing_index,
+    make_tool_index,
+)
 
-ENV = os.getenv('ENV')
-URL = os.getenv('BASE_URL')
-WIKI_DIR = os.getenv('WIKI_DIR')
+ENV = os.getenv("ENV")
+URL = os.getenv("BASE_URL")
+WIKI_DIR = os.getenv("WIKI_DIR")
 config = read_settings()
 
 
@@ -29,31 +34,32 @@ async def make_category_index(cat: str):
     cat_key = None
     cat_label = None
 
-    cats = config['wiki']['categories']
+    cats = config["wiki"]["categories"]
 
     for k, v in cats.items():
         if k.lower() == cat:
             cat_key = k
-            cat_label = cats[k]['label']
-
+            cat_label = cats[k]["label"]
 
     if not cat_key:
-        print(f"make-category-index: the 'cat: {cat}' has not matched with any\n",
-              "of the following categories:\n",
-              f"{list(cats.keys())}")
+        print(
+            f"make-category-index: the 'cat: {cat}' has not matched with any\n",
+            "of the following categories:\n",
+            f"{list(cats.keys())}",
+        )
         return None
 
     # --
 
     params = {
-        'action': 'query',
-        'list': 'categorymembers',
-        'cmtitle': f"Category:{cat_key}",
-        'cmlimit': '50',
-        'cmprop': 'ids|title|timestamp',
-        'formatversion': '2',
-        'format': 'json',
-        'redirects': '1',
+        "action": "query",
+        "list": "categorymembers",
+        "cmtitle": f"Category:{cat_key}",
+        "cmlimit": "50",
+        "cmprop": "ids|title|timestamp",
+        "formatversion": "2",
+        "format": "json",
+        "redirects": "1",
     }
 
     context = create_context(ENV)
@@ -62,70 +68,76 @@ async def make_category_index(cat: str):
 
         # -- get full list of entries from category
         data = []
-        translation_langs = [config['wiki']['default'],
-                             config['wiki']['translation_langs'][0]]
-        
-        async for response in query_continue(client, URL, params):
-            response = response['categorymembers']
-            title = response[0]['title']
+        translation_langs = [
+            config["wiki"]["default"],
+            config["wiki"]["translation_langs"][0],
+        ]
 
-            if len(response) > 0 and 'missing' in response[0]:
+        async for response in query_continue(client, URL, params):
+            response = response["categorymembers"]
+            title = response[0]["title"]
+
+            if len(response) > 0 and "missing" in response[0]:
                 print(f"the page could not be found => {title}")
 
             else:
                 data.extend(response)
-                    
 
         # TODO the code above can be replaced with get_category from build_wiki.py
         # --
 
-        translation_langs = [config['wiki']['default'],
-                             config['wiki']['translation_langs'][0]]
+        translation_langs = [
+            config["wiki"]["default"],
+            config["wiki"]["translation_langs"][0],
+        ]
 
         art_tasks = []
         for article in data:
             # filter out translated article
-            title = article['title']
-            lang_stem = title.split('/')[-1]
-            
+            title = article["title"]
+            lang_stem = title.split("/")[-1]
+
             if lang_stem not in translation_langs:
-                task = make_article(article['title'], client)
+                task = make_article(article["title"], client)
                 art_tasks.append(asyncio.ensure_future(task))
 
         prepared_articles = await asyncio.gather(*art_tasks)
-        await log('info',
-                  f"prep-articles {cat_key} => un-filtered {len(prepared_articles)}\n",
-                  sem=None)
-        
-        prepared_articles = [item for item
-                             in prepared_articles 
-                             if item is not None]
-        await log('info',
-                  f"prep-articles {cat_key} => filtered {len(prepared_articles)}\n",
-                  sem=None)
+        await log(
+            "info",
+            f"prep-articles {cat_key} => un-filtered {len(prepared_articles)}\n",
+            sem=None,
+        )
+
+        prepared_articles = [item for item in prepared_articles if item is not None]
+        await log(
+            "info",
+            f"prep-articles {cat_key} => filtered {len(prepared_articles)}\n",
+            sem=None,
+        )
 
         article = None
 
-        if cat_label == 'Events':
+        if cat_label == "Events":
             article = await make_event_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == 'Collaborators':
-            article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
+        elif cat_label == "Collaborators":
+            article = await make_collaborators_index(
+                prepared_articles, cat_key, cat_label
+            )
 
-        elif cat_label == 'Publishing':
+        elif cat_label == "Publishing":
             article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == 'Tools':
+        elif cat_label == "Tools":
             article = await make_tool_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == 'Articles':
+        elif cat_label == "Articles":
             article = await make_article_index(prepared_articles, cat_key, cat_label)
 
-
         if article:
-            return (article)
+            return article
 
-        
+
 async def build_categories(categories: list[str], template, sem):
     """
     Build all category index pages.
@@ -137,16 +149,16 @@ async def build_categories(categories: list[str], template, sem):
         cat_tasks.append(asyncio.ensure_future(task))
 
     prepared_category_indexes = await asyncio.gather(*cat_tasks)
-    prepared_category_indexes = [item for item
-                                 in prepared_category_indexes
-                                 if item is not None]
+    prepared_category_indexes = [
+        item for item in prepared_category_indexes if item is not None
+    ]
 
     cat_tasks_html = []
     for cat_index in prepared_category_indexes:
         filepath = f"{cat_index['slug']}"
-        task = write_to_disk(filepath, cat_index['html'], sem)
+        task = write_to_disk(filepath, cat_index["html"], sem)
         cat_tasks_html.append(asyncio.ensure_future(task))
-        
+
     await asyncio.gather(*cat_tasks_html)
 
 
@@ -164,36 +176,36 @@ async def update_categories(article, sem):
 
     cat_tasks_html = []
 
-    cats = config['wiki']['categories']
+    cats = config["wiki"]["categories"]
     cat_label = None
-    for cat in article['metadata']['categories']:
-        
+    for cat in article["metadata"]["categories"]:
+
         # -- get cat_label and check if:
         #    - index is True (if False we don't want
         #      to build index page for it)
         #    - given cat match any of the set category
         #      so we can fetch the label value
         for k, v in cats.items():
-            if v['index'] and cat == k.lower():
-                cat_label = cats[k]['label']
+            if v["index"] and cat == k.lower():
+                cat_label = cats[k]["label"]
 
         if cat_label is None:
             print(f"update-categories err => no cat_label set for {cat}")
-            
+
         else:
             # if article is an `event` we need to do more work
             # on the data structure before we pass it to the template.
             # do it here.
             prepared_article = article
-            if cat == 'event':
+            if cat == "event":
                 prepared_article = make_article_event(article)
 
-            # make new snippet for updated article 
-            template = get_template(f'partials/{cat}-item')
+            # make new snippet for updated article
+            template = get_template(f"partials/{cat}-item")
             snippet_new = template.render(article=prepared_article)
 
             # make bs4 object out of the HTML string
-            snippet_new = BeautifulSoup(snippet_new, 'lxml')
+            snippet_new = BeautifulSoup(snippet_new, "lxml")
 
             index_doc = cat_label.lower()
 
@@ -204,16 +216,15 @@ async def update_categories(article, sem):
                 # (as unnecessary at this point).
                 cat_index = await make_category_index(cat)
                 filepath = f"{cat_index['slug']}"
-                await write_to_disk(filepath, cat_index['html'], sem=None)
+                await write_to_disk(filepath, cat_index["html"], sem=None)
 
                 break
 
-        
             index_old = Path(f"./{WIKI_DIR}/{index_doc}.html").read_text()
-        
+
             # find cat index's list item (article snippet) matching
             # against given article's slug
-            soup = BeautifulSoup(index_old, 'lxml')
+            soup = BeautifulSoup(index_old, "lxml")
 
             # replace matched article snippet with newer one
             article_snippet = soup.select(f"#{article['slug']}")
@@ -239,12 +250,8 @@ async def update_categories(article, sem):
 
                 cat_index = await make_category_index(cat)
                 filepath = f"{cat_index['slug']}"
-                await write_to_disk(filepath, cat_index['html'], sem=None)
-                
+                await write_to_disk(filepath, cat_index["html"], sem=None)
+
                 break
-        
 
     await asyncio.gather(*cat_tasks_html)
-
-
-    

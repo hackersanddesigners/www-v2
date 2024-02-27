@@ -1,6 +1,5 @@
 import asyncio
 import os
-
 from pathlib import Path
 
 import aiofiles
@@ -14,13 +13,12 @@ from app.fetch import create_context, fetch_article
 from app.file_ops import file_lookup, search_file_content, write_to_disk
 from app.parser import parser
 from app.read_settings import main as read_settings
-from app.views.template_utils import (get_template, make_mw_url_slug,
-                                      make_timestamp_full,
-                                      )
+from app.views.template_utils import get_template, make_mw_url_slug, make_timestamp_full
 
-WIKI_DIR = Path(os.getenv('WIKI_DIR'))
+WIKI_DIR = Path(os.getenv("WIKI_DIR"))
 config = read_settings()
-mw_host = config['domain']['mw_url']
+mw_host = config["domain"]["mw_url"]
+
 
 def make_nav():
     """
@@ -28,24 +26,22 @@ def make_nav():
     to listed categories in settings.toml
     """
 
-    cats = config['wiki']['categories']
+    cats = config["wiki"]["categories"]
 
     nav = []
     for k, v in cats.items():
-        if v['nav']:
-            label = v['label']
-            if 'actual_label' in v:
-                label = v['actual_label']
-            nav.append({ "label": label,
-                      "uri": f"/{slugify(v['label'])}" })
+        if v["nav"]:
+            label = v["label"]
+            if "actual_label" in v:
+                label = v["actual_label"]
+            nav.append({"label": label, "uri": f"/{slugify(v['label'])}"})
 
-    nav.extend([{
-        "label": "About",
-        "uri": "About.html"
-    },{
-    "label": "Contact",
-        "uri": "Contact.html"
-    }])
+    nav.extend(
+        [
+            {"label": "About", "uri": "About.html"},
+            {"label": "Contact", "uri": "Contact.html"},
+        ]
+    )
 
     return nav
 
@@ -55,13 +51,12 @@ def make_footer_nav():
     make a sub nav from settings.toml for footer links
     """
 
-    links = config['wiki']['footer_links']
+    links = config["wiki"]["footer_links"]
 
     footer_nav = []
     for k, v in links.items():
-        if v['nav']:
-            footer_nav.append({ "label": v['label'],
-                      "uri": f"/{slugify(v['label'])}" })
+        if v["nav"]:
+            footer_nav.append({"label": v["label"], "uri": f"/{slugify(v['label'])}"})
 
     return footer_nav
 
@@ -71,9 +66,9 @@ def get_article_field(field: str, article: dict[str]):
     if field in article:
         article_field = article[field]
 
-        if field == 'templates':
+        if field == "templates":
             if len(article_field) > 0:
-                template = article_field[0]['title'].split(':')[-1]
+                template = article_field[0]["title"].split(":")[-1]
                 return template
         else:
             return article_field
@@ -87,11 +82,10 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
     Return list of URLs pointing to translations of the given article.
     """
 
-    translations = config['wiki']['translation_langs']
+    translations = config["wiki"]["translation_langs"]
     matches = [f"{page_title}/{lang}" for lang in translations]
 
-    return [page['title'] for page in backlinks
-            if page['title'] in matches]
+    return [page["title"] for page in backlinks if page["title"] in matches]
 
 
 async def make_article(page_title: str, client):
@@ -107,30 +101,30 @@ async def make_article(page_title: str, client):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    mw_slug = make_mw_url_slug( page_title )
-    mw_url = mw_host + '/index.php?title=' + mw_slug
+    mw_slug = make_mw_url_slug(page_title)
+    mw_url = mw_host + "/index.php?title=" + mw_slug
 
     if article is not None:
 
         body_html, art_metadata, images = parser(article, redirect_target)
 
         metadata = {
-            "id": article['pageid'],
-            "title": article['title'],
+            "id": article["pageid"],
+            "title": article["title"],
             "mw_url": mw_url,
-            "mw_history_url": mw_url + '&action=history',
-            "mw_edit_url": mw_url + '&action=edit',
+            "mw_history_url": mw_url + "&action=history",
+            "mw_edit_url": mw_url + "&action=edit",
             "images": images,
-            "template": get_article_field('templates', article),
-            "creation": make_timestamp_full( article['creation'] ),
-            "last_modified": make_timestamp_full( article['last_modified'] ),
+            "template": get_article_field("templates", article),
+            "creation": make_timestamp_full(article["creation"]),
+            "last_modified": make_timestamp_full(article["last_modified"]),
             "backlinks": backlinks,
             "nav": nav,
             "footer_nav": footer_nav,
             "translations": article_translations,
-            "parsed_metadata": art_metadata['info'],
-            "categories": art_metadata['categories'],
-            "tool_repos": art_metadata['repos_index'],
+            "parsed_metadata": art_metadata["info"],
+            "categories": art_metadata["categories"],
+            "tool_repos": art_metadata["repos_index"],
         }
 
         # convert possible unicode title with special characters
@@ -148,7 +142,6 @@ async def make_article(page_title: str, client):
             "translations": article_translations,
             "metadata": metadata,
         }
-
 
         return article
 
@@ -170,24 +163,23 @@ async def make_redirect_article(article_title: str, target_redirect):
         fn = paths[0]
 
         if await aos.path.exists(fn):
-            async with aiofiles.open(fn, mode='r') as f:
+            async with aiofiles.open(fn, mode="r") as f:
                 tree = await f.read()
-                soup = BeautifulSoup(tree, 'lxml')
+                soup = BeautifulSoup(tree, "lxml")
 
                 # remove everything from inside body.main
                 # except <h1>
                 for item in soup.body.main.children:
                     if isinstance(item, Tag):
-                        if item.name != 'h1':
+                        if item.name != "h1":
                             item.decompose()
 
-                            
                 redirect = f"<p>This page has been moved to <a href=\"{target_redirect['slug']}.html\">{target_redirect['title']}</a>.</p>"
                 soup.body.main.append(redirect)
-                
+
                 output = soup.prettify(formatter=None)
 
-            async with aiofiles.open(fn, mode='w') as f:
+            async with aiofiles.open(fn, mode="w") as f:
                 await f.write(output)
 
         else:
@@ -241,7 +233,7 @@ async def remove_article_traces(article_title: str):
     and remove any block + link pointing to it.
     """
 
-    sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
+    sem = asyncio.Semaphore(int(os.getenv("SEMAPHORE")))
 
     pattern = slugify(article_title)
     filepaths = search_file_content(pattern)
@@ -259,18 +251,18 @@ async def remove_article_traces(article_title: str):
 
     tasks_html = []
 
-    cats = config['wiki']['categories']
+    cats = config["wiki"]["categories"]
     cat_labels = []
-    
+
     for k, v in cats.items():
-        cat_labels.append(v['label'].lower())
+        cat_labels.append(v["label"].lower())
 
     for filepath in filepaths:
         print(f"remove-traces from => {filepath}")
         filename = Path(filepath).stem
 
         article_html = Path(f"./{WIKI_DIR}/{filename}.html").read_text()
-        soup = BeautifulSoup(article_html, 'lxml')
+        soup = BeautifulSoup(article_html, "lxml")
 
         # update cat-index pages if any is matching
         if filename in cat_labels:
@@ -292,22 +284,22 @@ async def remove_article_traces(article_title: str):
             print(f"remove-traces :: remove links from article => {filepath}")
 
             links = soup.find_all("a")
-            snippets = [link for link
-                        in links
-                        if 'href' in link.attrs and
-                        link.attrs['href'].startswith(f"/{pattern}")]
-            
+            snippets = [
+                link
+                for link in links
+                if "href" in link.attrs and link.attrs["href"].startswith(f"/{pattern}")
+            ]
+
             if len(snippets) > 0:
                 for snippet in snippets:
                     parent = snippet.parent
-                    if snippet.name == 'a' and parent.name == 'li':
+                    if snippet.name == "a" and parent.name == "li":
                         parent.decompose()
 
                 # write updated cat-index HTML back to disk
                 article_html = str(soup.prettify())
                 task = write_to_disk(filename, article_html, sem)
                 tasks_html.append(asyncio.ensure_future(task))
-
 
     await asyncio.gather(*tasks_html)
 
@@ -327,26 +319,26 @@ def extract_title_from_URL(links):
     titles = []
 
     for link in links:
-        if 'href' in link.attrs and not link.attrs['href'].startswith('http'):
+        if "href" in link.attrs and not link.attrs["href"].startswith("http"):
             url = None
             title = None
 
-            url = link.attrs['href'][1:]
+            url = link.attrs["href"][1:]
 
-            if 'title' in link.attrs:
-                title = link.attrs['title']
+            if "title" in link.attrs:
+                title = link.attrs["title"]
             else:
-                return ''
+                return ""
 
             # url and title easily match
             if url == slugify(title):
                 titles.append(title)
-                
+
             else:
                 # title is not 1:1 with url (eg custom title)
                 # let's adjust title to match with url
-                url_tokens = url.split('-')
-                title_tokens = title.split(' ')
+                url_tokens = url.split("-")
+                title_tokens = title.split(" ")
 
                 new_title = []
                 for idx, token in enumerate(title_tokens):
@@ -357,10 +349,9 @@ def extract_title_from_URL(links):
                         pass
 
                 if len(new_title) > 0:
-                    new_title = ' '.join(new_title)
+                    new_title = " ".join(new_title)
                     titles.append(new_title)
 
-                    
     return titles
 
 
@@ -375,20 +366,20 @@ async def update_backlinks(article, sem):
     from them.
     """
 
-    soup = BeautifulSoup(article['html'], 'lxml')
+    soup = BeautifulSoup(article["html"], "lxml")
     links = soup.find_all("a")
     titles = extract_title_from_URL(links)
 
-    ENV = os.getenv('ENV')
+    ENV = os.getenv("ENV")
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
-    sem = asyncio.Semaphore(int(os.getenv('SEMAPHORE')))
+    sem = asyncio.Semaphore(int(os.getenv("SEMAPHORE")))
 
-    template = get_template('article')
+    template = get_template("article")
 
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
         build_tasks = []
-        
+
         if len(titles) > 0:
             for title in titles:
                 build_task = make_article(title, client)
@@ -396,9 +387,7 @@ async def update_backlinks(article, sem):
 
                 articles = await asyncio.gather(*build_tasks)
 
-                articles = [item for item
-                            in articles
-                            if item is not None]
+                articles = [item for item in articles if item is not None]
 
             save_tasks = []
             for article in articles:
@@ -406,6 +395,6 @@ async def update_backlinks(article, sem):
 
                 task = save_article(article, filepath, template, sem)
                 save_tasks.append(asyncio.ensure_future(task))
-        
+
             # write all articles to disk
             await asyncio.gather(*save_tasks)

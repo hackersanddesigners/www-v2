@@ -1,7 +1,7 @@
 wiki
 .env
 settings.toml
-Icon[\]
+# Icon[\] # somehow this messes up with  the `black` formatter command
 .DS_Store
 __pycache__
 env

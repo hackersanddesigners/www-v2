@@ -1,12 +1,7 @@
-
-
 import os
 from pathlib import Path
 
 import aiofiles
-
-
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -15,16 +10,12 @@ from fastapi.templating import Jinja2Templates
 from slugify import slugify
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-
-
-from app.fetch import (
-                       query_wiki)
+from app.fetch import query_wiki
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
 from .views.template_utils import make_timestamp, make_url_slug, paginator
-from .views.views import (make_search_index,
-                          )
+from .views.views import make_search_index
 
 load_dotenv()
 
@@ -34,17 +25,19 @@ app = FastAPI()
 base_dir = Path.cwd()
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
-templates.env.filters['slug'] = make_url_slug
-templates.env.filters['ts'] = make_timestamp
+templates.env.filters["slug"] = make_url_slug
+templates.env.filters["ts"] = make_timestamp
 
 
-app.mount("/static",
-          StaticFiles(directory=Path(__file__).parent.parent / "static"),
-          name="static")
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent.parent / "static"),
+    name="static",
+)
 
 
-ENV = os.getenv('ENV')
-URL = os.getenv('BASE_URL')
+ENV = os.getenv("ENV")
+URL = os.getenv("BASE_URL")
 
 
 config = read_settings()
@@ -65,10 +58,13 @@ async def http_exception_handler(request, exc):
         "message": message,
     }
 
-    t = templates.TemplateResponse("error.html",
-                                   {"request": request,
-                                    "article": article,
-                                    })
+    t = templates.TemplateResponse(
+        "error.html",
+        {
+            "request": request,
+            "article": article,
+        },
+    )
 
     return HTMLResponse(content=t.body, status_code=exc.status_code)
 
@@ -80,10 +76,10 @@ async def root(request: Request):
     """
 
     try:
-        WIKI_DIR = os.getenv('WIKI_DIR')
+        WIKI_DIR = os.getenv("WIKI_DIR")
         file_path = f"{WIKI_DIR}/index.html"
 
-        async with aiofiles.open(file_path, mode='r') as f:
+        async with aiofiles.open(file_path, mode="r") as f:
             return await f.read()
 
     except FileNotFoundError:
@@ -103,7 +99,7 @@ async def redirect_uri(request: Request, call_next):
     uri = request.url.path[1:]
 
     # ignore URI to static assets
-    if not uri.startswith('static'):
+    if not uri.startswith("static"):
 
         # -- examples of old-style URIs:
         # p/About
@@ -111,7 +107,7 @@ async def redirect_uri(request: Request, call_next):
         # s/Summer_Camp_2023/p/Open_Call!_H%26D_Summer_Camp_2023_-_HopePunk%3A_Reknitting_Collective_Infrastructures
         # s/Summer_Camp_2023/p/Coding_in_Situ
 
-        tokens = uri.split('/')
+        tokens = uri.split("/")
         if len(tokens) > 1:
             new_uri = slugify(tokens[-1])
 
@@ -119,26 +115,24 @@ async def redirect_uri(request: Request, call_next):
             if len(matches) > 0:
                 redirect_uri = Path(matches[0]).stem
 
-                print(f"uri-redirect => {uri}\n",
-                      f"=> {new_uri}\n",
-                      f"matches => {matches}\n"
-                      f"r => {redirect_uri}")
+                print(
+                    f"uri-redirect => {uri}\n",
+                    f"=> {new_uri}\n",
+                    f"matches => {matches}\n" f"r => {redirect_uri}",
+                )
 
                 return RedirectResponse(url=f"/{redirect_uri}", status_code=301)
 
             else:
                 return RedirectResponse(url=f"/{new_uri}", status_code=301)
 
-    
-    # -- 
+    # --
     response = await call_next(request)
     return response
 
 
 @app.get("/search", response_class=HTMLResponse)
-async def search(request: Request,
-                 query: str,
-                 page: int | None = 0):
+async def search(request: Request, query: str, page: int | None = 0):
     """
     initiate wiki search on website
     """
@@ -150,12 +144,12 @@ async def search(request: Request,
     # -- make pagination
     pagination = paginator(results, 5, page)
 
-    article = await make_search_index(pagination['data'], query)
+    article = await make_search_index(pagination["data"], query)
 
-    return templates.TemplateResponse("search-index.html",
-                                      {"request": request,
-                                       "article": article,
-                                       "pagination": pagination})
+    return templates.TemplateResponse(
+        "search-index.html",
+        {"request": request, "article": article, "pagination": pagination},
+    )
 
 
 @app.get("/{article}", response_class=HTMLResponse)
@@ -165,11 +159,11 @@ async def article(request: Request, article: str):
     """
 
     try:
-        WIKI_DIR = os.getenv('WIKI_DIR')
+        WIKI_DIR = os.getenv("WIKI_DIR")
         filename = Path(article).stem
         file_path = f"{WIKI_DIR}/{slugify(filename)}.html"
 
-        async with aiofiles.open(file_path, mode='r') as f:
+        async with aiofiles.open(file_path, mode="r") as f:
             return await f.read()
 
     except FileNotFoundError:

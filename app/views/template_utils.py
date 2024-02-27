@@ -1,4 +1,3 @@
-
 from urllib.parse import quote_plus
 
 import arrow
@@ -10,9 +9,9 @@ def get_template(template: str):
 
     template = template.lower()
 
-    env = Environment(loader=FileSystemLoader('app/views/templates'), autoescape=True)
-    env.filters['slug'] = make_url_slug
-    env.filters['ts'] = make_timestamp
+    env = Environment(loader=FileSystemLoader("app/views/templates"), autoescape=True)
+    env.filters["slug"] = make_url_slug
+    env.filters["ts"] = make_timestamp
 
     try:
         t = env.get_template(f"{template}.html")
@@ -34,7 +33,7 @@ def make_url_slug(url: str):
 
 def make_mw_url_slug(url: str):
     if url:
-        return quote_plus( url.replace( " ", "_") )
+        return quote_plus(url.replace(" ", "_"))
 
     return url
 
@@ -42,20 +41,20 @@ def make_mw_url_slug(url: str):
 def make_timestamp(t: str):
 
     if t:
-        ts = arrow.get(t).to('local').format('YYYY-MM-DD')
+        ts = arrow.get(t).to("local").format("YYYY-MM-DD")
         return ts
 
 
 def make_timestamp_full(t: str):
 
     if t:
-        ts = arrow.get(t).to('local').format('YYYY-MM-DD HH:mm:ss')
+        ts = arrow.get(t).to("local").format("YYYY-MM-DD HH:mm:ss")
         return ts
 
 
 def date_split(date: str):
 
-    dates = date.split('-')
+    dates = date.split("-")
     if len(dates) == 2:
         return f"{dates[0]} – {dates[1]}"
     else:
@@ -69,7 +68,7 @@ def extract_datetime(value):
     #    time: <18:00>-<21:00>
 
     if value is not None:
-        tokens = value.split('-')
+        tokens = value.split("-")
 
         if len(tokens) <= 2:
             return tokens
@@ -97,16 +96,15 @@ def paginator(items: list[dict], list_size: int, cursor: int):
     cur_next = None
 
     if len(items) == 0:
-            return {
-                "pages": pagination,
-                "data": items,
-                "nav": {
-                    "current": cursor,
-                    "prev": cur_prev,
-                    "next": cur_next,
-                }
-            }
-
+        return {
+            "pages": pagination,
+            "data": items,
+            "nav": {
+                "current": cursor,
+                "prev": cur_prev,
+                "next": cur_next,
+            },
+        }
 
     for i in range(len(items)):
         pagenum, offset = divmod(i, list_size)
@@ -135,5 +133,5 @@ def paginator(items: list[dict], list_size: int, cursor: int):
             "current": cursor,
             "prev": cur_prev,
             "next": cur_next,
-        }
+        },
     }

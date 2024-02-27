@@ -1,13 +1,9 @@
 import os
-
-
 from urllib.parse import unquote, urlparse
-
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 from dotenv import load_dotenv
 from slugify import slugify
-
 
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
@@ -16,7 +12,7 @@ load_dotenv()
 
 
 config = read_settings()
-MEDIA_DIR = os.getenv('MEDIA_DIR')
+MEDIA_DIR = os.getenv("MEDIA_DIR")
 
 
 def link_rewrite_to_canonical_url(link):
@@ -25,58 +21,56 @@ def link_rewrite_to_canonical_url(link):
     and re-write the URL to be in relative format
     eg point to a page in *this* wiki
     """
-    
-    url_parse = urlparse(link.attrs['href'])
-    uri = slugify(url_parse.path.split('/')[-1])
+
+    url_parse = urlparse(link.attrs["href"])
+    uri = slugify(url_parse.path.split("/")[-1])
     matches = file_lookup(uri)
 
     if len(matches) > 0:
-        filename = str(matches[0]).split('.')[0]
-        new_url = "/".join(filename.split('/')[1:])
-        link.attrs['href'] = f"/{new_url}"
+        filename = str(matches[0]).split(".")[0]
+        new_url = "/".join(filename.split("/")[1:])
+        link.attrs["href"] = f"/{new_url}"
     else:
-        link.attrs['href'] = uri        
-            
+        link.attrs["href"] = uri
+
 
 def link_image_update(link, img_tag, mw_url):
     """
     update any img's srcset attribute to the correct URL format.
     """
 
-    img_tag.attrs['src'] = f"{mw_url}{img_tag.attrs['src']}"
+    img_tag.attrs["src"] = f"{mw_url}{img_tag.attrs['src']}"
 
-    if 'srcset' in img_tag.attrs:
-        srcset_list = [url.strip() for url
-                       in img_tag.attrs['srcset'].split(',')]
-            
+    if "srcset" in img_tag.attrs:
+        srcset_list = [url.strip() for url in img_tag.attrs["srcset"].split(",")]
+
         srcset_list_new = []
         for item in srcset_list:
-            tokens = item.split(' ')
+            tokens = item.split(" ")
             tokens[0] = f"{mw_url}{tokens[0]}"
             srcset_new = " ".join(tokens)
 
             srcset_list_new.append(srcset_new)
 
         if srcset_list_new:
-            img_tag.attrs['srcset'] = ", ".join(srcset_list_new)
+            img_tag.attrs["srcset"] = ", ".join(srcset_list_new)
 
 
 def link_extract_image_URL(links, mw_url):
-    """
-    """
+    """ """
 
     def extract_image_URL(img):
         img_name = None
-        src = img.attrs['src']
+        src = img.attrs["src"]
 
         # fetch File:<name> by the parent tag, eg. the <a>.
         # doing it through the img's src URL contains sometimes
         # a thumb filename prefix in it, eg `520px-<image-name>.jpg`
         # which breaks our code when using MW's thumb APIs below.
-        if 'href' in img.parent.attrs:
-            img_name = img.parent.attrs['href'].split('File:')[-1]
+        if "href" in img.parent.attrs:
+            img_name = img.parent.attrs["href"].split("File:")[-1]
         else:
-            img_name = src.split('/')[-1]
+            img_name = src.split("/")[-1]
 
         # af <2024-02-12>
         # we can't just set an arbitrary thumb width value as below,
@@ -84,20 +78,20 @@ def link_extract_image_URL(links, mw_url):
         # the set thumb width value. this silenty fails and returns
         # no valid image URL, therefore displaying the img alt text
         # in the frontend.
-        
+
         # therefore one way (1) to go about this is to parse the rest
         # of the HTML img tag and extract if possible the set width
         # value in it, either via the `width` attribute, or by parsing
         # the srcset attribute and read from the first URL the given
         # width value (slightly more complicated).
-        
+
         img_width = None
 
-        if 'width' in img.attrs:
-            img_width = int(img.attrs['width'])
-            
-        elif 'srcset' in img.attrs:
-            srcset = img.attrs['srcset']
+        if "width" in img.attrs:
+            img_width = int(img.attrs["width"])
+
+        elif "srcset" in img.attrs:
+            srcset = img.attrs["srcset"]
 
             # <http://localhost/images/thumb/b/b4/Mediachoreo5.jpg/240px-Mediachoreo5.jpg 1x,
             #  http://localhost:8001/images/thumb/b/b4/Mediachoreo5.jpg/480px-Mediachoreo5.jpg 2x>
@@ -106,24 +100,23 @@ def link_extract_image_URL(links, mw_url):
             # - then by `/` and get the last part of it
             # - then by `px` to get the width of the image
             # - and convert the width to integer
-            
-            srcset_big = srcset.split(',')[-1].strip()
-            
-            width_x = srcset_big.split(' ')[0]
-            width_x = width_x.split('/')[-1]
-            width_x = width_x.split('px')[0]
+
+            srcset_big = srcset.split(",")[-1].strip()
+
+            width_x = srcset_big.split(" ")[0]
+            width_x = width_x.split("/")[-1]
+            width_x = width_x.split("px")[0]
 
             if width_x.isdigit():
-                img_width = int(width_x)                
+                img_width = int(width_x)
 
-        
         thumb = src
         thumb_width = 250
 
         # if img_width is equal or bigger than thumb_width value
         # make thumb version of given img, else use the original
         # src URL.
-        
+
         # TODO @karl: the MW thumb API works very inconsistently. i figured
         # that some of the missing images in the index page are due to passing
         # a "wrong" thumb_width value to the URL. while fiddling with it, i
@@ -133,11 +126,10 @@ def link_extract_image_URL(links, mw_url):
         if img_width is not None and img_width >= thumb_width:
             thumb = f"{mw_url}/thumb.php?f={img_name}&w={thumb_width}"
 
-        alt = img.attrs['alt']
-            
-        img_data = { 'src': src, 'thumb': thumb, 'alt': alt }
-        imageURLs.append(img_data)
+        alt = img.attrs["alt"]
 
+        img_data = {"src": src, "thumb": thumb, "alt": alt}
+        imageURLs.append(img_data)
 
     imageURLs = []
 
@@ -150,7 +142,7 @@ def link_extract_image_URL(links, mw_url):
             # we do this at the end because we
             # parse the <a> wrapping the <img>
             # to retrieve the image URL
-            link.parent.attrs['class'] = 'image'
+            link.parent.attrs["class"] = "image"
             link.unwrap()
 
     return imageURLs
@@ -161,18 +153,18 @@ def link_rewrite_image_url(link, mw_url):
     update URL for link to an image file.
     """
 
-    if '=File:' in link.attrs['href']:
+    if "=File:" in link.attrs["href"]:
         # update <img> wrapping <a> href
-        link.attrs['href'] = f"{mw_url}{link.attrs['href']}"
+        link.attrs["href"] = f"{mw_url}{link.attrs['href']}"
 
         # update <img> tag
         if link.img:
             img_tag = link.img
-            
+
             link_image_update(link, img_tag, mw_url)
             # strip_thumb(img_tag)
-            
-                    
+
+
 def link_rewrite_other_url(link):
     """
     update URL of any other link that is not a `File:`.
@@ -186,19 +178,19 @@ def link_rewrite_other_url(link):
     # this is useful, but when thinking about it
     # it could be well helpful.
 
-    if '=File:' not in link.attrs['href']:
+    if "=File:" not in link.attrs["href"]:
 
-        url_parse = urlparse(link.attrs['href'])
-        uri_title = unquote(url_parse.query.split('=')[-1])
+        url_parse = urlparse(link.attrs["href"])
+        uri_title = unquote(url_parse.query.split("=")[-1])
         uri = slugify(uri_title)
         matches = file_lookup(uri)
 
         if len(matches) > 0:
-            filename = str(matches[0]).split('.')[0]
-            new_url = "/".join(filename.split('/')[1:])
-            link.attrs['href'] = f"/{new_url}"
+            filename = str(matches[0]).split(".")[0]
+            new_url = "/".join(filename.split("/")[1:])
+            link.attrs["href"] = f"/{new_url}"
         else:
-            link.attrs['href'] = f"/{uri}"
+            link.attrs["href"] = f"/{uri}"
 
 
 def strip_thumb(thumb):
@@ -207,17 +199,19 @@ def strip_thumb(thumb):
     width and height attributes.
     """
 
-    if 'src' in thumb.attrs:
+    if "src" in thumb.attrs:
         # strip height and width from image attribute
-        for attr in ['height', 'width']:
+        for attr in ["height", "width"]:
             if attr in thumb.attrs:
                 del thumb.attrs[attr]
 
 
-def post_process(article: str,
-                 file_URLs: [str],
-                 HTML_MEDIA_DIR: str,
-                 redirect_target: str | None = None):
+def post_process(
+    article: str,
+    file_URLs: [str],
+    HTML_MEDIA_DIR: str,
+    redirect_target: str | None = None,
+):
     """
     update HTML before saving to disk:
     - update wikilinks to set correct title attribute
@@ -228,47 +222,46 @@ def post_process(article: str,
     - do HTML clean-up for design fitting
     """
 
-    canonical_url = config['domain']['canonical_url']
-    mw_url = config['domain']['mw_url']
+    canonical_url = config["domain"]["canonical_url"]
+    mw_url = config["domain"]["mw_url"]
 
-    soup = BeautifulSoup(article, 'lxml')
+    soup = BeautifulSoup(article, "lxml")
 
     # -- update URLs for File: and any other URL type
-    links = soup.find_all('a')
+    links = soup.find_all("a")
     for link in links:
-        if 'title' in link.attrs:
-            link.attrs['title'] = link.text
+        if "title" in link.attrs:
+            link.attrs["title"] = link.text
 
         if link.has_attr("href"):
-            if link.attrs['href'].startswith(canonical_url):            
+            if link.attrs["href"].startswith(canonical_url):
                 link_rewrite_to_canonical_url(link)
 
-            elif link.attrs['href'].startswith('/index.php'):
+            elif link.attrs["href"].startswith("/index.php"):
                 link_rewrite_image_url(link, mw_url)
                 link_rewrite_other_url(link)
-
 
     # -- extract a list of image URLs for the article
     imageURLs = link_extract_image_URL(links, mw_url)
 
     # add a tag class for iframe wrappers
-    iframes = soup.find_all('iframe')
+    iframes = soup.find_all("iframe")
     for iframe in iframes:
-        iframe.parent.attrs['class'] = 'iframe'
-
+        iframe.parent.attrs["class"] = "iframe"
 
     # -- tool parser
-    tool_repos = soup.find_all('a', class_='inGitHub')
+    tool_repos = soup.find_all("a", class_="inGitHub")
     repos_index = []
     for repo in tool_repos:
-        href = repo.attrs['href']
-        repos_index.append({
-            "href": href,
-            "name": href.split("/")[-1],
-            "user": href.split("/")[-2],
-            "host": href.split("/")[-3]
-        })
-
+        href = repo.attrs["href"]
+        repos_index.append(
+            {
+                "href": href,
+                "name": href.split("/")[-1],
+                "user": href.split("/")[-2],
+                "host": href.split("/")[-3],
+            }
+        )
 
     # -- return article HTML
     # the wiki article can be empty
@@ -276,7 +269,6 @@ def post_process(article: str,
     if len(soup.contents) > 0:
         t = "".join(str(item) for item in soup.body.contents)
         article = t
-
 
     return article, imageURLs, repos_index
 
@@ -292,7 +284,7 @@ def get_table_data_row(td):
         if isinstance(item, Tag):
             # <td> contains the data in the format
             # => {key}::{value}, let's get only the value
-            content = item.string.split('::')[-1]
+            content = item.string.split("::")[-1]
 
             return content
 
@@ -306,10 +298,10 @@ def get_data_from_HTML_table(article_html):
     care about.
     """
 
-    table_keys = ['Name', 'Location', 'Date', 'Time', 'PeopleOrganisations', 'Type']
+    table_keys = ["Name", "Location", "Date", "Time", "PeopleOrganisations", "Type"]
 
-    soup = BeautifulSoup(article_html, 'lxml')
-    table = soup.find('tbody')
+    soup = BeautifulSoup(article_html, "lxml")
+    table = soup.find("tbody")
 
     # <tr> => table-row
     # <th> => table-header (where we check for a given key)
@@ -328,7 +320,7 @@ def get_data_from_HTML_table(article_html):
                 if table_key is not None and table_key.string is not None:
                     table_key = table_key.string.strip()
 
-                    if  table_key in table_keys:
+                    if table_key in table_keys:
                         if tr.td:
                             info[table_key.lower()] = None
                             info[table_key.lower()] = get_table_data_row(tr.td)
@@ -349,13 +341,13 @@ def get_metadata(article):
         "categories": [],
     }
 
-    info = get_data_from_HTML_table(article['text'])
-    metadata['info'] = info
+    info = get_data_from_HTML_table(article["text"])
+    metadata["info"] = info
 
-    cats = config['wiki']['categories']
+    cats = config["wiki"]["categories"]
 
-    categories = get_categories(article['categories'], cats)
-    metadata['categories'] = [slugify(cat) for cat in categories]
+    categories = get_categories(article["categories"], cats)
+    metadata["categories"] = [slugify(cat) for cat in categories]
 
     return metadata
 
@@ -365,11 +357,11 @@ def get_categories(categories, cats) -> [str]:
     cat_fallback = None
 
     for k, v in cats.items():
-        if v['fallback']:
+        if v["fallback"]:
 
             cat_fallback = v
 
-    cat_fallback_label = cat_fallback['label']
+    cat_fallback_label = cat_fallback["label"]
 
     if len(categories) > 0:
         # (1) we manually remove the cat Article from each article
@@ -378,10 +370,11 @@ def get_categories(categories, cats) -> [str]:
         # (2) we make sure that every cat is part of the list of
         # set categories in settings.toml
 
-        return [cat['category'] for cat
-                in categories
-                if not cat['category'] == 'Article'
-                and cat['category'] in list(cats.keys())]
+        return [
+            cat["category"]
+            for cat in categories
+            if not cat["category"] == "Article" and cat["category"] in list(cats.keys())
+        ]
 
     else:
         return [cat_fallback_label]
@@ -396,16 +389,15 @@ def parser(article: dict[str, int], redirect_target: str | None = None):
 
     print(f"parsing article {article['title']}")
 
-    HTML_MEDIA_DIR = '/'.join(MEDIA_DIR.split('/')[1:])
+    HTML_MEDIA_DIR = "/".join(MEDIA_DIR.split("/")[1:])
 
     metadata = get_metadata(article)
 
-    body_html, imageURLs, repos_index = post_process(article['text'],
-                                                     article['images'],
-                                                     HTML_MEDIA_DIR,
-                                                     redirect_target)
+    body_html, imageURLs, repos_index = post_process(
+        article["text"], article["images"], HTML_MEDIA_DIR, redirect_target
+    )
 
-    metadata['repos_index'] = repos_index
+    metadata["repos_index"] = repos_index
 
     print(f"parsed {article['title']}!")
 

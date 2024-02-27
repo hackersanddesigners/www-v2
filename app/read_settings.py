@@ -14,8 +14,10 @@ def main():
         with open(filepath, mode="rb") as f:
             config = tomli.load(f)
             return config
-            
+
     except FileNotFoundError:
-        print(f"error => {filepath} has not been found\n",
-              "        please check the README for instructions")
+        print(
+            f"error => {filepath} has not been found\n",
+            "        please check the README for instructions",
+        )
         sys.exit(1)

@@ -6,4 +6,4 @@ set -e
 # we manually set the path for cli.py (only program outside of app/)
 # and to app/ where everything lives
 isort --gitignore cli.py app
-# black cli.py app/
+black cli.py app/
