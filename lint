@@ -5,4 +5,4 @@ set -e
 
 # we manually set the path for cli.py (only program outside of app/)
 # and to app/ where everything lives
-flake8 cli.py app
+flake8 --extend-ignore=E203 cli.py app
