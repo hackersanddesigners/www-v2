@@ -30,7 +30,6 @@ from .views.template_utils import (
     make_url_slug,
     make_timestamp,
     paginator,
-    query_check,
 )
 import httpx
 from app.fetch import (
@@ -60,7 +59,6 @@ base_dir = Path.cwd()
 templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
 templates.env.filters['slug'] = make_url_slug
 templates.env.filters['ts'] = make_timestamp
-templates.env.filters['query_check'] = query_check
 
 
 app.mount("/static",
