@@ -194,17 +194,14 @@ def make_article_event(article):
 
         if date_now > article_ts["start"] and date_now < article_ts["end"]:
             article["metadata"]["when"] = "happening"
-            # events['happening'].append(article)
 
     if article_ts["start"]:
 
         if date_now < article_ts["start"]:
             article["metadata"]["when"] = "upcoming"
-            # events['upcoming'].append(article)
 
         else:
             article["metadata"]["when"] = "past"
-            # events['past'].append(article)
 
     # -- prepare article dates for template
 
@@ -247,12 +244,6 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     #
     # order articles by date desc
 
-    # events = {
-    #     'upcoming': [],
-    #     'happening': [],
-    #     'past': [],
-    # }
-
     events = []
     types = []
 
@@ -274,11 +265,6 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
             events.append(article)
 
     # -- sorting events by date desc
-
-    # events['upcoming'] = sorted(events['upcoming'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    # events['past'] = sorted(events['past'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-    # events['happening'] = sorted(events['happening'], key=lambda d: d['metadata']['dates']['start'], reverse=True)
-
     events = sorted(
         events, key=lambda d: d["metadata"]["dates"]["start"] or "", reverse=True
     )
