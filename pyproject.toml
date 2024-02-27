@@ -1,0 +1,43 @@
+[project]
+name = "hd-www-v2"
+description = "Hackers & Designers' second website iteration. A static site generator running off of MediaWiki's APIs. "
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+version = "0.9"
+authors = [
+  {name = "André Fincato", email = "andre@hackersanddesigners.nl" },
+  {name = "Karl Moubarak", email = "karl@hackersanddesigners.nl" }
+]
+dependencies = [
+  "aiofiles",
+  "arrow",
+  "bs4",
+  "fastapi",
+  "gunicorn",
+  "httpx",
+  "Jinja2",
+  "pytest",
+  "python-dotenv",
+  "python-slugify",
+  "typer",
+  "Unidecode",
+  "tomli",
+  "starlette",
+  "typing_extensions",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "isort",
+  "flake8",
+  "pip"  
+]
+
+[project.urls]
+Repository = "https://github.com/hackersanddesigners/www-v2"
+
+[build-system]
+requires= ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
