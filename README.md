@@ -45,6 +45,20 @@ if you want to build programmatically any part of the wiki, do:
 - `cd` into this repo, activate the environment
 - run `python cli.py build-article` or any other command to build the entire wiki, a specific category page, the frontpage, etc.
 
+### scripts
+
+there are two Python helper scripts to lint and format code: 
+
+- the former runs [flake8](https://flake8.pycqa.org/en/latest/index.html) and reports you a list of suggestions;
+- the latter runs [isort](https://pycqa.github.io/isort/) and [black](https://black.readthedocs.io/en/stable/index.html) to update the codebase by (1) re-sorting the list of imports at the top of a file, and (2) rewriting code in a specific style (eg using single quote, keeping correct whitespace between lines of code, etc).
+
+you can run them manually by simple shell invocation:
+
+```
+./scripts/lint
+./scripts/format
+```
+
 ## intro
 
 this program acts as a static site builder for a MediaWiki instance. we define in `settings.toml` the list of categories we use to fetch articles from the wiki, and output a folder of static HTML files.
