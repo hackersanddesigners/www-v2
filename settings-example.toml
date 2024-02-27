@@ -1,64 +1,76 @@
 [wiki]
 
-# list of translated languages
+# name of stylesheet page
+stylespage = "Styles"
+
+# translaton languages
 translation_langs = ["nl"]
 default = "en"
 
-# article title and cat used to fetch articles for the frontpage
+# set what's the article to use for the frontpage
 [wiki.frontpage]
 article = "Hackers & Designers"
 category = "Highlight"
 
 # as a TOML illiterate this seemed the most reasonable setup: apologies if not!
 # please fill out all fields, including "label" even if you set `nav: false`
+# - parse => build articles with this category
+# - nav => add link to nav
+# - index => build index page for category
+# - fallback => use category as fallback category if article has none
+# - label => use custom title for the link in the nav
 [wiki.categories.Article]
 parse = true
 nav = false
+index = false
 fallback = true
 label = "Articles"
 [wiki.categories.Event]
 parse = true
 nav = false
+index = true
 fallback = false
 label = "Events"
 [wiki.categories.Collaborators]
 parse = true
 nav = true
+index = true
 fallback = false
 label = "Collaborators"
 [wiki.categories.Publishing]
 parse = true
 nav = true
+index = true
 fallback = false
 label = "Publishing"
 [wiki.categories.Tools]
 parse = true
 nav = true
+index = true
 fallback = false
 label = "Tools"
+[wiki.categories.Highlight]
+parse = false
+nav = false
+index = false
+fallback = false
+label = "Highlight"
 
-# footer links
-[wiki.footer_links.About]
+[wiki.footer_links.Conduct]
 nav = true
-label = "About"
-[wiki.footer_links.Contact]
-nav = true
-label = "Contact"
+label = "Code of Conduct"
 [wiki.footer_links.Accessibility]
 nav = true
 label = "Accessibility"
-[wiki.footer_links.Conduct]
-nav = true
-label = "H&D Code of Conduct"
 [wiki.footer_links.Privacy]
 nav = true
 label = "Privacy Policy"
 
+[domain]
+canonical_url = "https://hackersanddesigners.nl"
+mw_url = "http://localhost:8001"
+      
 [tool-plugin]
 host_default = 'github'
 host = { github = ['https://raw.githubusercontent.com', 'https://github.com'] }
 branch_default = ['main', 'master']
-
-[domain]
-canonical_url = "https://hackersanddesigners.nl"
-mw_url = "http://localhost:8001"
