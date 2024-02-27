@@ -1,0 +1,8 @@
+BASH=$(which bash)
+#!$BASH
+
+set -e
+
+# we manually set the path for cli.py (only program outside of app/)
+# and to app/ where everything lives
+flake8 cli.py app
