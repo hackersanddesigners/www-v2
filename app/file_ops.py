@@ -1,4 +1,4 @@
-import glob
+
 import os
 import subprocess
 import sys
@@ -39,12 +39,12 @@ def search_file_content(pattern: str) -> list[str]:
         RG_PATH = subprocess.check_output(['/usr/bin/which', 'rg'],
                                           text=True, cwd=WIKI_DIR).strip()
         
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         # no ripgrep (rg) found in the system.
         # stop everything and exit. print a user-facing
         # message asking to install ripgrep.
-        print(f"search_file_content error =>  ripgrep is not installed\n",
-              f"in the system. please install it, see README.md")
+        print("search_file_content error =>  ripgrep is not installed\n",
+              "in the system. please install it, see README.md")
         sys.exit(1)
 
     print(f"RG_PATH => {RG_PATH}")
@@ -61,7 +61,7 @@ def search_file_content(pattern: str) -> list[str]:
 
         matches = matches.splitlines()
         return matches
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         # no rg match. return empty list.
         print(f"search-file-content => no match for {pattern}")
         

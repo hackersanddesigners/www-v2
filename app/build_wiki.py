@@ -1,21 +1,21 @@
 import asyncio
-import json
+
 import os
 import time
-from sys import argv
+
 
 import httpx
 from dotenv import load_dotenv
-from slugify import slugify
+
 
 from app.build_article import make_article, save_article
 from app.build_category_index import build_categories
 from app.build_front_index import build_front_index
 from app.copy_assets import main as copy_assets
-from app.fetch import create_context, fetch_article, query_continue
+from app.fetch import create_context, query_continue
 from app.read_settings import main as read_settings
-from app.views.template_utils import (get_template, make_timestamp,
-                                      make_url_slug)
+from app.views.template_utils import (get_template,
+                                      )
 
 load_dotenv()
 
@@ -68,7 +68,6 @@ async def main(ENV: str, URL: str):
     cats = config['wiki']['categories']
 
     cat_tasks = []
-    cat_indexes = {}
     for k, v in cats.items():
         if v['parse']:
             task = get_category(ENV, URL, k)
@@ -87,13 +86,10 @@ async def main(ENV: str, URL: str):
 
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
-        frontpage = {"news": None, "upcoming_events": []}
-
         articles_index = []
 
         for category in articles:
             cat = list(category.keys())[0]
-            cat_label = cats[cat]['label']
 
             template = get_template(cat)
 

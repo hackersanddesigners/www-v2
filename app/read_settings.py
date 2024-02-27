@@ -17,5 +17,5 @@ def main():
             
     except FileNotFoundError:
         print(f"error => {filepath} has not been found\n",
-              f"        please check the README for instructions")
+              "        please check the README for instructions")
         sys.exit(1)

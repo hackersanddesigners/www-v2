@@ -1,6 +1,6 @@
 import asyncio
 import os
-import re
+
 from pathlib import Path
 
 import aiofiles
@@ -10,13 +10,13 @@ from bs4 import BeautifulSoup, Tag
 from slugify import slugify
 from unidecode import unidecode
 
-from app.fetch import create_context, fetch_article, query_continue
+from app.fetch import create_context, fetch_article
 from app.file_ops import file_lookup, search_file_content, write_to_disk
 from app.parser import parser
 from app.read_settings import main as read_settings
 from app.views.template_utils import (get_template, make_mw_url_slug,
-                                      make_timestamp, make_timestamp_full,
-                                      make_url_slug)
+                                      make_timestamp_full,
+                                      )
 
 WIKI_DIR = Path(os.getenv('WIKI_DIR'))
 config = read_settings()

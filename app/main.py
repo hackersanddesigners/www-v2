@@ -1,12 +1,12 @@
-import asyncio
-import json
+
+
 import os
 from pathlib import Path
 
 import aiofiles
-import arrow
-import httpx
-from aiofiles import os as aos
+
+
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -15,18 +15,16 @@ from fastapi.templating import Jinja2Templates
 from slugify import slugify
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.build_article import make_article
-from app.build_wiki import get_category
-from app.fetch import (create_context, fetch_category, query_continue,
+
+
+from app.fetch import (
                        query_wiki)
-from app.file_ops import file_lookup, search_file_content
+from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
 from .views.template_utils import make_timestamp, make_url_slug, paginator
-from .views.views import (make_article_index, make_collaborators_index,
-                          make_event_index, make_front_index,
-                          make_publishing_index, make_search_index,
-                          make_tool_index)
+from .views.views import (make_search_index,
+                          )
 
 load_dotenv()
 
@@ -89,7 +87,7 @@ async def root(request: Request):
             return await f.read()
 
     except FileNotFoundError:
-        print(f"return 404")
+        print("return 404")
 
         raise HTTPException(status_code=404)
 
@@ -175,6 +173,6 @@ async def article(request: Request, article: str):
             return await f.read()
 
     except FileNotFoundError:
-        print(f"return 404")
+        print("return 404")
 
         raise HTTPException(status_code=404)

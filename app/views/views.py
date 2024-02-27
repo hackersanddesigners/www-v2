@@ -12,11 +12,11 @@ from slugify import slugify
 
 from app.build_article import make_article, make_footer_nav, make_nav
 from app.fetch import create_context, fetch_category
-from app.file_ops import file_lookup, write_to_disk
+from app.file_ops import file_lookup
 from app.log_to_file import main as log
-from app.parser import get_metadata, parser
+from app.parser import parser
 
-from .template_utils import get_template, make_timestamp, make_url_slug
+from .template_utils import get_template
 
 load_dotenv()
 
@@ -75,7 +75,7 @@ async def make_front_index(home_art: str, home_cat: str):
     ENV = os.getenv('ENV')
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0)
-    async with httpx.AsyncClient(verify=context) as client:
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         # list of articles w/ `highlight` cat
         data = await fetch_category(home_cat, client)
@@ -248,7 +248,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     events = []
     types = []
 
-    date_now = arrow.now()
+
 
 
     for article in articles:
@@ -395,7 +395,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 
 async def make_search_index(articles, query):
 
-    template = get_template(f"search-index")
+
     nav = make_nav()
     footer_nav = make_footer_nav()
 

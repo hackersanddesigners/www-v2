@@ -5,12 +5,12 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-from app.build_article import make_article, save_article
+from app.build_article import make_article
 from app.fetch import create_context, query_continue
 from app.file_ops import write_to_disk
 from app.log_to_file import main as log
 from app.read_settings import main as read_settings
-from app.views.template_utils import get_template, paginator
+from app.views.template_utils import get_template
 from app.views.views import (make_article_event, make_article_index,
                              make_collaborators_index, make_event_index,
                              make_publishing_index, make_tool_index)
@@ -39,7 +39,7 @@ async def make_category_index(cat: str):
 
     if not cat_key:
         print(f"make-category-index: the 'cat: {cat}' has not matched with any\n",
-              f"of the following categories:\n",
+              "of the following categories:\n",
               f"{list(cats.keys())}")
         return None
 
@@ -87,7 +87,6 @@ async def make_category_index(cat: str):
             # filter out translated article
             title = article['title']
             lang_stem = title.split('/')[-1]
-            tokens = title.split('/')
             
             if lang_stem not in translation_langs:
                 task = make_article(article['title'], client)
@@ -106,7 +105,6 @@ async def make_category_index(cat: str):
                   sem=None)
 
         article = None
-        sorting = None
 
         if cat_label == 'Events':
             article = await make_event_index(prepared_articles, cat_key, cat_label)
@@ -216,7 +214,6 @@ async def update_categories(article, sem):
             # find cat index's list item (article snippet) matching
             # against given article's slug
             soup = BeautifulSoup(index_old, 'lxml')
-            snippets_old = soup.select(f"#{article['slug']}")
 
             # replace matched article snippet with newer one
             article_snippet = soup.select(f"#{article['slug']}")

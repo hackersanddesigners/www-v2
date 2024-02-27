@@ -15,8 +15,8 @@ from app.build_front_index import build_front_index
 from app.fetch import (convert_article_trans_title_to_regular_title,
                        create_context)
 from app.pretty_json_log import main as pretty_json_log
-from app.views.template_utils import (get_template, make_timestamp,
-                                      make_url_slug)
+from app.views.template_utils import (get_template,
+                                      )
 
 load_dotenv()
 
@@ -31,7 +31,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_sock.bind((SERVER_IP, SERVER_PORT))
 
-    print(f"UDP server has started and is ready to receive...",
+    print("UDP server has started and is ready to receive...",
           f"{SERVER_IP, SERVER_PORT}")
 
     template = get_template('article')
@@ -169,7 +169,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                             traceback.print_exc()
 
             else:
-                print(f"we dont' know how to parse this MW operation.",
+                print("we dont' know how to parse this MW operation.",
                       f"=> {msg}")
 
 

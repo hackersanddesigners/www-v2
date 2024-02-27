@@ -1,5 +1,5 @@
-from html import unescape
-from urllib.parse import parse_qs, quote_plus, urlencode
+
+from urllib.parse import quote_plus
 
 import arrow
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound

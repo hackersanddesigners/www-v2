@@ -1,14 +1,14 @@
 import os
-import re
-from pathlib import Path
+
+
 from urllib.parse import unquote, urlparse
 
-import httpx
+
 from bs4 import BeautifulSoup, NavigableString, Tag
 from dotenv import load_dotenv
 from slugify import slugify
 
-from app.fetch import create_context, fetch_file
+
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
@@ -353,7 +353,7 @@ def get_metadata(article):
     metadata['info'] = info
 
     cats = config['wiki']['categories']
-    cat_keys = cats.keys()
+
     categories = get_categories(article['categories'], cats)
     metadata['categories'] = [slugify(cat) for cat in categories]
 
@@ -363,10 +363,10 @@ def get_metadata(article):
 def get_categories(categories, cats) -> [str]:
 
     cat_fallback = None
-    cat_fallback_key = ""
+
     for k, v in cats.items():
         if v['fallback']:
-            cat_fallback_key = k
+
             cat_fallback = v
 
     cat_fallback_label = cat_fallback['label']

@@ -1,8 +1,8 @@
-import json
+
 import os
 from pathlib import Path
 
-import arrow
+
 import httpx
 from dotenv import load_dotenv
 from slugify import slugify
@@ -41,7 +41,7 @@ async def query_continue(client, url, params):
     request = params
     last_continue = {}
 
-    tasks = []
+
     while True:
         req = request.copy()
         req.update(last_continue)
@@ -60,7 +60,7 @@ async def query_continue(client, url, params):
 
             last_continue = result['continue']
 
-        except httpx.TimeoutException as exception:
+        except httpx.TimeoutException:
             await log('error',
                       f"query-continue e => {params}\n",
                       sem=None)
@@ -176,7 +176,7 @@ async def fetch_article(title: str, client):
 
 
 async def fetch_category(cat, client):
-    print(f"fetching category data...")
+    print(f"fetching category data {cat}")
 
     params = {
         'action': 'query',
