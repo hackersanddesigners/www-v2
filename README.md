@@ -33,17 +33,27 @@ whenever you install a new package with `pip`, update the requirements list with
 
 ## everyday usage
 
-if you have setup everything as described below, to run a local instance of the software do the following:
+there are two ways to use this software:
 
-- in one terminal, `cd` into the MW repo and run `devenv up` (TODO ask Karl how he does it without devenv up)
-- in another terminal, `cd` into this repo and:
-  - `source env/bin/activate`
-  - then run `python cli.py server` to listen to the MW changes
+1. run the local server that listens to MediaWiki UDP messages
+2. (re-) build part of, or the entire wiki, at once
+
+first of all run the local MediaWiki instance ([from this repo](https://github.com/hackersanddesigners/mw-fork)):
+
+- open a terminal, `cd` to the MW repo and run `devenv up`
+
+then, if wanting to do 1:
+
+- open another terminal and `cd` into this repo
+- run `source env/bin/activate` (or `devenv shell` if you use devenv)
+- then run `python cli.py server` to listen to the MW changes
   
-if you want to build programmatically any part of the wiki, do:
+otherwise, if interested in 2:
 
-- `cd` into this repo, activate the environment
+- `cd` into this repo and activate the environment
 - run `python cli.py build-article` or any other command to build the entire wiki, a specific category page, the frontpage, etc.
+
+type `python cli.py --help` for a list of all the options.
 
 ### scripts
 
