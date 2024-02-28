@@ -34,12 +34,13 @@ def setup():
 
     async def make_dirs_setup(dir_list: [str]):
         for path_dir in dir_list:
-            dir_path = os.path.abspath(path_dir)
-            if not await aos.path.exists(dir_path):
-                await aos.makedirs(dir_path)
-                print(f"created {dir_path}")
-            else:
-                print(f"{dir_path} exists already")
+            if path_dir:
+                dir_path = os.path.abspath(path_dir)
+                if not await aos.path.exists(dir_path):
+                    await aos.makedirs(dir_path)
+                    print(f"created {dir_path}")
+                else:
+                    print(f"{dir_path} exists already")
 
     asyncio.run(make_dirs_setup(dir_list))
 
