@@ -117,21 +117,19 @@ async def make_category_index(cat: str):
 
         article = None
 
-        if cat_label == "Events":
+        if cat_key == "Event":
             article = await make_event_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == "Collaborators":
-            article = await make_collaborators_index(
-                prepared_articles, cat_key, cat_label
-            )
+        elif cat_key == "Collaborators":
+            article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == "Publishing":
+        elif cat_key == "Publishing":
             article = await make_publishing_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == "Tools":
+        elif cat_key == "Tools":
             article = await make_tool_index(prepared_articles, cat_key, cat_label)
 
-        elif cat_label == "Articles":
+        elif cat_key == "Article":
             article = await make_article_index(prepared_articles, cat_key, cat_label)
 
         if article:

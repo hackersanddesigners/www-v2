@@ -32,9 +32,7 @@ def make_nav():
     for k, v in cats.items():
         if v["nav"]:
             label = v["label"]
-            if "actual_label" in v:
-                label = v["actual_label"]
-            nav.append({"label": label, "uri": f"/{slugify(v['label'])}"})
+            nav.append({"label": label, "uri": f"/{slugify(label)}"})
 
     nav.extend(
         [
