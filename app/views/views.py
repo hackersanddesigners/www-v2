@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 
+from typing import Sequence, Collection
+
 import aiofiles
 import arrow
 import httpx
@@ -26,7 +28,7 @@ load_dotenv()
 
 # -- front-page
 
-async def make_front_index(home_art: str, home_cat: str):
+async def make_front_index(home_art: str, home_cat: str) -> dict[str, bool | dict[str, int]]:
     """
     Prepare necessary data for the Front index page.
     """
@@ -91,7 +93,7 @@ async def make_front_index(home_art: str, home_cat: str):
 # -- events
 
 
-def make_article_event(article):
+def make_article_event(article: dict[str, list[str] | list[dict[str, str]]]) -> dict[str, list[str] | list[dict[str, str]]]:
     """
     Extend necessary data for the Event article.
     """
@@ -191,7 +193,9 @@ def make_article_event(article):
     return article
 
 
-async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
+async def make_event_index(articles: list[dict[str, list[str] | list[dict[str, str]]] | None],
+                           cat: str,
+                           cat_label: str) -> dict[str, list[str] | list[dict[str, str]]]:
     """
     Prepare necessary data for the Event index page.
     """
@@ -238,7 +242,7 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
     nav = make_nav()
     footer_nav = make_footer_nav()
 
-    article = {
+    article_index = {
         "title": cat,
         "slug": slugify(cat_label),
         "events": events,
@@ -248,16 +252,18 @@ async def make_event_index(articles: list[dict[str]], cat: str, cat_label: str):
         "html": "",
     }
 
-    document = template.render(article=article)
-    article["html"] = document
+    document = template.render(article=article_index)
+    article_index["html"] = document
 
-    return article
+    return article_index
 
 
 # -- collaborators
 
 
-async def make_collaborators_index(articles, cat: str, cat_label: str):
+async def make_collaborators_index(articles: list[dict[str, list[str] | list[dict[str, str]]]],
+                                   cat: str,
+                                   cat_label: str) -> dict[str, list[str] | list[dict[str, str]]]:
     """
     Prepare necessary data for the Collaborators index page.
     """
@@ -292,7 +298,9 @@ async def make_collaborators_index(articles, cat: str, cat_label: str):
 # -- publishing
 
 
-async def make_publishing_index(articles, cat: str, cat_label: str):
+async def make_publishing_index(articles: list[dict[str, list[str] | list[dict[str, str]]]],
+                                cat: str,
+                                cat_label: str) -> dict[str, list[str] | list[dict[str, str]]]:
     """
     Prepare necessary data for the Publishing index page.
     """
@@ -321,7 +329,9 @@ async def make_publishing_index(articles, cat: str, cat_label: str):
 # -- tool
 
 
-async def make_tool_index(articles, cat: str, cat_label: str):
+async def make_tool_index(articles: list[dict[str, list[str] | list[dict[str, str]]]],
+                          cat: str,
+                          cat_label: str) -> dict[str, Sequence[Collection[str]]]:
     """
     Prepare necessary data for the Tool index page.
     """
@@ -352,7 +362,7 @@ async def make_tool_index(articles, cat: str, cat_label: str):
 # -- search
 
 
-async def make_search_index(articles, query):
+async def make_search_index(articles: list[dict[str, list[str] | list[dict[str, str]]]], query: str) -> dict[str, Sequence[Collection[str]]]:
     """
     Prepare necessary data for the Search index page.
     """
@@ -379,7 +389,7 @@ async def make_search_index(articles, query):
 # -- article
 
 
-async def make_article_index(articles, cat, cat_label):
+async def make_article_index(articles: list[dict[str, list[str] | list[dict[str, str]]]], cat: str, cat_label: str) -> dict[str, Sequence[Collection[str]]]:
     """
     Prepare necessary data for the Article index page.
     """

@@ -24,7 +24,7 @@ from app.views.template_utils import get_template
 load_dotenv()
 
 
-async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
+async def main(SERVER_IP: str | None, SERVER_PORT: int, ENV: str | None) -> None:
     """
     Server function that:
     - listens to UDP message coming from the specified MediaWiki instance at SERVER_PORT
@@ -98,8 +98,8 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                         # -- then, update every category index page the article has
                         #    and write it to disk
                         # -- update article backlinks
-                        await update_categories(article, sem)
-                        await update_backlinks(article, sem)
+                        await update_categories(article)
+                        await update_backlinks(article)
 
                         # update front-index if necessary
                         art_title = article["title"]
@@ -149,7 +149,7 @@ async def main(SERVER_IP: str, SERVER_PORT: int, ENV: str):
                                 make_redirect = True
 
                             target = await make_article(redirect["target"], client)
-                            await update_categories(target, sem)
+                            await update_categories(target)
 
                             # update front-index if necessary
                             art_title = target["title"]

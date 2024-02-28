@@ -10,7 +10,7 @@ from app.views.template_utils import get_template
 from app.views.views import make_front_index
 
 
-async def build_front_index(article_title: str | None, article_cats: list[str] | None):
+async def build_front_index(article_title: str | None, article_cats: list[str] | None) -> None:
     """
     Build front index page.
     

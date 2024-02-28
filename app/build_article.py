@@ -1,6 +1,8 @@
+import jinja2
 import asyncio
 import os
 from pathlib import Path
+from typing import Type
 
 import aiofiles
 import httpx
@@ -20,10 +22,10 @@ config = read_settings()
 mw_host = config["domain"]["mw_url"]
 
 
-def make_nav():
+def make_nav() -> list[dict[str, str]]:
     """
     Make a list of dictionaries {label, uri} as links
-    to listed categories in settings.toml
+    to listed categories in settings.toml.
     """
 
     cats = config["wiki"]["categories"]
@@ -46,9 +48,9 @@ def make_nav():
     return nav
 
 
-def make_footer_nav():
+def make_footer_nav() -> list[dict[str, str]]:
     """
-    Make a sub nav from settings.toml for footer links
+    Make a sub nav from settings.toml for footer links.
     """
 
     links = config["wiki"]["footer_links"]
@@ -61,7 +63,7 @@ def make_footer_nav():
     return footer_nav
 
 
-def get_article_field(field: str, article: dict[str]):
+def get_article_field(field: str, article: dict[str, str]) -> str | None:
     """
     Extract specified field from the given dictionary.
     """
@@ -76,8 +78,8 @@ def get_article_field(field: str, article: dict[str]):
         else:
             return article_field
 
-    else:
-        return None
+
+    return None
 
 
 def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
@@ -91,7 +93,7 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
     return [page["title"] for page in backlinks if page["title"] in matches]
 
 
-async def make_article(page_title: str, client):
+async def make_article(page_title: str, client) -> dict[str, list[str] | list[dict[str, str]]] | None:
     """
     Fetch and return a dictionary based on the given page_title.
     """
@@ -149,13 +151,14 @@ async def make_article(page_title: str, client):
             "metadata": metadata,
         }
 
-        return article
-
     else:
         print(f"{page_title}: article not found!")
 
+        
+    return article
 
-async def make_redirect_article(article_title: str, target_redirect):
+
+async def make_redirect_article(article_title: str, target_redirect: dict[str, str]) -> None:
     """
     Update moved article (article source, eg the previous version of the article,
     before the rename) to display a redirect page template.
@@ -191,7 +194,10 @@ async def make_redirect_article(article_title: str, target_redirect):
             print(f"redirect-article: {article_title} not found, nothing done")
 
 
-async def save_article(article: str | None, filepath: str, template: str, sem: int):
+async def save_article(article: dict[str, list[str] | list[dict[str, str]]] | None,
+                       filepath: str,
+                       template: Type[jinja2.environment.Template],
+                       sem: asyncio.Semaphore | None) -> None:
     """
     Helper function to save article to disk.
     """
@@ -201,7 +207,7 @@ async def save_article(article: str | None, filepath: str, template: str, sem: i
         await write_to_disk(filepath, document, sem)
 
 
-async def delete_article(article_title: str):
+async def delete_article(article_title: str) -> None:
     """
     Pass article_title and remove it from local WIKI_DIR, if it exists.
 
@@ -235,7 +241,7 @@ async def delete_article(article_title: str):
         print(f"delete-article: {article_title} not found, nothing done")
 
 
-async def remove_article_traces(article_title: str):
+async def remove_article_traces(article_title: str) -> None:
     """
     Scan WIKI_DIR to find any bits of the given article_title
     and remove any block + link pointing to it.
@@ -312,7 +318,7 @@ async def remove_article_traces(article_title: str):
     await asyncio.gather(*tasks_html)
 
 
-def extract_title_from_URL(links):
+def extract_title_from_URL(links: list[Type[Tag]]) -> list[str]:
     """
     Parse links from the body of the article and
     extract title from it. Then use it to fetch the page via MW's APIs.
@@ -335,7 +341,7 @@ def extract_title_from_URL(links):
             if "title" in link.attrs:
                 title = link.attrs["title"]
             else:
-                return ""
+                return []
 
             # url and title easily match
             if url == slugify(title):
@@ -356,13 +362,13 @@ def extract_title_from_URL(links):
                         pass
 
                 if len(new_title) > 0:
-                    new_title = " ".join(new_title)
-                    titles.append(new_title)
+                    t = " ".join(new_title)
+                    titles.append(t)
 
     return titles
 
 
-async def update_backlinks(article, sem):
+async def update_backlinks(article: dict[str, list[str] | list[dict[str, str]]]) -> None:
     """
     Scan article for wiki links and rebuild each
     article it points to.

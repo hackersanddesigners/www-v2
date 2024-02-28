@@ -1,7 +1,8 @@
+from typing import Any
 import json
 
 
-def main(data):
+def main(data: dict[str, Any]) -> None:
     """
     Helper function to pretty-print json data.
     """

@@ -1,6 +1,6 @@
 import os
 from urllib.parse import unquote, urlparse
-
+from typing import Type, Any
 from bs4 import BeautifulSoup, NavigableString, Tag
 from dotenv import load_dotenv
 from slugify import slugify
@@ -15,10 +15,10 @@ config = read_settings()
 MEDIA_DIR = os.getenv("MEDIA_DIR")
 
 
-def link_rewrite_to_canonical_url(link):
+def link_rewrite_to_canonical_url(link: Type[Tag]) -> None:
     """
     Given a URL like:
-    https://hackersanddesigners.nl (no subdomain
+    https://hackersanddesigners.nl (no subdomain)
 
     Rewrite it to be in relative format, eg.
     pointing to a page in *this* wiki.
@@ -36,7 +36,7 @@ def link_rewrite_to_canonical_url(link):
         link.attrs["href"] = uri
 
 
-def link_image_update(link, img_tag, mw_url):
+def link_image_update(link: Type[Tag], img_tag: Type[Tag], mw_url: str) -> None:
     """
     Update any img's srcset attribute to the correct URL format.
     """
@@ -58,13 +58,14 @@ def link_image_update(link, img_tag, mw_url):
             img_tag.attrs["srcset"] = ", ".join(srcset_list_new)
 
 
-def link_extract_image_URL(links, mw_url):
+def link_extract_image_URL(links: list[Type[Tag]], mw_url: str) -> list[Type[Tag]]:
     """
     Extract image's URL from a list of links.
     Update URL to point to specified MediaWiki instance.
     """
 
-    def extract_image_URL(img):
+    def extract_image_URL(img: Type[Tag]) -> list[dict[str, str | int]]:
+
         img_name = None
         src = img.attrs["src"]
 
@@ -136,8 +137,8 @@ def link_extract_image_URL(links, mw_url):
         img_data = {"src": src, "thumb": thumb, "alt": alt}
         imageURLs.append(img_data)
 
-    imageURLs = []
 
+    imageURLs = []
     for link in links:
         if link.img:
             img = link.img
@@ -153,7 +154,7 @@ def link_extract_image_URL(links, mw_url):
     return imageURLs
 
 
-def link_rewrite_image_url(link, mw_url):
+def link_rewrite_image_url(link: Type[Tag], mw_url: str) -> None:
     """
     Update URL for link pointing to an image file.
     """
@@ -170,7 +171,7 @@ def link_rewrite_image_url(link, mw_url):
             # strip_thumb(img_tag)
 
 
-def link_rewrite_other_url(link):
+def link_rewrite_other_url(link: Type[Tag]) -> None:
     """
     Update URL for any other link that is not pointing
     to a `File:`.
@@ -199,7 +200,7 @@ def link_rewrite_other_url(link):
             link.attrs["href"] = f"/{uri}"
 
 
-def strip_thumb(thumb):
+def strip_thumb(thumb: Type[Tag]) -> None:
     """
     Strip "thumb" image from its hardcoded width and height attributes.
     """
@@ -213,7 +214,7 @@ def strip_thumb(thumb):
 
 def post_process(
     article: str,
-    file_URLs: [str],
+    file_URLs: list[str],
     HTML_MEDIA_DIR: str,
     redirect_target: str | None = None,
 ):
@@ -276,7 +277,7 @@ def post_process(
     return article, imageURLs, repos_index
 
 
-def get_table_data_row(td):
+def get_table_data_row(td: Type[Tag]) -> str | None:
     """
     Extracts data from HTML's <td> tag
     """
@@ -292,7 +293,7 @@ def get_table_data_row(td):
             return content
 
 
-def get_data_from_HTML_table(article_html):
+def get_data_from_HTML_table(article_html: str) -> dict[Any, str | None]:
     """
     Extracts data from HTML's <tbody> tag: we map over
     each <th> element and check if it matches against any
@@ -333,7 +334,7 @@ def get_data_from_HTML_table(article_html):
     return info
 
 
-def get_metadata(article):
+def get_metadata(article: dict[str, str | list[dict[str, str]]]) -> dict[str, dict[str, str] | list[str]]:
     """
     Extract wiki template tags from article, if any.
     Extract article's categories too. 
@@ -355,7 +356,7 @@ def get_metadata(article):
     return metadata
 
 
-def get_categories(categories, cats) -> [str]:
+def get_categories(categories: list[dict[str, str]], cats: dict[str, str]) -> list[str]:
     """
     Extract article's categories and handle
     eventual fallback situations.
@@ -387,7 +388,7 @@ def get_categories(categories, cats) -> [str]:
         return [cat_fallback_label]
 
 
-def parser(article: dict[str, int], redirect_target: str | None = None):
+def parser(article: dict[str, str | list[dict[str, str]]], redirect_target: str | None = None):
     """
     Parse given article dictionary by:
     - extracting metadata (images, categories, templates, tables, etc.)

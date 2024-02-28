@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-
+import ssl
+from typing import Any, AsyncGenerator
 import httpx
 from dotenv import load_dotenv
 from slugify import slugify
@@ -18,7 +19,7 @@ MEDIA_DIR = os.getenv("MEDIA_DIR")
 config = read_settings()
 
 
-def create_context(ENV):
+def create_context(ENV: str | None) -> ssl.SSLContext | bool:
     """
     Helper function to detect whether httpx needs to pass
     a custom TLS certificate (if running in `ENV=dev`), or not.
@@ -26,7 +27,6 @@ def create_context(ENV):
     
     if ENV == "dev":
         base_dir = Path(__file__).parent.parent
-        import ssl
 
         context = ssl.create_default_context()
         LOCAL_CA = os.getenv("LOCAL_CA")
@@ -39,7 +39,7 @@ def create_context(ENV):
         return True
 
 
-async def query_continue(client, url, params):
+async def query_continue(client, url: str | None, params: dict[str, str]):
     """
     Helper function needed by MediaWiki's APIs to fetch all the data
     from a given `list` endpoint (eg. category). The code paginates
@@ -190,7 +190,7 @@ async def fetch_article(title: str, client):
         return article, backlinks, redirect_target
 
 
-async def fetch_category(cat, client):
+async def fetch_category(cat: str, client) -> list[dict[str, bool | dict[str, int]]]:
     """
     Fetch all the articles from the given cat.
     """
@@ -223,7 +223,9 @@ async def fetch_category(cat, client):
     return data
 
 
-async def query_wiki(ENV: str, URL: str, query: str):
+async def query_wiki(ENV: str |
+                     None, URL: str
+                     | None, query: str) -> list[dict[Any, Any]] | bool:
     """
     Run a search query to MediaWiki and return its results.
     """
