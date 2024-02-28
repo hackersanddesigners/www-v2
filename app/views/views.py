@@ -57,11 +57,12 @@ async def make_front_index(
 
         # -- upcoming events
         upcoming_events = []
+        upcoming_events_str = []
         events_path = file_lookup("events")
 
         current_timestamp = arrow.now().to("local")
 
-        if events_path[0]:
+        if events_path:
             if await aos.path.exists(events_path[0]):
                 async with aiofiles.open(events_path[0], mode="r") as f:
                     tree = await f.read()
@@ -70,7 +71,6 @@ async def make_front_index(
                     upcoming_events = soup.find_all(
                         "article", {"class": "when-upcoming"}
                     )
-                    upcoming_events_str = []
 
                     for event in upcoming_events:
                         # check if upcoming-event's date is bigger than
