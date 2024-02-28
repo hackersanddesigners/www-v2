@@ -225,8 +225,7 @@ async def delete_article(article_title: str) -> None:
 
     print(f"delete-article => {article_title}")
 
-    p = Path(article_title)
-    filename = slugify(str(p.stem))
+    filename = slugify(article_title)
 
     paths = file_lookup(filename)
 
