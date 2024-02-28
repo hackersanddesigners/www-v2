@@ -161,8 +161,7 @@ async def make_redirect_article(article_title: str, target_redirect):
     before the rename) to display a redirect page template.
     """
 
-    p = Path(article_title)
-    filename = slugify(str(p.stem))
+    filename = slugify(article_title)
     paths = file_lookup(filename)
 
     if len(paths) > 0:
