@@ -1,7 +1,7 @@
-from typing import Any
 import asyncio
 import os
 import time
+from typing import Any
 
 import httpx
 from dotenv import load_dotenv
@@ -17,7 +17,9 @@ from app.views.template_utils import get_template
 load_dotenv()
 
 
-async def get_category(ENV: str | None, URL: str | None, cat: str) -> dict[str, list[Any]] | bool:
+async def get_category(
+    ENV: str | None, URL: str | None, cat: str
+) -> dict[str, list[Any]] | bool:
     """
     Fetch all articles from the given cat.
     """

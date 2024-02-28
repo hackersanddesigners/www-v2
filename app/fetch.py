@@ -1,7 +1,8 @@
 import os
-from pathlib import Path
 import ssl
+from pathlib import Path
 from typing import Any, AsyncGenerator
+
 import httpx
 from dotenv import load_dotenv
 from slugify import slugify
@@ -24,7 +25,7 @@ def create_context(ENV: str | None) -> ssl.SSLContext | bool:
     Helper function to detect whether httpx needs to pass
     a custom TLS certificate (if running in `ENV=dev`), or not.
     """
-    
+
     if ENV == "dev":
         base_dir = Path(__file__).parent.parent
 
@@ -49,7 +50,7 @@ async def query_continue(client, url: str | None, params: dict[str, str]):
     - <https://www.mediawiki.org/wiki/API:Continue#Example_3:_Python_code_for_iterating_through_all_results>
     - <https://github.com/nyurik/pywikiapi/blob/master/pywikiapi/Site.py#L259>
     """
-    
+
     request = params
     last_continue = {}
 
@@ -80,7 +81,7 @@ async def fetch_article(title: str, client):
     Fetch an article by its title, running several requests
     to get all the necessary bits of data.
     """
-    
+
     print(f"fetching article {title}")
 
     # for HTML-parsed wiki article
@@ -194,7 +195,7 @@ async def fetch_category(cat: str, client) -> list[dict[str, bool | dict[str, in
     """
     Fetch all the articles from the given cat.
     """
-    
+
     print(f"fetching category data {cat}")
 
     params = {
@@ -223,13 +224,13 @@ async def fetch_category(cat: str, client) -> list[dict[str, bool | dict[str, in
     return data
 
 
-async def query_wiki(ENV: str |
-                     None, URL: str
-                     | None, query: str) -> list[dict[Any, Any]] | bool:
+async def query_wiki(
+    ENV: str | None, URL: str | None, query: str
+) -> list[dict[Any, Any]] | bool:
     """
     Run a search query to MediaWiki and return its results.
     """
-    
+
     print(f"Querying mediawiki for { query } ...")
 
     params = {
@@ -261,7 +262,7 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
     """
     Extract given title from a translation-like format to
     a normal, title-only, format.
-    
+
     Check if article is a snippet translation, either of:
     - <title>/<Page display title>/<lang>
     - <title>/<num-version>/<lang>

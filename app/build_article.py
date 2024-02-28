@@ -1,4 +1,3 @@
-import jinja2
 import asyncio
 import os
 from pathlib import Path
@@ -6,6 +5,7 @@ from typing import Type
 
 import aiofiles
 import httpx
+import jinja2
 from aiofiles import os as aos
 from bs4 import BeautifulSoup, Tag
 from slugify import slugify
@@ -78,7 +78,6 @@ def get_article_field(field: str, article: dict[str, str]) -> str | None:
         else:
             return article_field
 
-
     return None
 
 
@@ -93,7 +92,9 @@ def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
     return [page["title"] for page in backlinks if page["title"] in matches]
 
 
-async def make_article(page_title: str, client) -> dict[str, list[str] | list[dict[str, str]]] | None:
+async def make_article(
+    page_title: str, client
+) -> dict[str, list[str] | list[dict[str, str]]] | None:
     """
     Fetch and return a dictionary based on the given page_title.
     """
@@ -154,11 +155,12 @@ async def make_article(page_title: str, client) -> dict[str, list[str] | list[di
     else:
         print(f"{page_title}: article not found!")
 
-        
     return article
 
 
-async def make_redirect_article(article_title: str, target_redirect: dict[str, str]) -> None:
+async def make_redirect_article(
+    article_title: str, target_redirect: dict[str, str]
+) -> None:
     """
     Update moved article (article source, eg the previous version of the article,
     before the rename) to display a redirect page template.
@@ -194,10 +196,12 @@ async def make_redirect_article(article_title: str, target_redirect: dict[str, s
             print(f"redirect-article: {article_title} not found, nothing done")
 
 
-async def save_article(article: dict[str, list[str] | list[dict[str, str]]] | None,
-                       filepath: str,
-                       template: Type[jinja2.environment.Template],
-                       sem: asyncio.Semaphore | None) -> None:
+async def save_article(
+    article: dict[str, list[str] | list[dict[str, str]]] | None,
+    filepath: str,
+    template: Type[jinja2.environment.Template],
+    sem: asyncio.Semaphore | None,
+) -> None:
     """
     Helper function to save article to disk.
     """
@@ -368,7 +372,9 @@ def extract_title_from_URL(links: list[Type[Tag]]) -> list[str]:
     return titles
 
 
-async def update_backlinks(article: dict[str, list[str] | list[dict[str, str]]]) -> None:
+async def update_backlinks(
+    article: dict[str, list[str] | list[dict[str, str]]]
+) -> None:
     """
     Scan article for wiki links and rebuild each
     article it points to.

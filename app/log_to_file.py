@@ -21,7 +21,7 @@ async def main(filename: str, msg: str, sem):
     Helper function to write important logged data
     to disk, rather than on the terminal.
     """
-    
+
     if sem is not None:
         async with sem:
             await write(filename, msg)

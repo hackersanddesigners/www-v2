@@ -1,6 +1,7 @@
 import os
+from typing import Any, Type
 from urllib.parse import unquote, urlparse
-from typing import Type, Any
+
 from bs4 import BeautifulSoup, NavigableString, Tag
 from dotenv import load_dotenv
 from slugify import slugify
@@ -136,7 +137,6 @@ def link_extract_image_URL(links: list[Type[Tag]], mw_url: str) -> list[Type[Tag
 
         img_data = {"src": src, "thumb": thumb, "alt": alt}
         imageURLs.append(img_data)
-
 
     imageURLs = []
     for link in links:
@@ -334,10 +334,12 @@ def get_data_from_HTML_table(article_html: str) -> dict[Any, str | None]:
     return info
 
 
-def get_metadata(article: dict[str, str | list[dict[str, str]]]) -> dict[str, dict[str, str] | list[str]]:
+def get_metadata(
+    article: dict[str, str | list[dict[str, str]]]
+) -> dict[str, dict[str, str] | list[str]]:
     """
     Extract wiki template tags from article, if any.
-    Extract article's categories too. 
+    Extract article's categories too.
     """
 
     metadata = {
@@ -388,7 +390,9 @@ def get_categories(categories: list[dict[str, str]], cats: dict[str, str]) -> li
         return [cat_fallback_label]
 
 
-def parser(article: dict[str, str | list[dict[str, str]]], redirect_target: str | None = None):
+def parser(
+    article: dict[str, str | list[dict[str, str]]], redirect_target: str | None = None
+):
     """
     Parse given article dictionary by:
     - extracting metadata (images, categories, templates, tables, etc.)

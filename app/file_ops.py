@@ -71,7 +71,9 @@ def search_file_content(pattern: str) -> list[str]:
         return []
 
 
-async def write_to_disk(page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None):
+async def write_to_disk(
+    page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None
+):
     """
     Write given file to disk. We wrap the actual function in an
     extra function that checks whether the sem parameter is used,

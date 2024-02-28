@@ -43,7 +43,7 @@ def make_mw_url_slug(url: str) -> str | None:
     """
     Convert given url to a MediaWiki friendly format.
     """
-    
+
     if url:
         return quote_plus(url.replace(" ", "_"))
 
@@ -79,7 +79,7 @@ def make_timestamp_full(t: str | None) -> str | None:
 def extract_datetime(value: str | None) -> list[str] | str | None:
     """
     Extract datetime string from given value.
-    
+
     Article.metadata's date and time could be
     constructed with a <start>-<end> format
     eg. date: <2023-04-12>-<2023-04-16>
@@ -103,7 +103,7 @@ def ts_pad_hour(tokens: str) -> str | None:
     Helper function to add an extra 0 to the begining
     of the hour token if necessary.
     """
-    
+
     hour = tokens[0]
 
     if len(hour) == 1:
@@ -114,9 +114,9 @@ def ts_pad_hour(tokens: str) -> str | None:
         return ":".join(tokens)
 
 
-def paginator(items: list[dict[Any, Any]],
-              list_size: int,
-              cursor: int | None) -> dict[str, list[int] | list[dict[Any, Any]] | dict[str, int | None] | int | None]:
+def paginator(
+    items: list[dict[Any, Any]], list_size: int, cursor: int | None
+) -> dict[str, list[int] | list[dict[Any, Any]] | dict[str, int | None] | int | None]:
     """
     Paginate over the given list of items by the specified list_size.
     The function returns back a dictionary with a cursor value that

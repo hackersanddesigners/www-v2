@@ -47,7 +47,7 @@ config = read_settings()
 async def http_exception_handler(request, exc):
     """
     Custom HTTP handler function to display custom
-    user-facing error messages (HTTP code, HTML response). 
+    user-facing error messages (HTTP code, HTML response).
     """
 
     if exc.status_code == 404:

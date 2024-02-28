@@ -26,7 +26,9 @@ WIKI_DIR = os.getenv("WIKI_DIR")
 config = read_settings()
 
 
-async def make_category_index(cat: str) -> dict[str, list[str] | list[dict[str, str]]] | None:
+async def make_category_index(
+    cat: str,
+) -> dict[str, list[str] | list[dict[str, str]]] | None:
     """
     Build Index page of the specified category.
     """
@@ -134,11 +136,12 @@ async def make_category_index(cat: str) -> dict[str, list[str] | list[dict[str, 
         elif cat_label == "Articles":
             article = await make_article_index(prepared_articles, cat_key, cat_label)
 
-
         return article
 
 
-async def build_categories(categories: list[str], sem: asyncio.Semaphore | None) -> None:
+async def build_categories(
+    categories: list[str], sem: asyncio.Semaphore | None
+) -> None:
     """
     Build index page for all categories.
     """
@@ -162,7 +165,9 @@ async def build_categories(categories: list[str], sem: asyncio.Semaphore | None)
     await asyncio.gather(*cat_tasks_html)
 
 
-async def update_categories(article: dict[str, list[str] | list[dict[str, str]]]) -> None:
+async def update_categories(
+    article: dict[str, list[str] | list[dict[str, str]]]
+) -> None:
     """
     Update Index page for each category defined in settings.toml.
     We don't rebuild the whole Index page from scratch by parsing every
