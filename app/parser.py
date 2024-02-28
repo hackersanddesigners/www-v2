@@ -280,11 +280,14 @@ def get_table_data_row(td):
     """
     Extracts data from HTML's <td> tag
     """
+    # somewhere here, when the PeopleOrganization field is a
+    # list, it only parses the first name and not all
 
     for item in td.children:
         if isinstance(item, NavigableString):
             continue
         if isinstance(item, Tag):
+
             # <td> contains the data in the format
             # => {key}::{value}, let's get only the value
             content = item.string.split("::")[-1]
@@ -319,7 +322,6 @@ def get_data_from_HTML_table(article_html):
                 continue
             if isinstance(tr, Tag):
                 table_key = tr.th
-
                 if table_key is not None and table_key.string is not None:
                     table_key = table_key.string.strip()
 
@@ -336,7 +338,7 @@ def get_data_from_HTML_table(article_html):
 def get_metadata(article):
     """
     Extract wiki template tags from article, if any.
-    Extract article's categories too. 
+    Extract article's categories too.
     """
 
     metadata = {
