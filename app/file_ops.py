@@ -1,3 +1,4 @@
+import asyncio
 import os
 import subprocess
 import sys
@@ -12,7 +13,7 @@ load_dotenv()
 WIKI_DIR = os.getenv("WIKI_DIR")
 
 
-def file_lookup(filename: str) -> list[str]:
+def file_lookup(filename: str) -> list[Path]:
     """
     Recursively check if given filename is found
     in WIKI_DIR and return list of results.
@@ -61,8 +62,8 @@ def search_file_content(pattern: str) -> list[str]:
             cwd=WIKI_DIR,
         )
 
-        matches = matches.splitlines()
-        return matches
+        results = matches.splitlines()
+        return results
     except subprocess.CalledProcessError:
         # no rg match. return empty list.
         print(f"search-file-content => no match for {pattern}")
@@ -70,14 +71,16 @@ def search_file_content(pattern: str) -> list[str]:
         return []
 
 
-async def write_to_disk(page_slug: str, document: str, sem: int | None = None):
+async def write_to_disk(
+    page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None
+):
     """
     Write given file to disk. We wrap the actual function in an
     extra function that checks whether the sem parameter is used,
     so as to iterate with it accordingly.
     """
 
-    async def write(page_slug: str, document: str):
+    async def write(page_slug: str | None, document: str):
         if page_slug is not None:
             async with aiofiles.open(f"./{WIKI_DIR}/{page_slug}.html", mode="w") as f:
                 try:

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def main():
+def main() -> None:
     """
     Copy assets folder from root directory to WIKI_DIR.
     """

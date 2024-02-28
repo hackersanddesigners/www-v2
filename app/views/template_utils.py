@@ -1,11 +1,13 @@
+from typing import Any, Type
 from urllib.parse import quote_plus
 
 import arrow
+import jinja2
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from slugify import slugify
 
 
-def get_template(template: str):
+def get_template(template: str) -> jinja2.environment.Template:
     """
     Helper function to load the correct template for Jinja.
     """
@@ -26,7 +28,7 @@ def get_template(template: str):
     return t
 
 
-def make_url_slug(url: str):
+def make_url_slug(url: str) -> str | None:
     """
     Convert given url to a slug version of itself.
     """
@@ -37,18 +39,18 @@ def make_url_slug(url: str):
     return url
 
 
-def make_mw_url_slug(url: str):
+def make_mw_url_slug(url: str) -> str | None:
     """
     Convert given url to a MediaWiki friendly format.
     """
-    
+
     if url:
         return quote_plus(url.replace(" ", "_"))
 
     return url
 
 
-def make_timestamp(t: str):
+def make_timestamp(t: str | None) -> str | None:
     """
     Shape given timestamp string into a standard
     timestamp format.
@@ -58,8 +60,10 @@ def make_timestamp(t: str):
         ts = arrow.get(t).to("local").format("YYYY-MM-DD")
         return ts
 
+    return t
 
-def make_timestamp_full(t: str):
+
+def make_timestamp_full(t: str | None) -> str | None:
     """
     Shape given timestamp string into a standard
     timestamp format, including hours, minutes and seconds.
@@ -69,11 +73,13 @@ def make_timestamp_full(t: str):
         ts = arrow.get(t).to("local").format("YYYY-MM-DD HH:mm:ss")
         return ts
 
+    return t
 
-def extract_datetime(value):
+
+def extract_datetime(value: str | None) -> list[str] | str | None:
     """
     Extract datetime string from given value.
-    
+
     Article.metadata's date and time could be
     constructed with a <start>-<end> format
     eg. date: <2023-04-12>-<2023-04-16>
@@ -89,13 +95,15 @@ def extract_datetime(value):
         elif len(tokens) > 2:
             return None
 
+    return value
 
-def ts_pad_hour(tokens):
+
+def ts_pad_hour(tokens: str) -> str | None:
     """
     Helper function to add an extra 0 to the begining
     of the hour token if necessary.
     """
-    
+
     hour = tokens[0]
 
     if len(hour) == 1:
@@ -106,7 +114,9 @@ def ts_pad_hour(tokens):
         return ":".join(tokens)
 
 
-def paginator(items: list[dict], list_size: int, cursor: int):
+def paginator(
+    items: list[dict[Any, Any]], list_size: int, cursor: int | None
+) -> dict[str, list[int] | list[dict[Any, Any]] | dict[str, int | None] | int | None]:
     """
     Paginate over the given list of items by the specified list_size.
     The function returns back a dictionary with a cursor value that
@@ -143,11 +153,12 @@ def paginator(items: list[dict], list_size: int, cursor: int):
 
     data = items[cursors[cursor] : (cursors[cursor] + list_size)]
 
-    if cursor > 0:
-        cur_prev = cursor - 1
+    if cursor is not None:
+        if cursor > 0:
+            cur_prev = cursor - 1
 
-    if cursor < len(cursors) - 1:
-        cur_next = cursor + 1
+        if cursor < len(cursors) - 1:
+            cur_next = cursor + 1
 
     return {
         "pages": pagination,

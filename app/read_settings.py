@@ -1,10 +1,11 @@
 import sys
 from pathlib import Path
+from typing import Any
 
 import tomli
 
 
-def main():
+def main() -> dict[str, Any] | None:
     """
     Read settings.toml from the root of the project folder
     """

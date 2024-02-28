@@ -10,7 +10,7 @@ from app.fetch import create_context
 load_dotenv()
 
 
-async def get_csrf_token(URL: str, client) -> str:
+async def get_csrf_token(URL: str | None, client) -> str:
     """
     Login to the wikimedia instance as a bot user
     and return CSRF token to use for other MW operations
@@ -60,7 +60,7 @@ async def get_csrf_token(URL: str, client) -> str:
     return csrf_token
 
 
-async def create_edit_page(URL: str, input_page: str, client):
+async def create_edit_page(URL: str | None, input_page: str, client):
     """
     Create a new article or edit an existing one.
 
@@ -111,7 +111,7 @@ async def delete_page(URL, input_page, client):
     print("res POST req =>", res_update_data)
 
 
-async def main(ENV: str, URL: str, input_page: str, operation: str):
+async def main(ENV: str | None, URL: str | None, input_page: str, operation: str):
     """
     Set of functions to test the whole build / update workflow
     by creating, updating or deleting a wiki article;

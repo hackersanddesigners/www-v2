@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+from typing import Any
 
 import httpx
 from dotenv import load_dotenv
@@ -16,7 +17,9 @@ from app.views.template_utils import get_template
 load_dotenv()
 
 
-async def get_category(ENV: str, URL: str, cat: str):
+async def get_category(
+    ENV: str | None, URL: str | None, cat: str
+) -> dict[str, list[Any]] | bool:
     """
     Fetch all articles from the given cat.
     """
@@ -50,7 +53,7 @@ async def get_category(ENV: str, URL: str, cat: str):
         return data
 
 
-async def main(ENV: str, URL: str):
+async def main(ENV: str | None, URL: str | None) -> None:
     """
     This function (re-)build the entire wiki by fetching a set of specific
     pages from the MediaWiki instance
@@ -118,7 +121,7 @@ async def main(ENV: str, URL: str):
 
         # -- update category index
         categories = [k.lower() for k, v in cats.items()]
-        await build_categories(categories, template, sem)
+        await build_categories(categories, sem)
 
         # -- build front-index page
         await build_front_index(article_title=None, article_cats=None)
