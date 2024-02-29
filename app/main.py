@@ -14,7 +14,7 @@ from app.fetch import query_wiki
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
-from .views.template_utils import make_timestamp, make_url_slug, paginator
+from .views.template_utils import make_timestamp, make_timestamp_friendly, make_url_slug, paginator
 from .views.views import make_error_page, make_search_index
 
 load_dotenv()
@@ -27,6 +27,7 @@ base_dir = Path.cwd()
 templates = Jinja2Templates(directory=Path(__file__).parent / "views" / "templates")
 templates.env.filters["slug"] = make_url_slug
 templates.env.filters["ts"] = make_timestamp
+templates.env.filters["tsh"] = make_timestamp_friendly
 
 
 app.mount(

@@ -12,7 +12,7 @@
       name="query"
       type="search"
       list="article_list"
-      placeholder="Search query..."
+      placeholder="Search..."
       value="{{ article.query }}"
       required
     />
@@ -41,8 +41,9 @@
     <!-- submit query -->
 
     <input
+      aria-label="Proceed with search."
       type="submit"
-      value="Go"
+      value=">"
     />
 
   </form>

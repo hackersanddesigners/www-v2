@@ -12,12 +12,12 @@
   <a href="/{{ article.title | slug }}.html">
     <p>
       <time datetime="{{ article.metadata.dates.start }}">
-        {{ article.metadata.dates.start }}
+        {{ article.metadata.dates.start | tsh }}
       </time>
       {% if article.metadata.dates.end %}
         <br> -
         <time datetime="{{ article.metadata.dates.end }}">
-          {{ article.metadata.dates.end }}
+          {{ article.metadata.dates.end | tsh  }}
         </time>
       {% endif %}
       {% if article.metadata.time %}
@@ -27,7 +27,7 @@
         {% if article.metadata.times.end %}–
           <br>
           <time datetime="{{ article.metadata.times.end }}">
-           {{ article.metadata.times.end }}
+           {{ article.metadata.times.end | tsh }}
           </time>
         {% endif %}
       {% endif %}

@@ -13,7 +13,7 @@
     {% endif %}
     <p>
       <time datetime="{{ article.metadata.creation }}">
-        {{ article.metadata.creation }}
+        {{ article.metadata.creation | tsh }}
       </time>
     </p>
     {% if article.metadata.backlinks | length > 0 %}

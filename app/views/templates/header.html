@@ -1,9 +1,11 @@
 <header aria-label="Main site navigation and search">
   <nav aria-label="Main navigation">
-    <uL>
+    <ul id="meta-nav">
       <li class="skip-link"><a title="Skip to main content" href="#main-content">Skip to main content</a></li>
       <li class="skip-link"><a title="Skip to page and site information" href="#footer">Skip to page and site information</a></li>
       <li><a title="H&D" href="/">H&D</a></li>
+    </ul>
+    <uL id="index-nav">
       {% for link in article.nav %}
         <li><a title="{{ link.label }}" href="{{ link.uri }}">{{ link.label }}</a></li>
       {% endfor %}

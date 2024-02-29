@@ -17,6 +17,7 @@ def get_template(template: str) -> jinja2.environment.Template:
     env = Environment(loader=FileSystemLoader("app/views/templates"), autoescape=True)
     env.filters["slug"] = make_url_slug
     env.filters["ts"] = make_timestamp
+    env.filters["tsh"] = make_timestamp_friendly
 
     try:
         t = env.get_template(f"{template}.html")
@@ -58,6 +59,19 @@ def make_timestamp(t: str | None) -> str | None:
 
     if t:
         ts = arrow.get(t).to("local").format("YYYY-MM-DD")
+        return ts
+
+    return t
+
+
+def make_timestamp_friendly(t: str | None) -> str | None:
+    """
+    Shape given timestamp string into a friendly date
+    format.
+    """
+
+    if t:
+        ts = arrow.get(t).to("local").format("DD MMM YYYY")
         return ts
 
     return t

@@ -3,28 +3,34 @@
 {% block content %}
 <main id="main-content">
   <h1>{{ article['title'] }}</h1>
-  {% if article.upcoming | length > 0 %}
+  <div class="grid">
     <section class="index_row">
-      <h2>Upcoming activities</h2>
-      <ul class="events">
-        {% for event in article.upcoming %}
-          {{ event | safe }}
-        {% endfor %}
-      </ul>
+      <h2>Upcoming</h2>
+      {% if article.upcoming | length > 0 %}
+        <ul class="events">
+          {% for event in article.upcoming %}
+            {{ event | safe }}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>We do not have any upcoming activities.</p>
+      {% endif %}
+      <p><a href="activities">See past activities.</a></p>
     </section>
-  {% endif %}
-  <section>
-    {{ article['html'] | safe }}
-  </section>
-  {% if article.highlights | length > 0 %}
+    <section>
+      <h2>News</h2>
+      {{ article['html'] | safe }}
+    </section>
     <section class="index_row">
       <h2>Highlights</h2>
-      <ul class="publishing">
-        {% for article in article.highlights %}
-        {% include "partials/publishing-item.html" %}
-        {% endfor %}
-      </ul>
+        {% if article.highlights | length > 0 %}
+          <ul class="publishing">
+            {% for article in article.highlights %}
+            {% include "partials/publishing-item.html" %}
+            {% endfor %}
+          </ul>
+        {% endif %}
     </section>
-  {% endif %}
+  </div>
 </main>
 {% endblock %}
