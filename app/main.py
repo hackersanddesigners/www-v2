@@ -15,7 +15,7 @@ from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
 from .views.template_utils import make_timestamp, make_url_slug, paginator
-from .views.views import make_search_index
+from .views.views import make_search_index, make_error_page
 
 load_dotenv()
 
@@ -57,10 +57,7 @@ async def http_exception_handler(request, exc):
     elif 400 <= exc.status_code <= 499:
         message = "Generic error."
 
-    article = {
-        "title": "Error",
-        "message": message,
-    }
+    article = await make_error_page( exc.status_code, message )
 
     t = templates.TemplateResponse(
         "error.html",
