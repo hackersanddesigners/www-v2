@@ -396,6 +396,26 @@ async def make_search_index(
     return article
 
 
+
+# -- error
+
+async def make_error_page( status_code, message: str ):
+    """
+    Prepare necessary data for error page
+    """
+    nav = make_nav()
+    footer_nav = make_footer_nav()
+    article = {
+        "title": "Error",
+        "slug": "error",
+        "error": status_code,
+        "message": message,
+        "footer_nav": footer_nav,
+        "nav": nav,
+    }
+    return article
+
+
 # -- article
 
 

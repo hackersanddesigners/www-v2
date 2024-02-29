@@ -132,13 +132,14 @@ footer {
 
 header,
 footer,
-p:not(.image, .iframe),
+p:not(.image),
 div:not(.mw-parser-output, .image, .thumb),
 ul:not(.gallery, .events, .publishing),
 aside,
 menu,
 pre,
 ol,
+iframe,
 h1,
 h2,
 h3,
@@ -152,8 +153,6 @@ h6 {
 img,
 .image,
 .thumb,
-iframe,
-.iframe,
 hr,
 table {
   max-width: var(--expanded-width);

@@ -168,7 +168,6 @@ def link_rewrite_image_url(link: Type[Tag], mw_url: str) -> None:
             img_tag = link.img
 
             link_image_update(link, img_tag, mw_url)
-            # strip_thumb(img_tag)
 
 
 def link_rewrite_other_url(link: Type[Tag]) -> None:
@@ -202,14 +201,23 @@ def link_rewrite_other_url(link: Type[Tag]) -> None:
 
 def strip_thumb(thumb: Type[Tag]) -> None:
     """
-    Strip "thumb" image from its hardcoded width and height attributes.
+    Strip "thumb" image from its hardcoded width and height attributes and correct URL to point to full size image.
     """
-
     if "src" in thumb.attrs:
+        # replace thumbstyle url with full size url
+        # before: /images/thumb/7/74/FramerFramed-WhereIsEveryBody.gif/300px-FramerFramed-WhereIsEveryBody.gif
+        # after: /images/7/74/FramerFramed-WhereIsEveryBody.gif
+        thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
         # strip height and width from image attribute
         for attr in ["height", "width"]:
             if attr in thumb.attrs:
                 del thumb.attrs[attr]
+
+    # removing srcset for now because dont need
+    if "srcset" in thumb.attrs:
+        del thumb.attrs["srcset"]
+
+    return thumb
 
 
 def post_process(
@@ -244,6 +252,11 @@ def post_process(
             elif link.attrs["href"].startswith("/index.php"):
                 link_rewrite_image_url(link, mw_url)
                 link_rewrite_other_url(link)
+
+    # -- dethumbify images
+    thumbs = soup.select(".thumb img")
+    for thumb in thumbs:
+        strip_thumb( thumb )
 
     # -- extract a list of image URLs for the article
     imageURLs = link_extract_image_URL(links, mw_url)
@@ -281,11 +294,14 @@ def get_table_data_row(td: Type[Tag]) -> str | None:
     """
     Extracts data from HTML's <td> tag
     """
+    # somewhere here, when the PeopleOrganization field is a
+    # list, it only parses the first name and not all
 
     for item in td.children:
         if isinstance(item, NavigableString):
             continue
         if isinstance(item, Tag):
+
             # <td> contains the data in the format
             # => {key}::{value}, let's get only the value
             content = item.string.split("::")[-1]
@@ -320,7 +336,6 @@ def get_data_from_HTML_table(article_html: str) -> dict[Any, str | None]:
                 continue
             if isinstance(tr, Tag):
                 table_key = tr.th
-
                 if table_key is not None and table_key.string is not None:
                     table_key = table_key.string.strip()
 
