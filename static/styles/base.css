@@ -633,6 +633,7 @@ menu.types {
 menu.types label {
   font-family: 'authentic-bold';
   font-size: 0.8rem;
+  display: inline-block;
 }
 
 menu.types input[type="radio"] {
