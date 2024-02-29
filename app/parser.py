@@ -207,7 +207,9 @@ def strip_thumb(thumb: Type[Tag]) -> None:
         # replace thumbstyle url with full size url
         # before: /images/thumb/7/74/FramerFramed-WhereIsEveryBody.gif/300px-FramerFramed-WhereIsEveryBody.gif
         # after: /images/7/74/FramerFramed-WhereIsEveryBody.gif
-        thumb.attrs['src'] = '/'.join(thumb.attrs['src'].replace('/images/thumb/', '/images/' ).split('/')[:-1])
+        thumb.attrs["src"] = "/".join(
+            thumb.attrs["src"].replace("/images/thumb/", "/images/").split("/")[:-1]
+        )
         # strip height and width from image attribute
         for attr in ["height", "width"]:
             if attr in thumb.attrs:
@@ -256,7 +258,7 @@ def post_process(
     # -- dethumbify images
     thumbs = soup.select(".thumb img")
     for thumb in thumbs:
-        strip_thumb( thumb )
+        strip_thumb(thumb)
 
     # -- extract a list of image URLs for the article
     imageURLs = link_extract_image_URL(links, mw_url)
