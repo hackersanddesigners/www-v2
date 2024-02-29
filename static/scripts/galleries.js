@@ -1,21 +1,20 @@
 "use strict";
 
 window.addEventListener('load', () => {
-  const controls_template = document.querySelector('#gallery-controls-template')
+  const controls_template = document.getElementById('gallery-controls-template')
   for ( const gallery of document.querySelectorAll( '.gallery' ) ) {
-    const controls = controls_template.content.cloneNode(true)
+    // let controls = controls_template.content.cloneNode(true)
+    let controls = document.importNode(controls_template.content, true)
     gallery.parentNode.insertBefore( controls, gallery.nextSibling )
-    setTimeout(() => {
-      gallery.nextElementSibling.querySelector( '.right' ).onclick = () => { gallery.scroll({
-        // left: gallery.scrollLeft + gallery.offsetWidth - 10 * rem,
-        left: gallery.scrollLeft + 0.6 * window.innerWidth ,
-        behavior: "smooth"
-      })}
-      gallery.nextElementSibling.querySelector( '.left' ).onclick = () => { gallery.scroll({
-        // left: gallery.scrollLeft - gallery.offsetWidth + 10 * rem,
-        left: gallery.scrollLeft - 0.6 * window.innerWidth,
-        behavior: "smooth"
-      })}
-    }, 300)
+    gallery.nextElementSibling.querySelector( '.right' ).onclick = () => { gallery.scroll({
+      // left: gallery.scrollLeft + gallery.offsetWidth - 10 * rem,
+      left: gallery.scrollLeft + 0.6 * window.innerWidth ,
+      behavior: "smooth"
+    })}
+    gallery.nextElementSibling.querySelector( '.left' ).onclick = () => { gallery.scroll({
+      // left: gallery.scrollLeft - gallery.offsetWidth + 10 * rem,
+      left: gallery.scrollLeft - 0.6 * window.innerWidth,
+      behavior: "smooth"
+    })}
   }
 })
