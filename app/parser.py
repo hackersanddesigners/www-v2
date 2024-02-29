@@ -212,6 +212,11 @@ def strip_thumb(thumb: Type[Tag]) -> None:
         for attr in ["height", "width"]:
             if attr in thumb.attrs:
                 del thumb.attrs[attr]
+
+    # removing srcset for now because dont need
+    if "srcset" in thumb.attrs:
+        del thumb.attrs["srcset"]
+
     return thumb
 
 
