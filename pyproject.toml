@@ -32,7 +32,12 @@ dev = [
   "black",
   "isort",
   "flake8",
-  "pip"  
+  "pip",
+  "mypy",
+  "types-aiofiles",
+  "types-beautifulsoup4",
+  "types-html5lib",
+  "typing_extensions"
 ]
 
 [project.urls]
