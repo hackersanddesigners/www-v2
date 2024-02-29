@@ -396,10 +396,10 @@ async def make_search_index(
     return article
 
 
-
 # -- error
 
-async def make_error_page( status_code, message: str ):
+
+async def make_error_page(status_code, message: str):
     """
     Prepare necessary data for error page
     """

@@ -1,7 +1,7 @@
 import os
 import ssl
 from pathlib import Path
-from typing import Any, AsyncGenerator
+from typing import Any
 
 import httpx
 from dotenv import load_dotenv
