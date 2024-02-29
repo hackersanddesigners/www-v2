@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 from urllib.parse import quote_plus
 
 import arrow
