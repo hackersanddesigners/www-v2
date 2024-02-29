@@ -684,6 +684,10 @@ article.publishing-item a.related-item {
   text-decoration: underline !important;
 }
 
+.index_row .publishing-item div:has(a.related-item) {
+  display: none;
+}
+
 article.event-item .title,
 article.publishing-item .title {
   font-family: authentic;
