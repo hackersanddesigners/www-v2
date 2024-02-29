@@ -420,20 +420,20 @@ ul li:last-of-type:hover::before {
   /* max-width:50%; */
   /* float: right; */
 
-  float: left;
+  /* float: left; */
   /* margin-left: calc( (100% - var(--base-width))/2 ); */
-  margin-inline: unset;
+  margin-inline: 1rem;
 
-  position: sticky;
+  /* position: sticky; */
   /* top: 6.5rem; */
-  top: 4.5rem;
+  /* top: 4.5rem; */
   /* top: 4rem; */
   z-index: 10000;
   /* left: calc((100% - var(--expanded-width))/2 - 1rem); */
 
   --width :  calc((var(--expanded-width) - var(--base-width))/2);
   width:var(--whidth);
-  left: calc((100% - var(--expanded-width))/2 - var(--side-width) - 1rem);
+  /* left: calc((100% - var(--expanded-width))/2 - var(--side-width) - 1rem); */
   /* width: calc((100% - var(--expanded-width))/2); */
   max-width: var(--side-width);
   /* left: 0; */
@@ -1008,7 +1008,7 @@ table.tools tr td ul {
     width: unset;
     z-index:unset;
     float: unset;
-    margin-left: calc((100% - var(--expanded-width))/2);
+    /* margin-left: calc((100% - var(--expanded-width))/2); */
   }
 }
 @media (max-width: 1000px) {
