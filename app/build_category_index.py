@@ -123,7 +123,9 @@ async def make_category_index(
             article = await make_event_index(prepared_articles, cat_key, cat_label)
 
         elif cat_key == "Collaborators":
-            article = await make_collaborators_index(prepared_articles, cat_key, cat_label)
+            article = await make_collaborators_index(
+                prepared_articles, cat_key, cat_label
+            )
 
         elif cat_key == "Publishing":
             article = await make_publishing_index(prepared_articles, cat_key, cat_label)
