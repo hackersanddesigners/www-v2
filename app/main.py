@@ -14,7 +14,12 @@ from app.fetch import query_wiki
 from app.file_ops import file_lookup
 from app.read_settings import main as read_settings
 
-from .views.template_utils import make_timestamp, make_timestamp_friendly, make_url_slug, paginator
+from .views.template_utils import (
+    make_timestamp,
+    make_timestamp_friendly,
+    make_url_slug,
+    paginator,
+)
 from .views.views import make_error_page, make_search_index
 
 load_dotenv()

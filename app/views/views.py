@@ -6,7 +6,6 @@ from typing import Collection, Sequence
 import aiofiles
 import arrow
 import httpx
-from aiofiles import os as aos
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from slugify import slugify
@@ -59,7 +58,7 @@ async def make_front_index(
         article["highlights"] = highlight_articles
 
         # -- upcoming events
-        event_filename = slugify(config['wiki']['categories']['Event']['label'])
+        event_filename = slugify(config["wiki"]["categories"]["Event"]["label"])
 
         upcoming_events = []
         upcoming_events_str = []
@@ -71,9 +70,7 @@ async def make_front_index(
                 tree = await f.read()
                 soup = BeautifulSoup(tree, "lxml")
 
-                upcoming_events = soup.find_all(
-                    "article", {"class": "when-upcoming"}
-                )
+                upcoming_events = soup.find_all("article", {"class": "when-upcoming"})
 
                 for event in upcoming_events:
                     # check if upcoming-event's date is bigger than
@@ -89,7 +86,7 @@ async def make_front_index(
                 article["upcoming"] = upcoming_events_str
 
                 return article
-            
+
         else:
             print(f"make-frontindex err => {events_path} does not exist in the wiki.")
 
