@@ -209,7 +209,7 @@ and specific plugin options:
 there is a CLI program at `cli.py` to run common operations. currently available commands are:
 
 - `build-article` <PageTitle> <edit/delete>: helper function to trigger a change in the MediaWiki instance, instead of manually logging in to the MW editor and commit a change. the command takes two arguments: `PageTitle` and type of operation (`edit`, `delete`); the `edit` operation creates a new article if it does not exist yet, beside making a change to an existing wiki article.
-- `build-article-index`: builds the frontpage
+- `build-frontpage`: builds the frontpage
 - `build-category-index` <category>: builds the given category index page
 - `build-wiki`: builds the entire wiki, where by entire it's meant the list of articles with specific categories defined in `settings.toml`
 - `server`: starts a local server and listen to specified port at UDP messages from the MediaWiki instance

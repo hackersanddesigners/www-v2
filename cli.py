@@ -92,9 +92,9 @@ def build_article(
 
 
 @app.command()
-def build_article_index():
+def build_frontpage():
     """
-    (re-) Build the article index page.
+    (re-) Build the frontpage article index page.
     """
 
     asyncio.run(build_front_index(article_title=None, article_cats=None))
