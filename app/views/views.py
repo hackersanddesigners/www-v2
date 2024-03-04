@@ -15,6 +15,7 @@ from app.build_article import make_article, make_footer_nav, make_nav
 from app.fetch import create_context, fetch_category
 from app.file_ops import file_lookup
 from app.log_to_file import main as log
+from app.read_settings import main as read_settings
 
 from .template_utils import extract_datetime, get_template, ts_pad_hour
 
@@ -30,6 +31,8 @@ async def make_front_index(
     """
     Prepare necessary data for the Front index page.
     """
+
+    config = read_settings()
 
     ENV = os.getenv("ENV")
     context = create_context(ENV)
@@ -56,36 +59,39 @@ async def make_front_index(
         article["highlights"] = highlight_articles
 
         # -- upcoming events
+        event_filename = slugify(config['wiki']['categories']['Event']['label'])
+
         upcoming_events = []
         upcoming_events_str = []
-        events_path = file_lookup("events")
-
+        events_path = file_lookup(event_filename)
         current_timestamp = arrow.now().to("local")
 
-        if events_path:
-            if await aos.path.exists(events_path[0]):
-                async with aiofiles.open(events_path[0], mode="r") as f:
-                    tree = await f.read()
-                    soup = BeautifulSoup(tree, "lxml")
+        if len(events_path) > 0:
+            async with aiofiles.open(events_path[0], mode="r") as f:
+                tree = await f.read()
+                soup = BeautifulSoup(tree, "lxml")
 
-                    upcoming_events = soup.find_all(
-                        "article", {"class": "when-upcoming"}
-                    )
+                upcoming_events = soup.find_all(
+                    "article", {"class": "when-upcoming"}
+                )
 
-                    for event in upcoming_events:
-                        # check if upcoming-event's date is bigger than
-                        # current timestamp. this helps to keep the list of
-                        # upcoming events even when no change is done to an event
-                        # and by consequence to the events page, which we
-                        # use above to query for all the upcoming events.
+                for event in upcoming_events:
+                    # check if upcoming-event's date is bigger than
+                    # current timestamp. this helps to keep the list of
+                    # upcoming events even when no change is done to an event
+                    # and by consequence to the events page, which we
+                    # use above to query for all the upcoming events.
 
-                        event_date = arrow.get(event.attrs["data-start"])
-                        if event_date > current_timestamp:
-                            upcoming_events_str.append(str(event))
+                    event_date = arrow.get(event.attrs["data-start"])
+                    if event_date > current_timestamp:
+                        upcoming_events_str.append(str(event))
 
-        article["upcoming"] = upcoming_events_str
+                article["upcoming"] = upcoming_events_str
 
-        return article
+                return article
+            
+        else:
+            print(f"make-frontindex err => {events_path} does not exist in the wiki.")
 
 
 # -- events
