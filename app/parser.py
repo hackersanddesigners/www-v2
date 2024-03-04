@@ -292,23 +292,31 @@ def post_process(
     return article, imageURLs, repos_index
 
 
-def get_table_data_row(td: Type[Tag]) -> str | None:
+def get_table_data_row(table_key: str, td: Type[Tag]) -> str | None:
     """
     Extracts data from HTML's <td> tag
     """
     # somewhere here, when the PeopleOrganization field is a
     # list, it only parses the first name and not all
 
-    for item in td.children:
-        if isinstance(item, NavigableString):
-            continue
-        if isinstance(item, Tag):
+    table_row = []
 
+    for item in td.children:
+        if isinstance(item, Tag):
             # <td> contains the data in the format
             # => {key}::{value}, let's get only the value
             content = item.string.split("::")[-1]
 
-            return content
+            if table_key == "PeopleOrganisations":
+                table_row.append(content)
+            else:
+                return content
+
+    # TODO @karl: if you want to instead map over the list
+    # in the template add wrap each name in a link,
+    # simply return the table_row list.
+    if table_key == "PeopleOrganisations":
+        return ", ".join(table_row)
 
 
 def get_data_from_HTML_table(article_html: str) -> dict[Any, str | None]:
@@ -344,7 +352,9 @@ def get_data_from_HTML_table(article_html: str) -> dict[Any, str | None]:
                     if table_key in table_keys:
                         if tr.td:
                             info[table_key.lower()] = None
-                            info[table_key.lower()] = get_table_data_row(tr.td)
+                            info[table_key.lower()] = get_table_data_row(
+                                table_key, tr.td
+                            )
 
         table.decompose()
 
