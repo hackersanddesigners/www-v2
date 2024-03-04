@@ -111,13 +111,15 @@ async def redirect_uri(request: Request, call_next):
         # -- examples of old-style URIs:
         # p/About
         # s/Collaborators
-        # s/Summer_Camp_2023/p/Open_Call!_H%26D_Summer_Camp_2023_-_HopePunk%3A_Reknitting_Collective_Infrastructures
-        # s/Summer_Camp_2023/p/Coding_in_Situ
+        # special case:
+        # - s/Summer_Camp_2023 => activities?type=hdsc2023
+        # - s/Summer_Camp_2023/p/Open_Call!_H%26D_Summer_Camp_2023_-_HopePunk%3A_Reknitting_Collective_Infrastructures
+        # - s/Summer_Camp_2023/p/Coding_in_Situ
 
         tokens = uri.split("/")
+
         if len(tokens) > 1:
             new_uri = slugify(tokens[-1])
-
             matches = file_lookup(new_uri)
             if len(matches) > 0:
                 redirect_uri = Path(matches[0]).stem
@@ -129,6 +131,25 @@ async def redirect_uri(request: Request, call_next):
                 )
 
                 return RedirectResponse(url=f"/{redirect_uri}", status_code=301)
+
+            elif new_uri.startswith("summer-academy") or new_uri.startswith(
+                "summer-camp"
+            ):
+
+                summer_tokens = new_uri.split("-")
+                summer_type = summer_tokens[-2][0].lower()
+                summer_year = summer_tokens[-1]
+                event_label = slugify(config["wiki"]["categories"]["Event"]["label"])
+
+                redirect_uri = f"{event_label}?type=hds{summer_type}{summer_year}"
+
+                print(
+                    f"uri-redirect => {uri}\n",
+                    f"=> {new_uri}\n",
+                    f"r => {redirect_uri}",
+                )
+
+                return RedirectResponse(url=f"/{redirect_uri}", status_code=308)
 
             else:
                 return RedirectResponse(url=f"/{new_uri}", status_code=301)
