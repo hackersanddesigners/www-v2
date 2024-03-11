@@ -25,7 +25,7 @@ from .views.views import make_error_page, make_search_index
 load_dotenv()
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 
 base_dir = Path.cwd()
 
