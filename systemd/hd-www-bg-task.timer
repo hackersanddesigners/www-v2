@@ -1,0 +1,12 @@
+[Unit]
+Description=hd-www background service (refresh frontend)
+
+# run every day at midnight,
+# also across server reboot
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=hd-www-bg-task.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,21 @@
+[Unit]
+Description=hd-www background service (refresh frontend)
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=hd-www
+Group=hd-www
+
+WorkingDirectory=<path/to/website>
+
+# this makes Python send logs to journalctl right-away, without buffering
+Environment="PYTHONUNBUFFERED=1"
+
+Environment="PATH=<path/to/website>/env/bin"
+ExecStart=<path/to/website>/env/bin/python cli.py build-frontpage
+
+[Install]
+WantedBy=multi-user.target

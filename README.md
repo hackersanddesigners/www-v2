@@ -31,6 +31,22 @@ whenever you install a new package with `pip`, update the requirements list with
 
 - `pip freeze > requirements.txt`
 
+### systemd config
+
+the software is controlled through some systemd unit files (you can inspect them under `./systemd`):
+
+- `hd-www-frontend.service`: runs the server (handling routes, redirects, etc)
+- `hd-www-udp.service`: runs the UDP server which listen to the MediaWiki instance sending messages whenever an article is created / modified / deleted
+
+the above two systemd services are crucial for the functioning of the website.
+
+there are two more systemd files that acts as a cronjob-like service. these are used to keep the frontpage up-to-date on a daily basis — necessary given that the frontpage is automatically updated only when any of the articles that it displays has received an update; so in cases when nothing changes for days, the upcoming events section might get out of date.
+
+these two systemd services are:
+
+- `hd-www-bg-task.service`: to setup the necessary command to run on a given period of time
+- `hd-www-bg-task.timer`: to set the actual timer
+
 ## everyday usage
 
 there are two ways to use this software:
