@@ -14,18 +14,21 @@
   font-family: 'adelphe';
   src: url("Adelphe-FlorealRegular.woff2") format("woff2");
   font-weight: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'adelphe';
   src: url("Adelphe-FlorealItalic.woff2") format("woff2");
   font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'adelphe';
   src: url("Adelphe-FlorealBold.woff2") format("woff2");
   font-weight: 600;
+  font-display: swap;
 }
 
 @font-face {
@@ -33,17 +36,19 @@
   src: url("Adelphe-FlorealBoldItalic.woff2") format("woff2");
   font-weight: 600;
   font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'dindong';
   src: url("DINdong.woff2") format("woff2");
+  font-display: swap;
 }
-
 
 @font-face {
   font-family: 'notcourier';
   src: url("NotCourierSans.otf");
+  font-display: swap;
 }
 
 
