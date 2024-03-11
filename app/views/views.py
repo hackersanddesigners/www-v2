@@ -80,10 +80,22 @@ async def make_front_index(
                     # use above to query for all the upcoming events.
 
                     event_date = arrow.get(event.attrs["data-start"])
-                    if event_date > current_timestamp:
-                        upcoming_events_str.append(str(event))
 
-                article["upcoming"] = upcoming_events_str
+                    if event_date > current_timestamp:
+                        upcoming_events_str.append(
+                            {
+                                "date": event_date,
+                                "html": str(event),
+                            }
+                        )
+
+                # sort event by ASC order using the `date` key
+                upcoming_events_str = sorted(
+                    upcoming_events_str, key=lambda e: e["date"]
+                )
+
+                # make new list keeping only the html of each event and get rid of the date key
+                article["upcoming"] = [event["html"] for event in upcoming_events_str]
 
                 return article
 
