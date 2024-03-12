@@ -799,26 +799,27 @@ ul.publishing {
   overflow: scroll;
 }
 
-article.event-item,
-article.publishing-item {
+li.event-item,
+li.publishing-item {
+  list-style: none;
   max-width: 15rem;
   min-width: 12rem;
 }
 
-article.event-item a,
-article.publishing-item a {
+li.event-item a,
+li.publishing-item a {
   text-decoration: none;
   color: var(--black);
 }
 
-article.event-item div:has( a.related-item ),
-article.publishing-item div:has( a.related-item ) {
+li.event-item div:has( a.related-item ),
+li.publishing-item div:has( a.related-item ) {
   font-family: 'notcourier';
   font-size: 0.8rem;
 }
 
-article.event-item a.related-item,
-article.publishing-item a.related-item {
+li.event-item a.related-item,
+li.publishing-item a.related-item {
   text-decoration: underline !important;
 }
 
@@ -827,8 +828,8 @@ article.publishing-item a.related-item {
   display: none;
 }
 
-article.event-item .title,
-article.publishing-item .title {
+li.event-item .title,
+li.publishing-item .title {
   font-family: dindong;
   font-size: 1.5rem;
   margin-bottom: 0.65rem;
@@ -838,20 +839,20 @@ article.publishing-item .title {
   text-decoration-color: var(--brown);
 }
 
-article.event-item p,
-article.publishing-item p {
+li.event-item p,
+li.publishing-item p {
   margin-block: 0.5rem;
 }
 
-article.event-item time,
-article.publishing-item time {
+li.event-item time,
+li.publishing-item time {
   max-width: 15rem;
   font-family: 'notcourier';
   font-size: 0.8rem;
 }
 
-article.event-item img,
-article.publishing-item img {
+li.event-item img,
+li.publishing-item img {
   max-height: 12rem;
   /* filter:
   drop-shadow( 0px 0px 5px rgb(255, 0, 0))
@@ -860,15 +861,15 @@ article.publishing-item img {
   border-radius: var(--d-rad);
  }
 
-article.event-item img:hover,
-article.publishing-item img:hover {
+li.event-item img:hover,
+li.publishing-item img:hover {
   /* animation: jello 1s ease-in-out forwards; */
 }
 
 
 /* pages: articles */
 
-article.article-item h3 {
+li.article-item h3 {
   margin-bottom: 0;
 }
 
@@ -1077,13 +1078,13 @@ table.tools tr td ul {
   div.mw-pt-languages {
     display: inline-block;
   }
-  article.event-item,
-  article.publishing-item {
+  li.event-item,
+  li.publishing-item {
     max-width: 20rem;
   }
 
-  article.event-item img,
-  article.publishing-item img {
+  li.event-item img,
+  li.publishing-item img {
     min-height: 8rem;
     max-height: 15rem;
   }
