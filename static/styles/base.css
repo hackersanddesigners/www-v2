@@ -1,16 +1,4 @@
 @font-face {
-  font-family: 'authentic';
-  src: url("AUTHENTICSans-90.woff2") format("woff2");
-  font-display: "swap";
-}
-
-@font-face {
-  font-family: 'authentic-bold';
-  src: url("AUTHENTICSans-130.woff2") format("woff2");
-  font-display: "swap";
-}
-
-@font-face {
   font-family: 'adelphe';
   src: url("Adelphe-FlorealRegular.woff2") format("woff2");
   font-weight: normal;
@@ -284,7 +272,6 @@ div.mw-pt-languages {
    /* margin-inline: unset; */
   /* margin-left: calc((100% - var(--base-width))/2); */
   width: fit-content;
-  font-family: 'authentic';
 }
 
 .mw-pt-languages .mw-pt-languages-label {
@@ -309,8 +296,8 @@ main aside {
   /* margin-left: calc( (100% - var(--base-width))/2 ); */
   max-width: var(--side-width);
   z-index: 1;
-  font-family: 'authentic';
-  /* font-size: 0.8rem; */
+  font-family: 'notcourier';
+  font-size: 0.8rem;
 }
 
 main aside .info {
@@ -318,8 +305,6 @@ main aside .info {
   width: 100%;
   border: 1px solid;
   border-radius: var(--d-rad);
-  font-family: 'notcourier';
-  font-size: 0.8rem;
  }
 
 main aside .info td {
@@ -443,7 +428,6 @@ ul li:last-of-type:hover::before {
   max-width: var(--side-width);
   /* left: 0; */
   background-color: var(--white);
-  font-family: 'authentic';
   border-radius: var(--d-rad);
   border: 1px solid;
 }
@@ -487,7 +471,6 @@ header {
   top: 0;
   z-index: 10000;
   filter: drop-shadow(0px 0px 3px var[--brown]);
-  font-family: 'authentic';
   color: var(--brown);
   font-family: 'dindong';
   font-size: 1.6rem;
