@@ -662,6 +662,7 @@ figure figcaption {
 
 ul.gallery {
   /* max-width: 100%; */
+  margin-block: 1rem;
   padding-inline: 1rem;
   display: flex;
   align-items: center;
