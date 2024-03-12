@@ -940,6 +940,9 @@ table.tools tr td ul {
 }
 
 
+
+/*********************************************************** the <tool /> embed  */
+
 .tool {
   margin: 1rem;
   max-width: var(--base-width);
@@ -971,21 +974,13 @@ table.tools tr td ul {
   border-right: 1px solid;
   border-top-right-radius: var(--d-rad);
 }
-
 .toolFooter a:last-of-type {
-  /* margin-right: 0; */
-  /* margin-left: 0.5rem; */
   border-right: none;
 }
 
-.tool:hover {
-  border-left-color: black;
-  border-bottom-color: black;
-}
 
-.tool:hover::before {
-  opacity: 1;
-}
+
+
 
 @media (max-width: 2000px) {
   #toc {
