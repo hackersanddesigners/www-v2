@@ -134,6 +134,8 @@ html,
 body {
   padding: 0;
   margin: 0;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 hr {
@@ -153,7 +155,7 @@ a:focus {
 
 ul {
   margin: 0;
-  padding: 0;
+  padding-left: 0;
 }
 
 input[type=submit] {
@@ -280,6 +282,7 @@ nav ul li a {
   text-decoration-color: var(--black);
   /* padding: 0.25rem 0.5rem; */
 }
+
 
 
 /*********************************************************** NAVIGATION: header */
@@ -502,6 +505,7 @@ figure figcaption,
 
 #toc {
   padding: 0.5rem;
+  padding-left: 1rem;
   margin-inline: 1rem;
   --width: calc((var(--expanded-width) - var(--base-width))/2);
   width: var(--whidth);
@@ -543,6 +547,7 @@ main aside {
 }
 
 main aside .info {
+  margin-inline: 1rem;
   padding: 0.5rem;
   width: 100%;
   border: var(--solid);
