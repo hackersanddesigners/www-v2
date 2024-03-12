@@ -170,7 +170,7 @@ footer {
 
 footer,
 p:not(.image),
-div:not(.mw-parser-output, .image, .thumb, .grid),
+div:not(.mw-parser-output, .image, .thumb, .grid, .tool, .tool *),
 ul:not(.gallery, .events, .publishing),
 aside,
 menu,
@@ -942,58 +942,39 @@ table.tools tr td ul {
 
 .tool {
   margin: 1rem;
-  left: -5rem;
   max-width: var(--base-width);
-  /* border-top: 0.3rem double black;
-  border-right: 0.3rem double black; */
-  border: 0.3rem double black;
-  border-left-color: var(--light-grey);
-  border-bottom-color: var(--light-grey);
-  background: linear-gradient(to bottom left, #e5f792dc, transparent, transparent);
-  transition: border-color 0.2s linear;
+  margin-inline: auto;
+  border: 1px solid;
+  border-radius: var(--d-rad);
+  background: var(--yellow);
 }
-
-.tool::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(to top right, #a9ff81e7, transparent);
-  opacity: 0;
-  transition: opacity 0.2s linear;
-}
-
 .toolHeader {
   text-align: center;
   padding: 0.3rem;
 }
-
 .toolContent {
   max-height: 80vh;
   overflow: scroll;
   padding: 1rem;
-  border-top: 0.3rem double black;
+  border-top: 1px solid;
 }
-
 .toolFooter {
   text-align: center;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
 }
-
 .toolFooter a {
   width: 100%;
   padding: 0.3rem;
-  margin-left: 0.5rem;
-  border-top: 0.3rem double black;
-  border-right: 0.3rem double black;
+  border-top: 1px solid;
+  border-right: 1px solid;
+  border-top-right-radius: var(--d-rad);
 }
 
 .toolFooter a:last-of-type {
-  margin-right: 0;
+  /* margin-right: 0; */
+  /* margin-left: 0.5rem; */
   border-right: none;
 }
 
