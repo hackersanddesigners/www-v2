@@ -17,15 +17,17 @@
       const button = e.target, menu = button.parentElement
       if ( menu.classList.contains( 'visible' ) ) {
         menu.classList.remove( 'visible' )
-        button.innerHTML = '☰'
+        button.value = '☰'
       } else {
         menu.classList.add( 'visible' )
-        button.innerHTML = '×'
+        button.value = '×'
       }
     }
   </script>
-  <button
+  <input
+    type="button"
+    value="☰"
     id="menu-button"
     onclick="toggle( event )"
-  >☰</button>
+  />
 </header>
