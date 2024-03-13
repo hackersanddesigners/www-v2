@@ -881,25 +881,6 @@ table.tools tr td ul {
 
 @media (min-width: 600px) {
 
-  footer,
-  p:not(.image),
-  div:not(.mw-parser-output, .image, .thumb, .grid, .tool, .tool *),
-  ul:not(.gallery, .events, .publishing),
-  aside,
-  menu,
-  pre,
-  ol,
-  iframe,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    /* max-width: var(--base-width); */
-    /* margin-inline: unset; */
-  }
-
   /* header */
 
   header {
@@ -945,39 +926,38 @@ table.tools tr td ul {
     flex-direction: row;
   }
 
+  /* other stuff */
 
   h1 {
     margin-top: 2rem;
   }
-
-  menu.types {
-    margin-inline: auto;
-  }
-
   main aside {
     float: right;
     margin-left: 1rem;
     margin-bottom: 1rem;
     margin-right: calc((100% - var(--base-width))/2);
   }
-  div.mw-pt-languages {
+  .mw-pt-languages {
     display: inline-block;
     margin-block: unset;
   }
-
   li.event-item,
   li.publishing-item {
     max-width: 15rem;
   }
-
   li.event-item img,
   li.publishing-item img {
     min-height: unset;
     max-height: 12rem;
   }
 
-  /* Force table to not be like tables anymore */
-  /* table.tools,
+}
+
+/* Force table to not be like tables anymore */
+/* only time we use max-wdith breakpoint becasue its easier */
+
+@media (max-width: 600px) {
+  table.tools,
   table.tools thead,
   table.tools tbody,
   table.tools th,
@@ -1013,10 +993,10 @@ table.tools tr td ul {
     padding-right: 10px;
     white-space: nowrap;
     font-family: 'notcourier', 'Courier New', Courier, monospace;
-  font-size: 0.8rem;
+    font-size: 0.8rem;
   }
   table.tools td:nth-of-type(1):not(:empty):before { content: ""; }
   table.tools td:nth-of-type(2):not(:empty):before { content: "Title"; }
   table.tools td:nth-of-type(3):not(:empty):before { content: "Repositories"; }
-  table.tools td:nth-of-type(4):not(:empty):before { content: "In Use"; } */
+  table.tools td:nth-of-type(4):not(:empty):before { content: "In Use"; }
 }
