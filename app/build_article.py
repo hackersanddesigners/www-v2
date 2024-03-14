@@ -105,6 +105,11 @@ async def make_article(
     if backlinks:
         article_translations = get_translations(page_title, backlinks)
 
+    # TODO: here you need to check if the page is a translation, if so, you fetch the
+    # translated display title from mediawiki and pass it to the data as a "display_title"
+    # (eg not to be used in slugs or filterning but just for display in templates)
+    # api url example; ?title=Translations:SoundLAB_Special_x_Hacked_Orchestra_@_Muziekgebouw_aan_’t_IJ/Page_display_title/nl
+
     nav = make_nav()
     footer_nav = make_footer_nav()
 
