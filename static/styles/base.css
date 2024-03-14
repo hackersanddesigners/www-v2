@@ -1,5 +1,4 @@
 
-    /* margin-left: calc((100% - var(--full-width))/2); */
 
 
 /*********************************************************** font imports */
@@ -236,43 +235,6 @@ body {
   padding-inline: 1rem;
 }
 
-footer,
-p:not(.image),
-div:not(.mw-parser-output, .image, .thumb, .grid, .tool, .tool *),
-ul:not(.gallery, .events, .publishing),
-aside,
-menu,
-pre,
-ol,
-iframe,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  /* max-width: var(--base-width); */
-  /* margin-inline: auto; */
-  /* margin-inline: calc((100% - var(--full-width))/2 ); */
-  /* margin-inline: 1rem; */
-}
-
-header,
-img,
-.image,
-.thumb,
-.grid,
-hr,
-table {
-  max-width: var(--full-width);
-  /* margin-inline: auto; */
-}
-
-header,
-footer {
-  /* padding-block: 1rem; */
-}
-
 
 
 /*********************************************************** NAVIGATION: ALL */
@@ -462,10 +424,11 @@ figure:focus-within {
 }
 img {
   height: auto;
+  max-width: 100%;
 }
 figure audio,
 figure video {
-  width: 100%;
+  max-width: 100%;
 }
 figure figcaption,
 .thumbcaption,
@@ -476,6 +439,8 @@ figure figcaption,
   font-size: 0.8rem;
   font-style: italic;
   text-align: center;
+}
+.mw-parser-output > .thumb:has(.image):first-of-type img {
 }
 
 
@@ -532,6 +497,7 @@ main aside {
   max-width: var(--side-width);
   font-family: 'notcourier';
   font-size: 0.8rem;
+  margin-block: 1rem;
 }
 main aside .info {
   padding: 0.5rem;
@@ -549,9 +515,9 @@ ul.gallery {
   margin-block: 1rem;
   margin-left: -1rem;
   padding-inline: 1rem;
-  min-width: calc( var(--base-width) + 2rem);
+  width: calc( 100% + 2rem );
   display: flex;
-  align-items: start;
+  align-items: end;
   align-content: flex-start;
   justify-content: flex-start;
   overflow: scroll;
@@ -635,6 +601,7 @@ ul.gallery+menu ul li button {
 
 menu.types {
   text-align: center;
+  margin-inline: auto;
 }
 menu.types label {
   font-family: 'notcourier';
@@ -701,7 +668,7 @@ li.publishing-item time {
 li.event-item img,
 li.publishing-item img {
   min-height: 8rem;
-  max-height: 15rem;
+  max-height: 10rem;
   filter: var(--shadow);
   border-radius: var(--d-rad);
 }
@@ -766,25 +733,29 @@ table.tools tr td ul {
 
 /*********************************************************** breakpoints */
 
-/* anything larger than a tablet of 600px wide */
-
-@media (min-width: 900px) {
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 0px 1rem;
-    grid-auto-flow: row;
-    grid-template-areas: ". . .";
-  }
-  .grid .index_row ul {
-    display: block;
-  }
-}
-
 /* anything larger than a mobile phone of 600px wide */
 
 @media (min-width: 600px) {
+
+  /* widths for long form reading elements */
+
+  footer,
+  p,
+  div:not(.mw-parser-output, .grid),
+  ul:not(.gallery, .events, .publishing),
+  aside,
+  menu,
+  pre,
+  ol,
+  iframe,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    max-width: var(--base-width);
+  }
 
   /* header */
 
@@ -817,7 +788,6 @@ table.tools tr td ul {
     display: none;
   }
 
-
   /* footer */
 
   footer #meta {
@@ -838,12 +808,16 @@ table.tools tr td ul {
   }
   main aside {
     float: right;
+    margin-top: 0;
     margin-left: 1rem;
-    margin-bottom: 1rem;
+    margin-right: calc(( 100% - var(--base-width)));
   }
   .mw-pt-languages {
     display: inline-block;
     margin-block: unset;
+  }
+  .mw-parser-output img {
+    margin-inline: auto;
   }
   li.event-item,
   li.publishing-item {
@@ -851,10 +825,48 @@ table.tools tr td ul {
   }
   li.event-item img,
   li.publishing-item img {
-    min-height: unset;
     max-height: 12rem;
   }
 
+}
+
+/* anything larger than a tablet of 600px wide */
+
+@media (min-width: 900px) {
+  .grid {
+    display: grid;
+    grid-template-columns: fit-content(1fr) 2fr fit-content(1fr);
+    grid-template-rows: 1fr;
+    gap: 0px 1rem;
+    grid-auto-flow: row;
+    grid-template-areas: ". . .";
+    width: calc( 100% + 2rem );
+    margin-left: -1rem;
+  }
+  .grid .mw-parser-output > * {
+    max-width: unset;
+  }
+  .grid .index_row > h2,
+  .grid .index_row > p {
+    margin-inline: 1rem;
+  }
+  .grid .index_row ul {
+    display: block;
+    min-width: unset;
+    margin-left: unset;
+  }
+}
+
+/* very large screens, where body has a max width */
+
+@media (min-width: 2000px) {
+  body {
+    max-width: 2000px;
+    margin-inline: auto;
+  }
+  footer nav {
+    right: calc( 1rem + ( 100% - 2000px) / 2 )
+  }
 }
 
 /* Force table to not be like tables anymore */
