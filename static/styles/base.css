@@ -377,12 +377,12 @@ header input#menu-button {
 footer {
   font-family: 'notcourier';
   font-size: 0.8rem;
+  margin-bottom: 5rem;
 }
 
 /* meta info on page bottom */
 
 footer #meta {
-  margin-bottom: 5rem;
   padding-block: 1rem;
   display: flex;
   flex-wrap: wrap;
