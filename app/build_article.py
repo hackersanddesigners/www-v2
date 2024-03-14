@@ -70,6 +70,10 @@ def get_article_field(field: str, article: dict[str, str]) -> str | None:
         article_field = article[field]
 
         if field == "templates":
+
+            if "is_styles_page" in article:
+                return "styles"
+
             if len(article_field) > 0:
                 template = article_field[0]["title"].split(":")[-1]
                 return template
@@ -155,6 +159,10 @@ async def make_article(
             "metadata": metadata,
         }
 
+        if article["title"] == config['wiki']['stylespage']:
+            article["is_styles_page"] = True
+
+
     else:
         print(f"{page_title}: article not found!")
 
@@ -211,7 +219,10 @@ async def save_article(
 
     if article is not None:
         document = template.render(article=article)
-        await write_to_disk(filepath, document, sem)
+        if "is_styles_page" in article:
+            print("write css to file")
+        else:
+            await write_to_disk(filepath, document, sem)
 
 
 async def delete_article(article_title: str) -> None:

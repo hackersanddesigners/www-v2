@@ -106,6 +106,10 @@ async def main(SERVER_IP: str | None, SERVER_PORT: int, ENV: str | None) -> None
                         art_cats = article["metadata"]["categories"]
                         await build_front_index(art_title, art_cats)
 
+                        # -- correct template if styles
+                        if "is_styles_page" in article:
+                            template = get_template( article["metadata"]["template"] )
+
                         # -- write article to disk
                         filepath = f"{article['slug']}"
                         await save_article(article, filepath, template, sem)

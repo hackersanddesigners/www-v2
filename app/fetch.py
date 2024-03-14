@@ -84,6 +84,8 @@ async def fetch_article(title: str, client):
 
     print(f"fetching article {title}")
 
+    is_styles_page = title == config['wiki']['stylespage']
+
     # for HTML-parsed wiki article
     parse_params = {
         "action": "parse",
@@ -95,6 +97,9 @@ async def fetch_article(title: str, client):
         "disableeditsection": "1",
         "disablestylededuplication": "1",
     }
+
+    if is_styles_page:
+        parse_params["prop"] += "|wikitext"
 
     # for wiki article's  oldest revisions and backlinks fields
     query_params = {
@@ -177,6 +182,9 @@ async def fetch_article(title: str, client):
 
             if article and len(article["redirects"]) > 0:
                 redirect_target = article["redirects"][0]["to"]
+
+            if is_styles_page:
+                article["is_styles_page"] = is_styles_page
 
         return article, backlinks, redirect_target
 

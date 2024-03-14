@@ -433,11 +433,17 @@ def parser(
 
     HTML_MEDIA_DIR = "/".join(MEDIA_DIR.split("/")[1:])
 
+    imageURLs = []
+    repos_index = []
     metadata = get_metadata(article)
 
-    body_html, imageURLs, repos_index = post_process(
-        article["text"], article["images"], HTML_MEDIA_DIR, redirect_target
-    )
+    if "is_styles_page" in article and "wikitext" in article:
+        body_html = article["wikitext"]
+
+    else:
+        body_html, imageURLs, repos_index = post_process(
+            article["text"], article["images"], HTML_MEDIA_DIR, redirect_target
+        )
 
     metadata["repos_index"] = repos_index
 
