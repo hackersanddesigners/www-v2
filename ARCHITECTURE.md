@@ -144,3 +144,8 @@ This set of functions transform the data prepared from the fetching and parsing 
 	- `partials`: we use partials for re-usable HTML snippets, see [Jinja's include](https://jinja.palletsprojects.com/en/3.1.x/templates/#include).
 		- `<snippet>.html`
   
+## Closing notes
+
+Don't fight MediaWiki's APIs!
+
+MediaWiki's APIs are not particularly well done, or they depend on MW's internals which — through their APIs — don't appear to be that malleable and composable. Therefore, keep in mind that often times we had to play around many limitations simply by running several HTTP API call in a row, and compose the data into one decent shape on our side. 
