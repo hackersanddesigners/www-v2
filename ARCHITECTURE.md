@@ -61,7 +61,7 @@ The website has two modalities:
 
 Tendentially you want to run one process as listening mode and in parallel run other commands through the manual mode. The manual commands can be run as programmatic actions as well, eg. running the frontpage build command via a timer to keep the website frontpage up-to-date (for instance once a day).
 
-See the *system config* section in the [README](./README) for more details and examples.
+See the *system config* section in the [README](./README.md) for more details and examples.
 
 ## Diagram workflow example
 
@@ -84,13 +84,13 @@ An example diagram of the website workflow when updating an article:
 	- check if this article is used in the frontpage, if so update frontpage `build_front_index` (`app/build_front_index.py/build_front_index`)
     - at last save this article to disk `save_article` (`app/build_article.py/save_article`)
 
-If the operation is of type `delete`, another set of steps are used to remove the article and update every other bit of the website — same for operation `move`.
+If the operation is of type `delete`, another set of steps are used to remove the article and update every other bit of the website — same for operation `move`, `restore` and so on.
 
 ## Codebase outline
 
 ### User Interface
 
-- `cli.py`: this command is used as an entry point into the codebase; everyday command to work with the website and do maintenance.
+- `cli.py`: this command is used as an entry point into the codebase; everyday commands to work with the website and do maintenance.
 
 ### Core
 
@@ -100,16 +100,16 @@ If the operation is of type `delete`, another set of steps are used to remove th
 
 This set of functions handle the (re-)build operations — from the granular need of building a single article, to the macro need of building the whole website.
 
-Each of this function is wired up in the CLI interface as well.
+Each of this function is wired up in the CLI interface.
 
-- `build_article.py`
-- `build_category_index.py`
-- `build_front_index.py`
-- `build_wiki.py`
+- `build_article.py`: build specific article; requires `fetch.py`
+- `build_category_index.py`: build specific category index page; requires `fetch.py` and `build_article.py`
+- `build_front_index.py`: build website frontpage; requires `fetch.py` and `build_article.py`
+- `build_wiki.py`: build entire website; requires `build_category_index`, etc.
 
 #### Server
 
-There are two server functions: the form runs a web-server through FastAPI (which we need primarily for the search route); the latter is the server listening to the UPD messaging coming from the Mediawiki APIs.
+There are two server functions: the former runs a web-server through FastAPI (which we need primarily for the search route); the latter is the server listening to the UPD messaging coming from the Mediawiki APIs.
 
 - `main.py`: check [FastAPI](https://fastapi.tiangolo.com/advanced/templates/) and [Starlette](https://www.starlette.io/templates/#jinja2templates)
 - `server.py`: check [wgRCFeeds](https://www.mediawiki.org/wiki/Manual:$wgRCFeeds)
@@ -124,10 +124,10 @@ These three functions do a lot of work between the MediaWiki APIs and the creati
 
 #### Helper Functions
 
-These functions do small things each on their own, from reading the file settings to log data in a better format.
+These functions do small things each on their own, from reading the file settings to log data in a specific format.
   
 - `read_settings.py`: self-explanatory
-- `copy_assets.py`: copy static assets (CSS and JS files) from FastAPI directory (`./static`) to the HTML output directory (eg `./wiki/static`)
+- `copy_assets.py`: copy static assets (CSS and JS files) from FastAPI directory (`./static`) to the HTML output directory (eg `./<WIKI_DIR>/static`)
 - `log_to_file.py`: write any logged message to the specified file in `./logs/<file>`; useful when re-building the entire website and not having to scroll back up through the terminal output
 - `pretty_json_log.py`: helper function to format a print statement with JSON data
 - `make_change_in_wiki.py`: set of few functions to make changes in a given MediaWiki article without having to go though the web interface each time; it just supports the creation + edit and delete of an article, not the move / rename of it (due to MediaWiki's APIs limitations / specific requirements)
@@ -137,7 +137,7 @@ These functions do small things each on their own, from reading the file setting
 This set of functions transform the data prepared from the fetching and parsing operations, into the HTML template:
   
 - `views/*`
-  - `template_utils.py`: various useful functions; many of this are used directly in the jinja templates by way of the `|` pipe operator. See [jinja's custom filters](https://jinja.palletsprojects.com/en/3.0.x/api/?highlight=environment#writing-filters) as well as how they are [registered in FastAPI via Starlette](https://www.starlette.io/templates/#jinja2templates). We do this in `app/main.py`.
+  - `template_utils.py`: various useful functions; many of these are used directly in the Jinja templates by way of the `|` pipe operator. See [Jinja's custom filters](https://jinja.palletsprojects.com/en/3.0.x/api/?highlight=environment#writing-filters) as well as how they are [registered in FastAPI via Starlette](https://www.starlette.io/templates/#jinja2templates). We do this in `app/main.py`.
   - `views.py`: each article template has its preparing function in here.
   - `templates/*`
 	- `<template>.html`: see [Jinja's docs](https://jinja.palletsprojects.com/en/3.1.x/templates/#include), [FastAPI templates](https://fastapi.tiangolo.com/advanced/templates/) and [Starlette's templates](https://www.starlette.io/templates/#jinja2templates).
