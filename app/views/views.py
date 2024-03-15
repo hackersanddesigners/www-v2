@@ -70,7 +70,7 @@ async def make_front_index(
                 tree = await f.read()
                 soup = BeautifulSoup(tree, "lxml")
 
-                upcoming_events = soup.find_all("article", {"class": "when-upcoming"})
+                upcoming_events = soup.find_all("li", {"class": "when-upcoming"})
 
                 for event in upcoming_events:
                     # check if upcoming-event's date is bigger than

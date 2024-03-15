@@ -204,12 +204,15 @@ def strip_thumb(thumb: Type[Tag]) -> None:
     Strip "thumb" image from its hardcoded width and height attributes and correct URL to point to full size image.
     """
     if "src" in thumb.attrs:
-        # replace thumbstyle url with full size url
-        # before: /images/thumb/7/74/FramerFramed-WhereIsEveryBody.gif/300px-FramerFramed-WhereIsEveryBody.gif
-        # after: /images/7/74/FramerFramed-WhereIsEveryBody.gif
-        thumb.attrs["src"] = "/".join(
-            thumb.attrs["src"].replace("/images/thumb/", "/images/").split("/")[:-1]
-        )
+
+        if "/images/thumb/" in thumb.attrs["src"]:
+            # replace thumbstyle url with full size url
+            # before: /images/thumb/7/74/FramerFramed-WhereIsEveryBody.gif/300px-FramerFramed-WhereIsEveryBody.gif
+            # after: /images/7/74/FramerFramed-WhereIsEveryBody.gif
+            thumb.attrs["src"] = "/".join(
+                thumb.attrs["src"].replace("/images/thumb/", "/images/").split("/")[:-1]
+            )
+
         # strip height and width from image attribute
         for attr in ["height", "width"]:
             if attr in thumb.attrs:
