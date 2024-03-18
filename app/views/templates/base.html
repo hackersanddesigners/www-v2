@@ -15,8 +15,9 @@
 
     <title>{{ article['title'] }} • H&amp;D</title>
     <link rel="stylesheet" type="text/css" href="/assets/styles/base.css?v=ea060d8"/>
-    <!-- TODO: check if stylespage is defined and then input here a link to the page -->
-    <!-- /<styles-page>.css -->
+    {% if "mw_styles_page" in article['metadata'] %}
+      <link rel="stylesheet" type="text/css" href="/assets/styles/{{ article['metadata']['mw_styles_page'] | slug }}.css"/>
+    {% endif %}
     <script src="/assets/scripts/galleries.js?v=cf9595a"></script>
     <!-- Matomo -->
     <script>

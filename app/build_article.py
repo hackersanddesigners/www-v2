@@ -130,6 +130,7 @@ async def make_article(
             "mw_url": mw_url,
             "mw_history_url": mw_url + "&action=history",
             "mw_edit_url": mw_url + "&action=edit",
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
             "images": images,
             "template": get_article_field("templates", article),
             "creation": make_timestamp_full(article["creation"]),
