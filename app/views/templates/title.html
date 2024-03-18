@@ -1,0 +1,5 @@
+{% if 'displaytitle' in article['metadata'] %}
+  {{ article['metadata']['displaytitle'] | safe }}
+{% else %}
+  {{ article['title'] }}
+{% endif %}

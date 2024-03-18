@@ -3,7 +3,7 @@
   class="publishing-item"
 >
   <a href="/{{ article.title | slug }}.html">
-    <p class="title">{{ article.title }}</p>
+    <p class="title">{% include 'title.html' %}</p>
     {% if article.metadata.images | length > 0 %}
       <img
         src="{{ article.metadata.images[0].thumb }}"

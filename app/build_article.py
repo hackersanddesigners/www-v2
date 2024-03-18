@@ -123,6 +123,7 @@ async def make_article(
         metadata = {
             "id": article["pageid"],
             "title": article["title"],
+            "displaytitle": article["displaytitle"],
             "mw_url": mw_url,
             "mw_history_url": mw_url + "&action=history",
             "mw_edit_url": mw_url + "&action=edit",

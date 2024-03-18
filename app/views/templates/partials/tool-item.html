@@ -9,7 +9,7 @@
     {% endif %}
   </td>
   <td class="title">
-    <h5><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h5>
+    <h5><a href="/{{ article.title | slug }}.html">{% include 'title.html' %}</a></h5>
   </td>
   <td class="repo">{% if article.metadata.tool_repos %}
       <ul>

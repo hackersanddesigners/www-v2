@@ -32,7 +32,7 @@
         {% endif %}
       {% endif %}
     </p>
-    <p class="title">{{ article.title }}</p>
+    <p class="title">{% include 'title.html' %}</p>
     {% if article.metadata.images[0] %}
       <img
         src="{{ article.metadata.images[0].thumb }}"
