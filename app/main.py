@@ -35,18 +35,21 @@ templates.env.filters["ts"] = make_timestamp
 templates.env.filters["tsh"] = make_timestamp_friendly
 
 
-app.mount(
-    "/assets",
-    StaticFiles(directory=Path(__file__).parent.parent / "assets"),
-    name="assets",
-)
-
+config = read_settings()
 
 ENV = os.getenv("ENV")
 URL = os.getenv("BASE_URL")
+WIKI_PATH = os.getenv( "WIKI_DIR" )
+WIKI_DIR = Path( WIKI_PATH ).resolve()
+ASSETS_PATH = os.getenv( "ASSETS_DIR" )
+ASSETS_DIR = WIKI_DIR / ASSETS_PATH
 
+print ( ASSETS_DIR )
 
-config = read_settings()
+if not Path( WIKI_DIR ).exists():
+    raise ValueError(f"WIKI_DIR does not yet exist. Please run the cli setup command to create it")
+
+app.mount( "/assets", StaticFiles(directory=ASSETS_DIR), name="assets" )
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -83,7 +86,6 @@ async def root(request: Request):
     """
 
     try:
-        WIKI_DIR = os.getenv("WIKI_DIR")
         file_path = f"{WIKI_DIR}/index.html"
 
         async with aiofiles.open(file_path, mode="r") as f:
@@ -189,7 +191,6 @@ async def article(request: Request, article: str):
     """
 
     try:
-        WIKI_DIR = os.getenv("WIKI_DIR")
         filename = Path(article).stem
         file_path = f"{WIKI_DIR}/{slugify(filename)}.html"
 
