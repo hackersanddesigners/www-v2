@@ -95,3 +95,30 @@ async def write_to_disk(
 
     else:
         await write(page_slug, document)
+
+
+
+async def write_to_disk_wiki_styles(
+    page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None
+):
+    """
+    Write given css file to disk at the static files dir. We wrap
+    the actual function in an extra function that checks whether
+    the sem parameter is used, so as to iterate with it accordingly.
+    """
+
+    async def write(page_slug: str | None, document: str):
+        if page_slug is not None:
+            async with aiofiles.open(f"./{WIKI_DIR}/assets/styles/{page_slug}.css", mode="w") as f:
+                try:
+                    await f.write(document)
+                    print(f"✓ {page_slug} has been correctly written to disk")
+                except Exception as e:
+                    print(f"✕ error for {page_slug} => {e}")
+
+    if sem is not None:
+        async with sem:
+            await write(page_slug, document)
+
+    else:
+        await write(page_slug, document)

@@ -36,9 +36,9 @@ templates.env.filters["tsh"] = make_timestamp_friendly
 
 
 app.mount(
-    "/static",
-    StaticFiles(directory=Path(__file__).parent.parent / "static"),
-    name="static",
+    "/assets",
+    StaticFiles(directory=Path(__file__).parent.parent / "assets"),
+    name="assets",
 )
 
 
@@ -106,7 +106,8 @@ async def redirect_uri(request: Request, call_next):
     uri = request.url.path[1:]
 
     # ignore URI to static assets
-    if not uri.startswith("static"):
+    ASSETS_DIR = os.getenv("ASSETS_DIR")
+    if not uri.startswith(ASSETS_DIR):
 
         # -- examples of old-style URIs:
         # p/About

@@ -12,7 +12,7 @@ from slugify import slugify
 from unidecode import unidecode
 
 from app.fetch import create_context, fetch_article
-from app.file_ops import file_lookup, search_file_content, write_to_disk
+from app.file_ops import file_lookup, search_file_content, write_to_disk, write_to_disk_wiki_styles
 from app.parser import parser
 from app.read_settings import main as read_settings
 from app.views.template_utils import get_template, make_mw_url_slug, make_timestamp_full
@@ -221,6 +221,7 @@ async def save_article(
         document = template.render(article=article)
         if "is_styles_page" in article:
             print("write css to file")
+            await write_to_disk_wiki_styles(filepath, document, sem)
         else:
             await write_to_disk(filepath, document, sem)
 

@@ -7,6 +7,7 @@ from aiofiles import os as aos
 from dotenv import load_dotenv
 from typing_extensions import Annotated
 
+from app.copy_assets import main as copy_assets
 from app.build_category_index import make_category_index
 from app.build_front_index import build_front_index
 from app.build_wiki import main as bw
@@ -43,6 +44,7 @@ def setup():
                     print(f"{dir_path} exists already")
 
     asyncio.run(make_dirs_setup(dir_list))
+    copy_assets()
 
 
 @app.command()
