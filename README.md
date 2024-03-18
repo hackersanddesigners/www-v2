@@ -95,20 +95,6 @@ originally the idea was to export the MediaWiki's wikitext beside the HTML, but 
 
 overall we still achieve the plan to generate a set of HTML files that can be easily backed up, parsed, re-generated, and so on.
 
-### details
-
-- a server listening to any change taking place in a MediaWiki instance, by using MW's [wgRCFeeds](wgRCFeedshttps://www.mediawiki.org/wiki/Manual:%24wgRCFeeds) UDP messaging protocol
-- at any change of an article (create, edit, move, delete), we do update the given article accordingly (eg, create, edit, move or delete it)
-- each article is saved to disk as static HTML
-- the list of categories defined in `settings.toml`, as well as the frontpage (which combines upcoming events, articles with category `Highlight` and the H&D article) are also generated as static HTML, and kept up-to-date whenever any of the involved articles has been changed
-- a FastAPI app provides a search interface to display results from the wiki
-
-structure:
-
-  - `<h&d.nl>` (frontpage, `index.html`)
-  - `<h&d.nl/<article.html / category.html>`
-  - `<h&d.nl/<search-query>`
-
 ## mediawiki
 
 a local instance of MediaWiki must be run, in order to have this software working correctly.
