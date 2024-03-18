@@ -921,3 +921,19 @@ table.tools tr td ul {
   table.tools td:nth-of-type(3):not(:empty):before { content: "Repositories"; }
   table.tools td:nth-of-type(4):not(:empty):before { content: "In Use"; }
 }
+
+/*********************************************************** print styles! */
+
+@media print {
+  .noprint,
+  nav,
+  form,
+  menu {
+    display: none !important;
+  }
+  .index_row ul.events,
+  .index_row ul.publishing,
+  .gallery {
+    flex-wrap: wrap;
+  }
+}
