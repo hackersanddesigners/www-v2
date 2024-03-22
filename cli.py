@@ -29,9 +29,10 @@ def setup():
 
     WIKI_DIR = os.getenv("WIKI_DIR")
     MEDIA_DIR = os.getenv("MEDIA_DIR")
+    ASSETS_DIR = os.getenv("ASSETS_DIR")
     LOG_DIR = os.getenv("LOG_DIR")
 
-    dir_list = [WIKI_DIR, MEDIA_DIR, LOG_DIR]
+    dir_list = [WIKI_DIR, MEDIA_DIR, ASSETS_DIR, LOG_DIR]
 
     async def make_dirs_setup(dir_list: [str]):
         for path_dir in dir_list:
@@ -119,7 +120,5 @@ def build_category_index(
     if cat_index is not None:
         filepath = f"{cat_index['slug']}"
         asyncio.run(write_to_disk(filepath, cat_index["html"], sem=None))
-
-
 if __name__ == "__main__":
     app()
