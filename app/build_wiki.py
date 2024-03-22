@@ -1,56 +1,19 @@
 import asyncio
 import os
 import time
-from typing import Any
 
 import httpx
 from dotenv import load_dotenv
 
 from app.build_article import make_article, save_article
-from app.build_category_index import build_categories
+from app.build_category_index import build_categories, get_category
 from app.build_front_index import build_front_index
 from app.copy_assets import main as copy_assets
-from app.fetch import create_context, query_continue
+from app.fetch import create_context
 from app.read_settings import main as read_settings
 from app.views.template_utils import get_template
 
 load_dotenv()
-
-
-async def get_category(
-    ENV: str | None, URL: str | None, cat: str
-) -> dict[str, list[Any]] | bool:
-    """
-    Fetch all articles from the given cat.
-    """
-
-    params = {
-        "action": "query",
-        "list": "categorymembers",
-        "cmtitle": f"Category:{cat}",
-        "cmlimit": "50",
-        "cmprop": "ids|title|timestamp",
-        "formatversion": "2",
-        "format": "json",
-        "redirects": "1",
-    }
-
-    context = create_context(ENV)
-    timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
-    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
-        data = {cat: []}
-        async for response in query_continue(client, URL, params):
-
-            response = response["categorymembers"]
-            if len(response) > 0 and "missing" in response[0]:
-                title = response[0]["title"]
-                print(f"the page could not be found => {title}")
-                return False
-
-            else:
-                data[cat].extend(response)
-
-        return data
 
 
 async def main(ENV: str | None, URL: str | None) -> None:
