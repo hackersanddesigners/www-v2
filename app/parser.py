@@ -176,14 +176,6 @@ def link_rewrite_other_url(link: Type[Tag]) -> None:
     to a `File:`.
     """
 
-    # TODO
-    # this file-lookup is done to make sure
-    # articles' filename on disks matches
-    # URL used in the article files.
-    # as of <2023-11-08> i am not entirely sure
-    # this is useful, but when thinking about it
-    # it could be well helpful.
-
     if "=File:" not in link.attrs["href"]:
 
         url_parse = urlparse(link.attrs["href"])
@@ -299,8 +291,6 @@ def get_table_data_row(table_key: str, td: Type[Tag]) -> str | None:
     """
     Extracts data from HTML's <td> tag
     """
-    # somewhere here, when the PeopleOrganization field is a
-    # list, it only parses the first name and not all
 
     table_row = []
 
