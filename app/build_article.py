@@ -79,17 +79,6 @@ def get_article_field(field: str, article: dict[str, str]) -> str | None:
     return None
 
 
-def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
-    """
-    Return list of URLs pointing to translations of the given article.
-    """
-
-    translations = config["wiki"]["translation_langs"]
-    matches = [f"{page_title}/{lang}" for lang in translations]
-
-    return [page["title"] for page in backlinks if page["title"] in matches]
-
-
 async def make_article(
     page_title: str, client
 ) -> dict[str, list[str] | list[dict[str, str]]] | None:
@@ -98,13 +87,7 @@ async def make_article(
     """
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
-
-    # TODO we wouldn't need this get_translations func anymore,
-    # since the HTML article contains alreasy links to available translations (?)
-    article_translations = []
-    if backlinks:
-        article_translations = get_translations(page_title, backlinks)
-
+    
     # TODO: here you need to check if the page is a translation, if so, you fetch the
     # translated display title from mediawiki and pass it to the data as a "display_title"
     # (eg not to be used in slugs or filterning but just for display in templates)
@@ -134,7 +117,6 @@ async def make_article(
             "backlinks": backlinks,
             "nav": nav,
             "footer_nav": footer_nav,
-            "translations": article_translations,
             "parsed_metadata": art_metadata["info"],
             "categories": art_metadata["categories"],
             "tool_repos": art_metadata["repos_index"],
@@ -152,7 +134,6 @@ async def make_article(
             "slug": article_slug,
             "nav": nav,
             "footer_nav": footer_nav,
-            "translations": article_translations,
             "metadata": metadata,
         }
 
