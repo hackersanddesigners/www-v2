@@ -87,7 +87,7 @@ async def make_article(
     """
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
-    
+
     # TODO: here you need to check if the page is a translation, if so, you fetch the
     # translated display title from mediawiki and pass it to the data as a "display_title"
     # (eg not to be used in slugs or filterning but just for display in templates)

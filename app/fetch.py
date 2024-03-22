@@ -285,7 +285,7 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
     # check if value before lang is a number
     tokens = title.split("/")
     if len(tokens) >= 2:
-        
+
         # `Page display title` is used for the article title translation:
         # though we might not use it, let's add it as a check,
         # so if we change that field the code does not break.
