@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<main id="main-content" aria-label="All H&D's activities.">
+<main id="main-content" aria-label="H&D's activities.">
   <h1>Activities</h1>
   {% if article.types | length > 0 %}
-    <menu class="types">
+    <menu class="types" aria-label="Filter activities by type">
       {% for type in article.types %}
         <label>
           <input
@@ -17,7 +17,7 @@
     </menu>
   {% endif %}
   {% if article.events | length > 0 %}
-    <ul class="events">
+    <ul class="events" aria-label="Activity list">
       {% for article in article.events %}
       {% include "partials/event-item.html" %}
       {% endfor %}
