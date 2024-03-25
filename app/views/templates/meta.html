@@ -3,19 +3,19 @@
     {% if 'last_modified' in article.metadata %}
     <table class="metadata fancy" aria-label="Page metadata">
       <tbody>
-        <tr>
+        <tr aria-label="Wiki identifier">
           <td>id</td>
           <td>{{ article.metadata.id | safe }}</td>
         </tr>
-        <tr>
+        <tr aria-label="Last updated date">
           <td>updated</td>
           <td>{{ article.metadata.last_modified }}</td>
         </tr>
-        <tr>
+        <tr aria-label="Creation date">
           <td>created</td>
           <td>{{ article.metadata.creation }}</td>
         </tr>
-        <tr>
+        <tr aria-label="Wiki action links">
           <td>actions</td>
           <td>
             <a title="view in wiki" href="{{ article.metadata.mw_url }}">view</a>
