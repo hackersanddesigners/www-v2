@@ -8,6 +8,7 @@
   data-type="{{ article.metadata.parsed_metadata.type | slug }}"
   data-start="{{ article.metadata.dates.start }}"
   id="{{ article.title | slug }}"
+  aria-label="{{ article.title }}"
 >
   <a href="/{{ article.title | slug }}.html">
     <p>
