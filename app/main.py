@@ -47,7 +47,7 @@ ASSETS_DIR = WIKI_DIR / ASSETS_PATH
 print ( ASSETS_DIR )
 
 if not Path( WIKI_DIR ).exists():
-    raise ValueError(f"WIKI_DIR does not yet exist. Please run the cli setup command to create it")
+    raise ValueError(f"WIKI_DIR does not yet exist. Please run the CLI setup command to create it")
 
 app.mount( "/assets", StaticFiles(directory=ASSETS_DIR), name="assets" )
 
