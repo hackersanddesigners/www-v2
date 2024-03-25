@@ -72,7 +72,10 @@ def search_file_content(pattern: str) -> list[str]:
 
 
 async def write_to_disk(
-    page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None
+    page_slug: str | None,
+    document: str,
+    sem: asyncio.Semaphore | None = None,
+    is_styles_page: bool = False,
 ):
     """
     Write given file to disk. We wrap the actual function in an
@@ -82,34 +85,10 @@ async def write_to_disk(
 
     async def write(page_slug: str | None, document: str):
         if page_slug is not None:
-            async with aiofiles.open(f"./{WIKI_DIR}/{page_slug}.html", mode="w") as f:
-                try:
-                    await f.write(document)
-                    print(f"✓ {page_slug} has been correctly written to disk")
-                except Exception as e:
-                    print(f"✕ error for {page_slug} => {e}")
-
-    if sem is not None:
-        async with sem:
-            await write(page_slug, document)
-
-    else:
-        await write(page_slug, document)
-
-
-
-async def write_to_disk_wiki_styles(
-    page_slug: str | None, document: str, sem: asyncio.Semaphore | None = None
-):
-    """
-    Write given css file to disk at the static files dir. We wrap
-    the actual function in an extra function that checks whether
-    the sem parameter is used, so as to iterate with it accordingly.
-    """
-
-    async def write(page_slug: str | None, document: str):
-        if page_slug is not None:
-            async with aiofiles.open(f"./{WIKI_DIR}/assets/styles/{page_slug}.css", mode="w") as f:
+            file_path = f"./{WIKI_DIR}/{page_slug}.html"
+            if is_styles_page:
+                file_path = f"./{WIKI_DIR}/assets/styles/{page_slug}.css"
+            async with aiofiles.open(file_path, mode="w") as f:
                 try:
                     await f.write(document)
                     print(f"✓ {page_slug} has been correctly written to disk")
