@@ -136,6 +136,7 @@ h1, h2, h3, h4, h5, h6 {
   :root {
     --fore: var(--white);
     --back: var(--black);
+    --shadow: drop-shadow(0px 0px 10px rgba(255, 255, 255, 0.5));
   }
 }
 /* @media ( prefers-contrast ) { } */
@@ -184,6 +185,11 @@ ul {
 
 menu {
   padding: 0;
+}
+
+input, button {
+  color: var(--fore);
+  background-color: var(--back);
 }
 
 input[type=submit] {
@@ -352,7 +358,6 @@ header form {
 }
 header input {
   padding: 0.7rem 0.5rem 0.5rem 0.5rem;
-  background-color: var(--back);
   border: var(--solid);
   border-radius: var(--d-rad);
 }
@@ -367,6 +372,9 @@ header form input[type="search"] {
   background-color: var(--accent);
   max-width: 10rem;
   z-index: 1;
+}
+header form input[type="search"]::placeholder {
+  color: var(--black);
 }
 header form input[type="search"] + label {
   position: absolute;
