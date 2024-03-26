@@ -1,31 +1,31 @@
 {% if article.metadata.parsed_metadata %}
   <table class="info fancy" aria-label="Practical information">
     {% if article.metadata.parsed_metadata.date %}
-      <tr>
+      <tr aria-label="Date">
         <td>date</td>
         <td>{{ article.metadata.parsed_metadata.date | safe }}</td>
       </tr>
     {% endif %}
     {% if article.metadata.parsed_metadata.time %}
-      <tr>
+      <tr aria-label="Time">
         <td>time</td>
         <td>{{ article.metadata.parsed_metadata.time | safe }}</td>
       </tr>
     {% endif %}
     {% if article.metadata.parsed_metadata.location %}
-      <tr>
+      <tr aria-label="Location">
         <td>at</td>
         <td>{{ article.metadata.parsed_metadata.location | safe }}</td>
       </tr>
     {% endif %}
     {% if article.metadata.parsed_metadata.peopleorganisations %}
-      <tr>
+      <tr aria-label="Collaborators">
         <td>with</td>
         <td>{{ article.metadata.parsed_metadata.peopleorganisations | safe }}</td>
       </tr>
     {% endif %}
     {% if article.metadata.parsed_metadata.type %}
-      <tr>
+      <tr aria-label="Type">
         <td>type</td>
         <td>{{ article.metadata.parsed_metadata.type | safe }}</td>
       </tr>

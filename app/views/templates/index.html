@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main id="main-content">
+<main id="main-content" aria-label="Upcoming activites, news and highlights">
   <h1>{{ article['title'] }}</h1>
   <div class="grid">
-    <section class="index_row">
+    <section class="index_row" aria-label="Upcoming activities">
       <h2>Upcoming</h2>
       {% if article.upcoming | length > 0 %}
         <ul class="events">
@@ -15,13 +15,13 @@
       {% else %}
         <p>We do not have any upcoming activities.</p>
       {% endif %}
-      <p><a href="activities">See all activities</a></p>
+      <p><a href="activities" title="See all activities" >See all activities</a></p>
     </section>
-    <section>
+    <section aria-label="News">
       <h2>News</h2>
       {{ article['html'] | safe }}
     </section>
-    <section class="index_row">
+    <section class="index_row" aria-label="Highlights">
       <h2>Highlights</h2>
         {% if article.highlights | length > 0 %}
           <ul class="publishing">

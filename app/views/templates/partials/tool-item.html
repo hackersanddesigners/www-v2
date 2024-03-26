@@ -1,4 +1,7 @@
-<tr id="{{ article.title | slug }}">
+<tr
+  id="{{ article.title | slug }}"
+  aria-label="{{ article.title }}"
+>
   <td class="icon">
     {% if article.metadata.images | length > 0 %}
     <img

@@ -3,24 +3,20 @@
     id="search"
     action="/search"
     method="get"
+    aria-label="Search form"
   >
-
-
-    <!-- todo: change placeholder on every refresh -->
-
     <input
       name="query"
       type="search"
+      id="query"
       list="article_list"
       placeholder="Search..."
       value="{{ article.query }}"
       required
     />
-
-
-    <!-- todo: populate with list of exisitng pages -->
-
-    <datalist id="article_list">
+    <label for="query">Search</label>
+    <!-- TODO -->
+    <!-- <datalist id="article_list">
       {% for cat in site_index %}
         <optgroup label="{{ cat.label }}">
           {% for item in cat.articles %}
@@ -31,21 +27,11 @@
           {% endfor %}
         </optgroup>
       {% endfor %}
-    </datalist>
-
-
-    <!-- todo: other search options -->
-
-
-
-    <!-- submit query -->
-
+    </datalist> -->
     <input
       aria-label="Proceed with search."
       type="submit"
       value=">"
     />
-
   </form>
-
 </search>
