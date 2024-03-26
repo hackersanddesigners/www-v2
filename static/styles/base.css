@@ -52,6 +52,12 @@
   --blue: hsl(240, 100%, 50%);
   --yellow: hsl(60, 100%, 50%);
 
+  /* Variables for most used colors */
+
+  --fore: var(--black);
+  --back: var(--white);
+  --accent: var(--yellow);
+
   /* Borders, radii and outlines */
 
   --solid: 1px solid;
@@ -155,8 +161,8 @@ hr {
 }
 
 a {
-  color: var(--black);
-  text-decoration-color: var(--black);
+  color: var(--fore);
+  text-decoration-color: var(--fore);
   text-decoration-thickness: 0.5;
 }
 a:focus {
@@ -228,7 +234,7 @@ html {
   font-size: 15pt;
   line-height: 1.2;
   font-family: 'adelphe', 'Georgia', 'Times New Roman', Times, serif ;
-  background-color: var(--white);
+  background-color: var(--back);
 }
 
 body {
@@ -243,7 +249,7 @@ nav ul {
   list-style: none;
   padding: 0.3rem 0.5rem;
   display: flex;
-  background-color: var(--white);
+  background-color: var(--back);
   border: var(--solid);
   border-radius: var(--d-rad);
 }
@@ -269,15 +275,15 @@ header {
   font-size: 1.6rem;
   z-index: 10000;
   translate: 0 calc(2rem - 100%);
-  color: var(--black);
+  color: var(--fore);
   background-color: transparent;
   box-shadow: 0 0 4rem 5rem transparent;
   transition: all var(--fast) linear;
 }
 header.visible {
   translate: 0;
-  background-color: var(--white);
-  box-shadow: 0 0 3rem 5rem var(--white);
+  background-color: var(--back);
+  box-shadow: 0 0 3rem 5rem var(--back);
 }
 
 header nav {
@@ -297,7 +303,7 @@ header nav ul {
   gap: 0.5rem;
 }
 header nav ul li {
-  background-color: var(--white);
+  background-color: var(--back);
   border: var(--solid);
   border-radius: var(--d-rad);
   padding: 0.5rem;
@@ -312,23 +318,23 @@ header nav ul li {
   border-radius: unset;
 }
 #meta-nav li {
-  background-color: var(--black);
+  background-color: var(--fore);
   border: var(--solid);
   padding: 0.3rem 0.5rem;
   border-radius: var(--d-rad);
 }
 #meta-nav li a {
-  color: var(--white) !important;
-  text-decoration-color: var(--white);
+  color: var(--back) !important;
+  text-decoration-color: var(--back);
 }
 #meta-nav li:has(a:hover),
 #meta-nav li:has(a:active) {
-  background-color: var(--white);
+  background-color: var(--back);
 }
 #meta-nav li a:hover,
 #meta-nav li a:active {
-  color: var(--black) !important;
-  text-decoration-color: var(--black);
+  color: var(--fore) !important;
+  text-decoration-color: var(--fore);
 }
 
 /* header inputs */
@@ -340,7 +346,7 @@ header form {
 }
 header input {
   padding: 0.7rem 0.5rem 0.5rem 0.5rem;
-  background-color: var(--white);
+  background-color: var(--back);
   border: var(--solid);
   border-radius: var(--d-rad);
 }
@@ -352,7 +358,7 @@ header form input {
   font-size: 1.6rem;
 }
 header form input[type="search"] {
-  background-color: var(--yellow);
+  background-color: var(--accent);
   max-width: 10rem;
   z-index: 1;
 }
@@ -363,7 +369,7 @@ header form input[type="search"] + label {
 }
 header form input[type="submit"]:hover,
 header form input[type="submit"]:active {
-  background-color: var(--yellow);
+  background-color: var(--accent);
 }
 
 /* show/hide button */
@@ -425,7 +431,7 @@ figure {
   margin-block: 1rem;
   padding: 1rem;
   border: var(--solid);
-  background-color: var(--white);
+  background-color: var(--back);
 }
 figure:focus-within {
   outline: var(--focus);
@@ -486,7 +492,7 @@ figure figcaption,
 #toc {
   padding: 0.5rem;
   max-width: var(--side-width);
-  background-color: var(--white);
+  background-color: var(--back);
   border-radius: var(--d-rad);
   border: var(--solid);
 }
@@ -511,7 +517,7 @@ main aside .info {
   padding: 0.5rem;
   width: 100%;
   border: var(--solid);
-  background-color: var(--white);
+  background-color: var(--back);
   border-radius: var(--d-rad);
 }
 
@@ -559,7 +565,7 @@ ul.gallery+menu ul li button {
   width: 2.25rem;
   padding: 0.15rem 0.5rem 0.5rem 0.5rem;
   border-radius: var(--d-rad);
-  background-color: var(--white);
+  background-color: var(--back);
   border: var(--solid);
   font-size: 1.2rem;
 }
@@ -572,7 +578,7 @@ ul.gallery+menu ul li button {
   margin-block: 1rem;
   border: var(--solid);
   border-radius: var(--d-rad);
-  background: var(--yellow);
+  background: var(--accent);
 }
 .toolHeader {
   text-align: center;
@@ -660,7 +666,7 @@ li.publishing-item .title {
   line-height: 1.1;
   text-decoration: underline;
   text-decoration-thickness: 0.5;
-  text-decoration-color: var(--black);
+  text-decoration-color: var(--fore);
 }
 li.event-item p,
 li.publishing-item p {
@@ -733,7 +739,7 @@ table.tools tr td ul {
 /*********************************************************** INDEX: search  */
 
 .searchmatch {
-  background-color: var(--yellow);
+  background-color: var(--accent);
 }
 
 
@@ -780,7 +786,7 @@ table.tools tr td ul {
   }
   header nav ul {
     flex-wrap: nowrap;
-    background-color: var(--white);
+    background-color: var(--back);
     border: var(--solid);
     border-radius: var(--d-rad);
     padding: 0.3rem 0.5rem;
