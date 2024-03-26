@@ -132,7 +132,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* dark mode */
 
-@media (prefers-color-scheme: dark) {
+@media ( prefers-color-scheme: dark ) {
   :root {
     --fore: var(--white);
     --back: var(--black);
@@ -147,9 +147,20 @@ h1, h2, h3, h4, h5, h6 {
     --yellow: var(--back);
   }
 }
+
+/* inverted */
+
+@media ( inverted-colors ) {
+  :root {
+    --yellow: hsl(240, 100%, 50%);
+    --blue: hsl(60, 100%, 50%);
+    --fore: var(--white);
+    --back: var(--black);
+    --shadow: drop-shadow(0px 0px 10px rgba(255, 255, 255, 0.5));
+  }
+}
 /* reduced transparency, inverted */
 /* @media ( prefers-reduced-transparency ) { } */
-/* @media ( inverted-colors ) { } */
 
 
 
