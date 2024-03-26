@@ -132,7 +132,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* TODO: dark mode, high contrast, reduced transparency, inverted */
 
-/* @media (prefers-color-scheme: dark) { } */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fore: var(--white);
+    --back: var(--black);
+  }
+}
 /* @media ( prefers-contrast ) { } */
 /* @media ( prefers-reduced-transparency ) { } */
 /* @media ( inverted-colors ) { } */
@@ -234,6 +239,7 @@ html {
   font-size: 15pt;
   line-height: 1.2;
   font-family: 'adelphe', 'Georgia', 'Times New Roman', Times, serif ;
+  color: var(--fore);
   background-color: var(--back);
 }
 
