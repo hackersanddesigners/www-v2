@@ -80,7 +80,7 @@ async def get_category(
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         # -- get full list of entries from category
-        data = []
+        data = {cat: []}
         async for response in query_continue(client, URL, params):
             response = response["categorymembers"]
 
@@ -89,7 +89,7 @@ async def get_category(
                 print(f"the page could not be found => {title}")
 
             else:
-                data.extend(response)
+                data[cat].extend(response)
 
     return data
 
@@ -109,13 +109,14 @@ async def make_category_index(
     ]
 
     category_data = await get_category(ENV, URL, cat_key)
+    articles = category_data[cat_key]
 
     context = create_context(ENV)
     timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         art_tasks = []
-        for article in category_data:
+        for article in articles:
             # filter out translated article
             title = article["title"]
             lang_stem = title.split("/")[-1]
