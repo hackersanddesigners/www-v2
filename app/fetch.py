@@ -272,10 +272,7 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
     ignoring the translation snippet.
     """
 
-    translation_langs = [
-        config["wiki"]["default"],
-        config["wiki"]["translation_langs"][0],
-    ]
+    langs = config["wiki"]["langs"]
 
     lang_stem = title.split("/")[-1]
 
@@ -293,9 +290,9 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
         if tokens[-2] == "Page display title" or tokens[-2].isdigit():
 
             # check if article's title ending is matching any of the lang set in
-            # the settings.toml variable `translation_langs`
-            # and return just actual title without lang and id tokens
-            if lang_stem in translation_langs:
+            # the settings.toml variable `langs` and return just actual title
+            # without lang and id tokens
+            if lang_stem in langs:
                 t = tokens[:-2]
                 t.append(lang_stem)
 

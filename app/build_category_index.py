@@ -103,10 +103,7 @@ async def make_category_index(
 
     cat_key, cat_label = check_if_cat_exists(cat)
 
-    translation_langs = [
-        config["wiki"]["default"],
-        config["wiki"]["translation_langs"][0],
-    ]
+    langs = config["wiki"]["langs"]
 
     category_data = await get_category(ENV, URL, cat_key)
     articles = category_data[cat_key]
@@ -121,7 +118,7 @@ async def make_category_index(
             title = article["title"]
             lang_stem = title.split("/")[-1]
 
-            if lang_stem not in translation_langs:
+            if lang_stem not in langs:
                 task = make_article(article["title"], client)
                 art_tasks.append(asyncio.ensure_future(task))
 
