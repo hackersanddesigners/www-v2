@@ -110,6 +110,7 @@ async def make_article(
             "mw_url": mw_url,
             "mw_history_url": mw_url + "&action=history",
             "mw_edit_url": mw_url + "&action=edit",
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
             "images": images,
             "template": get_article_field("templates", article),
             "creation": make_timestamp_full(article["creation"]),
@@ -136,6 +137,10 @@ async def make_article(
             "footer_nav": footer_nav,
             "metadata": metadata,
         }
+
+        if article["title"] == config['wiki']['stylespage']:
+            article["is_styles_page"] = True
+
 
     else:
         print(f"{page_title}: article not found!")
@@ -192,8 +197,11 @@ async def save_article(
     """
 
     if article is not None:
+        is_styles_page = "is_styles_page" in article
+        if is_styles_page:
+            template = get_template( 'styles' )
         document = template.render(article=article)
-        await write_to_disk(filepath, document, sem)
+        await write_to_disk(filepath, document, sem, is_styles_page)
 
 
 async def delete_article(article_title: str) -> None:

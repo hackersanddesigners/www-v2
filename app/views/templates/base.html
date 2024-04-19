@@ -5,17 +5,20 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="description" content="Hackers & Designers (H&D) is a conglomerate of practitioners from different fields and backgrounds (technology, design, art, and education) currently operating between Amsterdam, Rotterdam and Brussels. H&D is organized in a cooperative fashion, distributing responsibility over finances and decision making. Members of the collective are: Loes Bogers, Selby Gildemacher, Anja Groten, Heerko van der Kooij, Juliette Lizotte, Karl Moubarak, Pernilla Manjula Philip, slvi.e and vo ezn.">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
-    <link rel="manifest" href="/static/favicon/site.webmanifest">
-    <link rel="mask-icon" href="/static/favicon/safari-pinned-tab.svg" color="#fef326">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/assets/favicon/site.webmanifest">
+    <link rel="mask-icon" href="/assets/favicon/safari-pinned-tab.svg" color="#fef326">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
 
     <title>{{ article['title'] }} • H&amp;D</title>
-
-    <link rel="stylesheet" type="text/css" href="/static/styles/base.css?v=ea060d8"/>
+    <link rel="stylesheet" type="text/css" href="/assets/styles/base.css?v=ea060d8"/>
+    {% if "mw_styles_page" in article['metadata'] %}
+      <link rel="stylesheet" type="text/css" href="/assets/styles/{{ article['metadata']['mw_styles_page'] | slug }}.css"/>
+    {% endif %}
+    <!-- Matomo -->
     <script>
       // Matomo code
       var _paq = window._paq = window._paq || [];

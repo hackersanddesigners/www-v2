@@ -7,6 +7,7 @@ from aiofiles import os as aos
 from dotenv import load_dotenv
 from typing_extensions import Annotated
 
+from app.copy_assets import main as copy_assets
 from app.build_category_index import make_category_index
 from app.build_front_index import build_front_index
 from app.build_wiki import main as bw
@@ -28,9 +29,10 @@ def setup():
 
     WIKI_DIR = os.getenv("WIKI_DIR")
     MEDIA_DIR = os.getenv("MEDIA_DIR")
+    ASSETS_DIR = os.getenv("ASSETS_DIR")
     LOG_DIR = os.getenv("LOG_DIR")
 
-    dir_list = [WIKI_DIR, MEDIA_DIR, LOG_DIR]
+    dir_list = [WIKI_DIR, MEDIA_DIR, ASSETS_DIR, LOG_DIR]
 
     async def make_dirs_setup(dir_list: [str]):
         for path_dir in dir_list:
@@ -43,6 +45,7 @@ def setup():
                     print(f"{dir_path} exists already")
 
     asyncio.run(make_dirs_setup(dir_list))
+    copy_assets()
 
 
 @app.command()
@@ -117,7 +120,5 @@ def build_category_index(
     if cat_index is not None:
         filepath = f"{cat_index['slug']}"
         asyncio.run(write_to_disk(filepath, cat_index["html"], sem=None))
-
-
 if __name__ == "__main__":
     app()
