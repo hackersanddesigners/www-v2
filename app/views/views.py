@@ -46,7 +46,6 @@ async def make_front_index(
             title = article["title"]
             # filter away translations
             lang_stem = title.split("/")[-1]
-            print("stem: ", lang_stem)
             if lang_stem not in langs:
                 task = make_article(article["title"], client)
                 art_tasks.append(asyncio.ensure_future(task))
