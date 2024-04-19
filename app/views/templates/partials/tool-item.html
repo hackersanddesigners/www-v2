@@ -1,4 +1,7 @@
-<tr id="{{ article.title | slug }}">
+<tr
+  id="{{ article.title | slug }}"
+  aria-label="{{ article.title }}"
+>
   <td class="icon">
     {% if article.metadata.images | length > 0 %}
     <img
@@ -9,7 +12,7 @@
     {% endif %}
   </td>
   <td class="title">
-    <h5><a href="/{{ article.title | slug }}.html">{{ article.title }}</a></h5>
+    <h5><a href="/{{ article.title | slug }}.html">{% include 'title.html' %}</a></h5>
   </td>
   <td class="repo">{% if article.metadata.tool_repos %}
       <ul>

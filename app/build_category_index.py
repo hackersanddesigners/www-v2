@@ -1,6 +1,7 @@
 import asyncio
 import os
 from pathlib import Path
+from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup
@@ -26,11 +27,14 @@ WIKI_DIR = os.getenv("WIKI_DIR")
 config = read_settings()
 
 
-async def make_category_index(
-    cat: str,
-) -> dict[str, list[str] | list[dict[str, str]]] | None:
+def check_if_cat_exists(cat: str) -> tuple[str | None, str | None]:
     """
-    Build Index page of the specified category.
+    Check if given cat exists in settings.toml.
+    Check if:
+    - index is True (if False we don't want
+      to build index page for it)
+    - given cat match any of the set category
+      so we can fetch the label value
     """
 
     cat_key = None
@@ -39,7 +43,7 @@ async def make_category_index(
     cats = config["wiki"]["categories"]
 
     for k, v in cats.items():
-        if k.lower() == cat:
+        if v["index"] and cat == k.lower():
             cat_key = k
             cat_label = cats[k]["label"]
 
@@ -49,14 +53,21 @@ async def make_category_index(
             "of the following categories:\n",
             f"{list(cats.keys())}",
         )
-        return None
 
-    # --
+    return cat_key, cat_label
+
+
+async def get_category(
+    ENV: str | None, URL: str | None, cat: str
+) -> dict[str, list[Any]] | bool:
+    """
+    Fetch all articles from the given cat.
+    """
 
     params = {
         "action": "query",
         "list": "categorymembers",
-        "cmtitle": f"Category:{cat_key}",
+        "cmtitle": f"Category:{cat}",
         "cmlimit": "50",
         "cmprop": "ids|title|timestamp",
         "formatversion": "2",
@@ -69,37 +80,45 @@ async def make_category_index(
     async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         # -- get full list of entries from category
-        data = []
-        translation_langs = [
-            config["wiki"]["default"],
-            config["wiki"]["translation_langs"][0],
-        ]
-
+        data = {cat: []}
         async for response in query_continue(client, URL, params):
             response = response["categorymembers"]
-            title = response[0]["title"]
 
             if len(response) > 0 and "missing" in response[0]:
+                title = response[0]["title"]
                 print(f"the page could not be found => {title}")
 
             else:
-                data.extend(response)
+                data[cat].extend(response)
 
-        # TODO the code above can be replaced with get_category from build_wiki.py
-        # --
+    return data
 
-        translation_langs = [
-            config["wiki"]["default"],
-            config["wiki"]["translation_langs"][0],
-        ]
+
+async def make_category_index(
+    cat: str,
+) -> dict[str, list[str] | list[dict[str, str]]] | None:
+    """
+    Build Index page of the specified category.
+    """
+
+    cat_key, cat_label = check_if_cat_exists(cat)
+
+    langs = config["wiki"]["langs"]
+
+    category_data = await get_category(ENV, URL, cat_key)
+    articles = category_data[cat_key]
+
+    context = create_context(ENV)
+    timeout = httpx.Timeout(10.0, connect=60.0, read=60.0)
+    async with httpx.AsyncClient(verify=context, timeout=timeout) as client:
 
         art_tasks = []
-        for article in data:
+        for article in articles:
             # filter out translated article
             title = article["title"]
             lang_stem = title.split("/")[-1]
 
-            if lang_stem not in translation_langs:
+            if lang_stem not in langs:
                 task = make_article(article["title"], client)
                 art_tasks.append(asyncio.ensure_future(task))
 
@@ -117,6 +136,7 @@ async def make_category_index(
             sem=None,
         )
 
+        # -- prepare per-template category article
         article = None
 
         if cat_key == "Event":
@@ -181,23 +201,12 @@ async def update_categories(
 
     cat_tasks_html = []
 
-    cats = config["wiki"]["categories"]
     cat_label = None
     for cat in article["metadata"]["categories"]:
 
-        # -- get cat_label and check if:
-        #    - index is True (if False we don't want
-        #      to build index page for it)
-        #    - given cat match any of the set category
-        #      so we can fetch the label value
-        for k, v in cats.items():
-            if v["index"] and cat == k.lower():
-                cat_label = cats[k]["label"]
+        cat_key, cat_label = check_if_cat_exists(cat)
 
-        if cat_label is None:
-            print(f"update-categories err => no cat_label set for {cat}")
-
-        else:
+        if cat_label:
             # if article is an `event` we need to do more work
             # on the data structure before we pass it to the template.
             # do it here.

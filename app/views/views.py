@@ -32,6 +32,7 @@ async def make_front_index(
     """
 
     config = read_settings()
+    langs = config["wiki"]["langs"]
 
     ENV = os.getenv("ENV")
     context = create_context(ENV)
@@ -42,8 +43,12 @@ async def make_front_index(
         data = await fetch_category(home_cat, client)
         art_tasks = []
         for article in data:
-            task = make_article(article["title"], client)
-            art_tasks.append(asyncio.ensure_future(task))
+            title = article["title"]
+            # filter away translations
+            lang_stem = title.split("/")[-1]
+            if lang_stem not in langs:
+                task = make_article(article["title"], client)
+                art_tasks.append(asyncio.ensure_future(task))
 
         highlight_articles = await asyncio.gather(*art_tasks)
         highlight_articles = [item for item in highlight_articles if item is not None]

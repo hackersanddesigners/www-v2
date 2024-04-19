@@ -3,9 +3,8 @@
 # name of stylesheet page
 stylespage = "Styles"
 
-# translaton languages
-translation_langs = ["nl"]
-default = "en"
+# wiki languages
+langs = ["en", "nl", "fr"]
 
 # set what's the article to use for the frontpage
 [wiki.frontpage]
@@ -69,7 +68,7 @@ label = "Privacy Policy"
 [domain]
 canonical_url = "https://hackersanddesigners.nl"
 mw_url = "http://localhost:8001"
-      
+
 [tool-plugin]
 host_default = 'github'
 host = { github = ['https://raw.githubusercontent.com', 'https://github.com'] }

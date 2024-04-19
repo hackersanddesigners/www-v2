@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<main id="main-content">
+<main id="main-content" aria-label="Error message">
   <h1>{{ article["error"] }} </h1>
   <p>{{ article['message'] | safe }}</p>
 </main>

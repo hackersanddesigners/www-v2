@@ -79,17 +79,6 @@ def get_article_field(field: str, article: dict[str, str]) -> str | None:
     return None
 
 
-def get_translations(page_title: str, backlinks: list[str]) -> list[str]:
-    """
-    Return list of URLs pointing to translations of the given article.
-    """
-
-    translations = config["wiki"]["translation_langs"]
-    matches = [f"{page_title}/{lang}" for lang in translations]
-
-    return [page["title"] for page in backlinks if page["title"] in matches]
-
-
 async def make_article(
     page_title: str, client
 ) -> dict[str, list[str] | list[dict[str, str]]] | None:
@@ -98,12 +87,6 @@ async def make_article(
     """
 
     article, backlinks, redirect_target = await fetch_article(page_title, client)
-
-    # TODO we wouldn't need this get_translations func anymore,
-    # since the HTML article contains alreasy links to available translations (?)
-    article_translations = []
-    if backlinks:
-        article_translations = get_translations(page_title, backlinks)
 
     # TODO: here you need to check if the page is a translation, if so, you fetch the
     # translated display title from mediawiki and pass it to the data as a "display_title"
@@ -123,6 +106,7 @@ async def make_article(
         metadata = {
             "id": article["pageid"],
             "title": article["title"],
+            "displaytitle": article["displaytitle"],
             "mw_url": mw_url,
             "mw_history_url": mw_url + "&action=history",
             "mw_edit_url": mw_url + "&action=edit",
@@ -134,7 +118,6 @@ async def make_article(
             "backlinks": backlinks,
             "nav": nav,
             "footer_nav": footer_nav,
-            "translations": article_translations,
             "parsed_metadata": art_metadata["info"],
             "categories": art_metadata["categories"],
             "tool_repos": art_metadata["repos_index"],
@@ -152,7 +135,6 @@ async def make_article(
             "slug": article_slug,
             "nav": nav,
             "footer_nav": footer_nav,
-            "translations": article_translations,
             "metadata": metadata,
         }
 
@@ -289,45 +271,47 @@ async def remove_article_traces(article_title: str) -> None:
         print(f"remove-traces from => {filepath}")
         filename = Path(filepath).stem
 
-        article_html = Path(f"./{WIKI_DIR}/{filename}.html").read_text()
-        soup = BeautifulSoup(article_html, "lxml")
+        article_file = Path(f"./{WIKI_DIR}/{filename}.html")
+        if article_file.is_file():
+            article_html = article_file.read_text()
+            soup = BeautifulSoup(article_html, "lxml")
 
-        # update cat-index pages if any is matching
-        if filename in cat_labels:
-            snippets = soup.select(f"#{pattern}")
+            # update cat-index pages if any is matching
+            if filename in cat_labels:
+                snippets = soup.select(f"#{pattern}")
 
-            if len(snippets) > 0:
-                for snippet in snippets:
-                    snippet.decompose()
+                if len(snippets) > 0:
+                    for snippet in snippets:
+                        snippet.decompose()
 
-                # write updated cat-index HTML back to disk
-                article_html = str(soup.prettify())
-                task = write_to_disk(filename, article_html, sem)
-                tasks_html.append(asyncio.ensure_future(task))
+                    # write updated cat-index HTML back to disk
+                    article_html = str(soup.prettify())
+                    task = write_to_disk(filename, article_html, sem)
+                    tasks_html.append(asyncio.ensure_future(task))
 
-        else:
-            # update links, eg footer > meta > what-links-here
-            # and collaborator article page
+            else:
+                # update links, eg footer > meta > what-links-here
+                # and collaborator article page
 
-            print(f"remove-traces :: remove links from article => {filepath}")
+                print(f"remove-traces :: remove links from article => {filepath}")
 
-            links = soup.find_all("a")
-            snippets = [
-                link
-                for link in links
-                if "href" in link.attrs and link.attrs["href"].startswith(f"/{pattern}")
-            ]
+                links = soup.find_all("a")
+                snippets = [
+                    link
+                    for link in links
+                    if "href" in link.attrs and link.attrs["href"].startswith(f"/{pattern}")
+                ]
 
-            if len(snippets) > 0:
-                for snippet in snippets:
-                    parent = snippet.parent
-                    if snippet.name == "a" and parent.name == "li":
-                        parent.decompose()
+                if len(snippets) > 0:
+                    for snippet in snippets:
+                        parent = snippet.parent
+                        if snippet.name == "a" and parent.name == "li":
+                            parent.decompose()
 
-                # write updated cat-index HTML back to disk
-                article_html = str(soup.prettify())
-                task = write_to_disk(filename, article_html, sem)
-                tasks_html.append(asyncio.ensure_future(task))
+                    # write updated cat-index HTML back to disk
+                    article_html = str(soup.prettify())
+                    task = write_to_disk(filename, article_html, sem)
+                    tasks_html.append(asyncio.ensure_future(task))
 
     await asyncio.gather(*tasks_html)
 

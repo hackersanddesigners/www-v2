@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<main id="main-content" aria-label="All H&D's activities.">
+<main id="main-content" aria-label="H&D's activities.">
   <h1>Activities</h1>
   {% if article.types | length > 0 %}
-    <menu class="types">
+    <menu class="types" aria-label="Filter activities by type">
       {% for type in article.types %}
         <label>
           <input
@@ -17,12 +17,65 @@
     </menu>
   {% endif %}
   {% if article.events | length > 0 %}
-    <ul class="events">
+    <ul class="events" aria-label="Activity list">
       {% for article in article.events %}
       {% include "partials/event-item.html" %}
       {% endfor %}
     </ul>
   {% endif %}
 </main>
-<script src="/assets/scripts/events.js"></script>
+<script>
+
+  // submenu type handler as query parameter
+  const $ = a => document.querySelector( a )
+  const types_menu = $('menu.types')
+  const event_types = Array.from(types_menu.children).map( r => r.firstElementChild.value )
+
+  // add listenerns to radio buttons to change query params
+  add_radio_listeners()
+
+  // fetch query params type
+  const url_object = new URL(window.location)
+  const event_type = url_object.searchParams.get( 'type' )
+
+  // handle query parameter ?type=something
+  if ( event_type ) {
+    if ( event_types.includes( event_type ) ) {
+      check_radio( event_type )
+      create_clr_button()
+      filter_events( event_type )
+    } else {
+      create_err_msg( 'Event type not found.' )
+    }
+  }
+
+  function add_radio_listeners() {
+    for ( const radio of types_menu.children ) {
+      radio.addEventListener( 'change', e => {
+        window.location.search = `?type=${ e.target.value }`
+      })
+    }
+  }
+  function check_radio( val ) {
+    $( `input[value="${ val }"]` ).checked = true
+  }
+  function create_clr_button() {
+    const clr_button = document.createElement( 'button' )
+    clr_button.innerHTML = 'Clear filter'
+    clr_button.onclick = e => window.location.search = ''
+    types_menu.append( clr_button )
+  }
+  function create_err_msg( msg ) {
+    const err_msg = document.createElement( 'span' )
+    err_msg.classList.add('error')
+    err_msg.innerHTML = msg
+    types_menu.append( err_msg )
+  }
+  function filter_events( event_type ) {
+    Array.from( $('.events').children )
+    .filter( e => e.getAttribute( 'data-type' ) !== event_type )
+    .map( e => e.style.display = 'none' )
+  }
+
+</script>
 {% endblock %}

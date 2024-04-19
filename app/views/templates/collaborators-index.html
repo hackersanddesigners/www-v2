@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<main id="main-content">
+<main id="main-content" aria-label="Collaborators list">
   <h1>{{ article.title }}</h1>
   {% for article in article.collaborators %}
   {% include "partials/collaborators-item.html" %}

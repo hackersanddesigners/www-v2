@@ -89,7 +89,7 @@ async def fetch_article(title: str, client):
     # for HTML-parsed wiki article
     parse_params = {
         "action": "parse",
-        "prop": "text|langlinks|categories|templates|images",
+        "prop": "text|langlinks|categories|templates|images|displaytitle",
         "page": title,
         "formatversion": "2",
         "format": "json",
@@ -280,10 +280,7 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
     ignoring the translation snippet.
     """
 
-    translation_langs = [
-        config["wiki"]["default"],
-        config["wiki"]["translation_langs"][0],
-    ]
+    langs = config["wiki"]["langs"]
 
     lang_stem = title.split("/")[-1]
 
@@ -293,17 +290,17 @@ def convert_article_trans_title_to_regular_title(title: str) -> str:
     # check if value before lang is a number
     tokens = title.split("/")
     if len(tokens) >= 2:
+
+        # `Page display title` is used for the article title translation:
+        # though we might not use it, let's add it as a check,
+        # so if we change that field the code does not break.
+
         if tokens[-2] == "Page display title" or tokens[-2].isdigit():
 
-            # TODO @karl:
-            # `Page display title` is for the article title translation
-            # but it seems we're not using it?
-            # anyway i added it so if we change that field the code does not break.
-
             # check if article's title ending is matching any of the lang set in
-            # the settings.toml variable `translation_langs`
-            # and return just actual title without lang and id tokens
-            if lang_stem in translation_langs:
+            # the settings.toml variable `langs` and return just actual title
+            # without lang and id tokens
+            if lang_stem in langs:
                 t = tokens[:-2]
                 t.append(lang_stem)
 

@@ -63,7 +63,7 @@ then, if wanting to do 1:
 - open another terminal and `cd` into this repo
 - run `source env/bin/activate` (or `devenv shell` if you use devenv)
 - then run `python cli.py server` to listen to the MW changes
-  
+
 otherwise, if interested in 2:
 
 - `cd` into this repo and activate the environment
@@ -73,7 +73,7 @@ type `python cli.py --help` for a list of all the options.
 
 ### scripts
 
-there are two Python helper scripts to lint and format code: 
+there are two Python helper scripts to lint and format code:
 
 - the former runs [flake8](https://flake8.pycqa.org/en/latest/index.html) and reports you a list of suggestions;
 - the latter runs [isort](https://pycqa.github.io/isort/) and [black](https://black.readthedocs.io/en/stable/index.html) to update the codebase by (1) re-sorting the list of imports at the top of a file, and (2) rewriting code in a specific style (eg using single quote, keeping correct whitespace between lines of code, etc).
@@ -160,7 +160,7 @@ mkcert hd-v2.nl
 ```
 
 (you can use a different name for the certificate, eg `mkcert <name>`)
-	
+
 this will create two files in the current folder:
 
 - `hd-v2.nl-key.pem`
@@ -179,8 +179,7 @@ after this you can use https also in the dev environment while using this codeba
 this file mainly set website preferences, eg general wiki options:
 
 - `wiki.stylespage`: name of stylesheet page
-- `wiki.translation_langs`: list of translated languages
-- `wiki.default`: default wiki language
+- `wiki.langs`: list of wiki languages, including default
 
 - `wiki.frontpage.article`: which wiki article do we want to use for the website frontpage?
 - `wiki.frontpage.category`: which category do we want to fetch for the articles displayed in the frontpage?
@@ -193,7 +192,7 @@ this file mainly set website preferences, eg general wiki options:
   - `fallback`: using this category as fallback, in case the wiki article has no matching category with the given list of categories
   - `label`: some categories in the wiki might be called something, and we might want to display them in a different way in the navigation, in the URL path, etc.
 
-- `wiki.footer_links.<page>` (Conduct, Accessibility, Privacy Policy): 
+- `wiki.footer_links.<page>` (Conduct, Accessibility, Privacy Policy):
   - `nav`: add Conduct page to footer list of links
   - `label`: set label for the above link
 
