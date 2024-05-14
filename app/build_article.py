@@ -245,20 +245,6 @@ async def remove_article_traces(article_title: str) -> None:
 
     sem = asyncio.Semaphore(int(os.getenv("SEMAPHORE")))
 
-    pattern = slugify(article_title)
-    filepaths = search_file_content(pattern)
-    print(f"remove-traces :: filepaths => {filepaths}")
-
-    # map over each filepath and remove matched bits
-    # based on the template style of each article.
-    # eg, cat-index templates might be different than
-    # an article template, and each match needs to remove
-    # the correct DOM element in full.
-
-    # - cat-index + index page => event-item > article.id
-    # - collaborators => match <a> by href, go up one level to target parent <li>
-    # - footer => what links here => ""
-
     tasks_html = []
 
     cats = config["wiki"]["categories"]
@@ -267,51 +253,73 @@ async def remove_article_traces(article_title: str) -> None:
     for k, v in cats.items():
         cat_labels.append(v["label"].lower())
 
-    for filepath in filepaths:
-        print(f"remove-traces from => {filepath}")
-        filename = Path(filepath).stem
+    # check first if article is in footerlink list
+    footer_links = config["wiki"]["footer_links"]
+    footer_labels = []
+    for k, v in footer_links.items():
+        footer_labels.append(v["label"])
 
-        article_file = Path(f"./{WIKI_DIR}/{filename}.html")
-        if article_file.is_file():
-            article_html = article_file.read_text()
-            soup = BeautifulSoup(article_html, "lxml")
+    if article_title not in footer_labels:
 
-            # update cat-index pages if any is matching
-            if filename in cat_labels:
-                snippets = soup.select(f"#{pattern}")
+        pattern = slugify(article_title)
+        filepaths = search_file_content(pattern)
+        print(f"remove-traces :: filepaths => {filepaths}")
 
-                if len(snippets) > 0:
-                    for snippet in snippets:
-                        snippet.decompose()
+        # map over each filepath and remove matched bits
+        # based on the template style of each article.
+        # eg, cat-index templates might be different than
+        # an article template, and each match needs to remove
+        # the correct DOM element in full.
 
-                    # write updated cat-index HTML back to disk
-                    article_html = str(soup.prettify())
-                    task = write_to_disk(filename, article_html, sem)
-                    tasks_html.append(asyncio.ensure_future(task))
+        # - cat-index + index page => event-item > article.id
+        # - collaborators => match <a> by href, go up one level to target parent <li>
+        # - footer => what links here => ""
 
-            else:
-                # update links, eg footer > meta > what-links-here
-                # and collaborator article page
+        for filepath in filepaths:
+            print(f"remove-traces from => {filepath}")
+            filename = Path(filepath).stem
 
-                print(f"remove-traces :: remove links from article => {filepath}")
+            article_file = Path(f"./{WIKI_DIR}/{filename}.html")
+            if article_file.is_file():
+                article_html = article_file.read_text()
+                soup = BeautifulSoup(article_html, "lxml")
 
-                links = soup.find_all("a")
-                snippets = [
-                    link
-                    for link in links
-                    if "href" in link.attrs and link.attrs["href"].startswith(f"/{pattern}")
-                ]
+                # update cat-index pages if any is matching
+                if filename in cat_labels:
+                    snippets = soup.select(f"#{pattern}")
 
-                if len(snippets) > 0:
-                    for snippet in snippets:
-                        parent = snippet.parent
-                        if snippet.name == "a" and parent.name == "li":
-                            parent.decompose()
+                    if len(snippets) > 0:
+                        for snippet in snippets:
+                            snippet.decompose()
 
-                    # write updated cat-index HTML back to disk
-                    article_html = str(soup.prettify())
-                    task = write_to_disk(filename, article_html, sem)
-                    tasks_html.append(asyncio.ensure_future(task))
+                        # write updated cat-index HTML back to disk
+                        article_html = str(soup.prettify())
+                        task = write_to_disk(filename, article_html, sem)
+                        tasks_html.append(asyncio.ensure_future(task))
+
+                else:
+                    # update links, eg footer > meta > what-links-here
+                    # and collaborator article page
+
+                    print(f"remove-traces :: remove links from article => {filepath}")
+
+                    links = soup.find_all("a")
+                    snippets = [
+                        link
+                        for link in links
+                        if "href" in link.attrs and link.attrs["href"].startswith(f"/{pattern}")
+                    ]
+
+                    if len(snippets) > 0:
+                        for snippet in snippets:
+                            parent = snippet.parent
+                            if snippet.name == "a" and parent.name == "li":
+                                parent.decompose()
+
+                        # write updated cat-index HTML back to disk
+                        article_html = str(soup.prettify())
+                        task = write_to_disk(filename, article_html, sem)
+                        tasks_html.append(asyncio.ensure_future(task))
 
     await asyncio.gather(*tasks_html)
 
