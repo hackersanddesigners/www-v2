@@ -16,7 +16,7 @@ from app.file_ops import file_lookup
 from app.log_to_file import main as log
 from app.read_settings import main as read_settings
 
-from .template_utils import extract_datetime, get_template, ts_pad_hour
+from .template_utils import extract_datetime, get_template, ts_pad_hour, make_mw_url_slug
 
 load_dotenv()
 
@@ -222,6 +222,8 @@ async def make_event_index(
     Prepare necessary data for the Event index page.
     """
 
+    config = read_settings()
+
     template = get_template(f"{cat}-index")
 
     # events
@@ -272,6 +274,9 @@ async def make_event_index(
         "nav": nav,
         "footer_nav": footer_nav,
         "html": "",
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     document = template.render(article=article_index)
@@ -292,6 +297,7 @@ async def make_collaborators_index(
     Prepare necessary data for the Collaborators index page.
     """
 
+    config = read_settings()
     template = get_template(f"{cat}-index")
 
     # collaborators
@@ -311,6 +317,9 @@ async def make_collaborators_index(
         "nav": nav,
         "footer_nav": footer_nav,
         "html": "",
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     document = template.render(article=article)
@@ -331,6 +340,7 @@ async def make_publishing_index(
     Prepare necessary data for the Publishing index page.
     """
 
+    config = read_settings()
     template = get_template(f"{cat}-index")
     nav = make_nav()
     footer_nav = make_footer_nav()
@@ -344,6 +354,9 @@ async def make_publishing_index(
         "footer_nav": footer_nav,
         "nav": nav,
         "html": "",
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     document = template.render(article=article)
@@ -364,6 +377,7 @@ async def make_tool_index(
     Prepare necessary data for the Tool index page.
     """
 
+    config = read_settings()
     template = get_template(f"{cat}-index")
     nav = make_nav()
     footer_nav = make_footer_nav()
@@ -377,6 +391,9 @@ async def make_tool_index(
         "nav": nav,
         "footer_nav": footer_nav,
         "html": "",
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     # print( json.dumps( article, indent=2 ) )
@@ -397,6 +414,7 @@ async def make_search_index(
     Prepare necessary data for the Search index page.
     """
 
+    config = read_settings()
     nav = make_nav()
     footer_nav = make_footer_nav()
 
@@ -411,6 +429,9 @@ async def make_search_index(
         "results": articles,
         "footer_nav": footer_nav,
         "nav": nav,
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     return article
@@ -423,6 +444,7 @@ async def make_error_page(status_code, message: str):
     """
     Prepare necessary data for error page
     """
+    config = read_settings()
     nav = make_nav()
     footer_nav = make_footer_nav()
     article = {
@@ -432,6 +454,9 @@ async def make_error_page(status_code, message: str):
         "message": message,
         "footer_nav": footer_nav,
         "nav": nav,
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
     return article
 
@@ -448,6 +473,7 @@ async def make_article_index(
     Prepare necessary data for the Article index page.
     """
 
+    config = read_settings()
     template = get_template(f"{cat}-index")
 
     nav = make_nav()
@@ -460,6 +486,9 @@ async def make_article_index(
         "nav": nav,
         "footer_nav": footer_nav,
         "html": "",
+        "metadata" : {
+            "mw_styles_page": make_mw_url_slug( config['wiki']['stylespage'] ),
+        },
     }
 
     document = template.render(article=article)
