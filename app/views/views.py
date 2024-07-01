@@ -233,7 +233,11 @@ async def make_event_index(
     #
     # order articles by date desc
 
-    events = []
+    events = {
+        "upcoming": [],
+        "happening": [],
+        "past": []
+    }
     types = []
 
     for article in articles:
@@ -251,11 +255,24 @@ async def make_event_index(
                 if event_type and event_type not in types:
                     types.append(event_type)
 
-            events.append(article)
+            if (
+                prepared_article["metadata"]
+                and prepared_article["metadata"]["when"]
+            ):
+                event_when = prepared_article["metadata"]["when"]
+                events[event_when].append( article )
+
+            # events.append(article)
 
     # -- sorting events by date desc
-    events = sorted(
-        events, key=lambda d: d["metadata"]["dates"]["start"] or "", reverse=True
+    events['upcoming'] = sorted(
+        events['upcoming'], key=lambda d: d["metadata"]["dates"]["start"] or ""
+    )
+    events['happening'] = sorted(
+        events['happening'], key=lambda d: d["metadata"]["dates"]["start"] or ""
+    )
+    events['past'] = sorted(
+        events['past'], key=lambda d: d["metadata"]["dates"]["start"] or "", reverse=True
     )
     await log("info", f"make-event => un-filtered {len(events)}\n", sem=None)
 

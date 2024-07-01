@@ -16,12 +16,35 @@
       {% endfor %}
     </menu>
   {% endif %}
-  {% if article.events | length > 0 %}
-    <ul class="events" aria-label="Activity list">
-      {% for article in article.events %}
-      {% include "partials/event-item.html" %}
-      {% endfor %}
-    </ul>
+  {% if article.events.happening | length > 0 %}
+    <section>
+      <h2>Happening Now</h2>
+      <ul class="events" aria-label="Activities happening now">
+        {% for article in article.events.happening %}
+        {% include "partials/event-item.html" %}
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if article.events.upcoming | length > 0 %}
+    <section>
+      <h2>Upcoming</h2>
+      <ul class="events" aria-label="Upcoming activities">
+        {% for article in article.events.upcoming %}
+        {% include "partials/event-item.html" %}
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if article.events.past | length > 0 %}
+    <section>
+      <h2>Past</h2>
+      <ul class="events" aria-label="Past activities">
+        {% for article in article.events.past %}
+        {% include "partials/event-item.html" %}
+        {% endfor %}
+      </ul>
+    </section>
   {% endif %}
 </main>
 <script>
@@ -72,9 +95,12 @@
     types_menu.append( err_msg )
   }
   function filter_events( event_type ) {
-    Array.from( $('.events').children )
-    .filter( e => e.getAttribute( 'data-type' ) !== event_type )
-    .map( e => e.style.display = 'none' )
+    const event_lists = Array.from(document.querySelectorAll( '.events' ))
+    for ( const list of event_lists ) {
+      Array.from( list.children )
+      .filter( e => e.getAttribute( 'data-type' ) !== event_type )
+      .map( e => e.style.display = 'none' )
+    }
   }
 
 </script>
